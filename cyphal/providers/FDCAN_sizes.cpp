@@ -1,0 +1,88 @@
+#include "FDCAN_generic.h"
+
+const uint32_t CanardFDCANLengthToDLC[65] = {
+    // 0-8
+    FDCAN_DLC_BYTES_0,
+    FDCAN_DLC_BYTES_1,
+    FDCAN_DLC_BYTES_2,
+    FDCAN_DLC_BYTES_3,
+    FDCAN_DLC_BYTES_4,
+    FDCAN_DLC_BYTES_5,
+    FDCAN_DLC_BYTES_6,
+    FDCAN_DLC_BYTES_7,
+    FDCAN_DLC_BYTES_8,
+    // 9-12
+    FDCAN_DLC_BYTES_12,
+    FDCAN_DLC_BYTES_12,
+    FDCAN_DLC_BYTES_12,
+    FDCAN_DLC_BYTES_12,
+    // 13-16
+    FDCAN_DLC_BYTES_16,
+    FDCAN_DLC_BYTES_16,
+    FDCAN_DLC_BYTES_16,
+    FDCAN_DLC_BYTES_16,
+    // 17-20
+    FDCAN_DLC_BYTES_20,
+    FDCAN_DLC_BYTES_20,
+    FDCAN_DLC_BYTES_20,
+    FDCAN_DLC_BYTES_20,
+    // 20-24
+    FDCAN_DLC_BYTES_24,
+    FDCAN_DLC_BYTES_24,
+    FDCAN_DLC_BYTES_24,
+    FDCAN_DLC_BYTES_24,
+    // 24-32
+    FDCAN_DLC_BYTES_32,
+    FDCAN_DLC_BYTES_32,
+    FDCAN_DLC_BYTES_32,
+    FDCAN_DLC_BYTES_32,
+    FDCAN_DLC_BYTES_32,
+    FDCAN_DLC_BYTES_32,
+    FDCAN_DLC_BYTES_32,
+    FDCAN_DLC_BYTES_32,
+    // 33-48
+    FDCAN_DLC_BYTES_48,
+    FDCAN_DLC_BYTES_48,
+    FDCAN_DLC_BYTES_48,
+    FDCAN_DLC_BYTES_48,
+    FDCAN_DLC_BYTES_48,
+    FDCAN_DLC_BYTES_48,
+    FDCAN_DLC_BYTES_48,
+    FDCAN_DLC_BYTES_48,
+    FDCAN_DLC_BYTES_48,
+    FDCAN_DLC_BYTES_48,
+    FDCAN_DLC_BYTES_48,
+    FDCAN_DLC_BYTES_48,
+    FDCAN_DLC_BYTES_48,
+    FDCAN_DLC_BYTES_48,
+    FDCAN_DLC_BYTES_48,
+    FDCAN_DLC_BYTES_48,
+    // 49-64
+    FDCAN_DLC_BYTES_64,
+    FDCAN_DLC_BYTES_64,
+    FDCAN_DLC_BYTES_64,
+    FDCAN_DLC_BYTES_64,
+    FDCAN_DLC_BYTES_64,
+    FDCAN_DLC_BYTES_64,
+    FDCAN_DLC_BYTES_64,
+    FDCAN_DLC_BYTES_64,
+    FDCAN_DLC_BYTES_64,
+    FDCAN_DLC_BYTES_64,
+    FDCAN_DLC_BYTES_64,
+    FDCAN_DLC_BYTES_64,
+    FDCAN_DLC_BYTES_64,
+    FDCAN_DLC_BYTES_64,
+    FDCAN_DLC_BYTES_64,
+    FDCAN_DLC_BYTES_64,
+};
+
+size_t fdcan_dlc_to_len(uint32_t dlc) {
+    auto dlc_index = (uint8_t)(dlc / 65536);
+    if (dlc_index <= 8) {
+        return dlc_index;
+    }
+    if (dlc_index <= 12) {
+        return 8 + 4 * (dlc_index - 8);
+    }
+    return 32 + 16 * (dlc_index - 13);
+}
