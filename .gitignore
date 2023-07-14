@@ -15,13 +15,6 @@ libs
 .recommenders
 # VSCode
 .vscode/*
-!.vscode/*.sh
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-!.vscode/*.code-workspace
-*.code-workspace
 # Xi
 default.profraw
 # Idea
