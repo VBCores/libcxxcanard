@@ -17,6 +17,7 @@ uint64_t micros() {
 }
 #endif
 
+#include <iostream>
 void AbstractCANProvider::process_canard_rx(CanardFrame* frame) {
     CanardRxTransfer transfer = {.payload = nullptr};
     CanardRxSubscription* subscription = nullptr;

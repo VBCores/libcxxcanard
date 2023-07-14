@@ -216,6 +216,9 @@ cython_debug/
 
 ### C++
 
+CMakeFiles/
+CMakeCache.txt
+*.cmake
 # Prerequisites
 *.d
 

@@ -14,13 +14,15 @@ class AbstractCANProvider {
     CanardInstance canard;
 
    public:
+    typedef void Handler;
+
     AbstractCANProvider() = delete;
     AbstractCANProvider(size_t canard_mtu, size_t wire_mtu)
         : WIRE_MTU(wire_mtu), CANARD_MTU(canard_mtu), canard{}, queue{} {};
     template <class T>
-    CanardTxQueue* setup(CanardNodeID node_id) {
+    void setup(CanardNodeID node_id) {
         auto memory_pair = get_memory_pair<T>();
-        canard = canardInit(memory_pair[0], memory_pair[1]);
+        canard = canardInit(std::get<0>(memory_pair), std::get<1>(memory_pair));
         canard.node_id = node_id;
         queue = canardTxInit(200, CANARD_MTU);
     }

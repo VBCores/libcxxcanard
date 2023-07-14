@@ -22,11 +22,12 @@ void CyphalInterface::push(
 void CyphalInterface::subscribe(
     CanardPortID port_id,
     size_t extent,
-    CanardRxSubscription* const subscription,
+    CanardTransferKind kind,
+    CanardRxSubscription* subscription
 ) {
     if (canardRxSubscribe(
             (CanardInstance* const)&provider->canard,
-            CanardTransferKindRequest,
+            kind,
             port_id,
             extent,
             CANARD_DEFAULT_TRANSFER_ID_TIMEOUT_USEC,
@@ -34,4 +35,8 @@ void CyphalInterface::subscribe(
         ) != 1) {
         Error_Handler();
     }
+}
+
+void CyphalInterface::loop() {
+    provider->can_loop();
 }

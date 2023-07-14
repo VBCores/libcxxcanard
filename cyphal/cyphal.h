@@ -13,18 +13,24 @@ class CyphalInterface {
 
    public:
     CyphalInterface(CanardNodeID node_id) : node_id(node_id){};
-    template <class Provider, class Allocator, typename Handler>
-    void setup(Handler handler) {
+    template <typename Provider, class Allocator>
+    void setup(typename Provider::Handler handler) {
         provider = new Provider(handler);
         provider->setup<Allocator>(node_id);
     }
+    void loop();
     void push(
         CanardMicrosecond tx_deadline_usec,
         const CanardTransferMetadata* metadata,
         size_t payload_size,
         const void* payload
     );
-    void subscribe(CanardPortID port_id, size_t extent, CanardRxSubscription* subscription);
+    void subscribe(
+        CanardPortID port_id,
+        size_t extent,
+        CanardTransferKind kind,
+        CanardRxSubscription* subscription
+    );
 
     // TEMPLATES
     template <typename ObjType>

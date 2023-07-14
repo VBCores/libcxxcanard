@@ -17,5 +17,14 @@ void O1Allocator::free(CanardInstance* ins, void* pointer) {
 }
 
 O1Allocator::O1Allocator(size_t size) {
-    o1heapInit(o1heap, size);
+    memory_arena = new uint8_t[size];
+    O1HeapInstance* out = o1heapInit(memory_arena, size);
+    if (out == nullptr) {
+        Error_Handler();
+    }
+    o1heap = out;
+}
+
+O1Allocator::~O1Allocator() {
+    delete (uint8_t*)memory_arena;
 }

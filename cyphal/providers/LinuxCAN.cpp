@@ -7,6 +7,7 @@
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <cstring>
+#include <iostream>
 
 #include "FDCAN_generic.h"
 
@@ -64,21 +65,21 @@ void LinuxCAN::can_loop() {
     process_canard_tx();
 }
 
+struct canfd_frame rxframe;
 CanardFrame* LinuxCAN::read_frame() {
-    struct canfd_frame rxframe;
-
     uint8_t nbytes = read(socketcan_handler, &rxframe, WIRE_MTU);
-    if (nbytes != WIRE_MTU) {  // only complete CAN frames are accepted.
+    if (nbytes != WIRE_MTU) {  // only complete CAN frames are accepted
         return nullptr;
     }
 
     auto msg_id = (uint32_t)rxframe.can_id;
     msg_id = msg_id & ~(1 << 31);  // clear EFF flag
 
-    auto rxf = new CanardFrame{};
+    auto rxf = new CanardFrame();
     rxf->extended_can_id = msg_id;
     rxf->payload_size = (size_t)rxframe.len;
     rxf->payload = (void*)&rxframe.data;
+
     return rxf;
 }
 

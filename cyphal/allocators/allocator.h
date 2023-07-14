@@ -21,10 +21,6 @@ inline void free(CanardInstance* ins, void* ptr) {
 }
 template <class T>
 std::tuple<CanardMemoryAllocate, CanardMemoryFree> get_memory_pair() {
-    static_assert(
-        std::is_convertible<T, AbstractAllocator>::value,
-        "Must be a subclass of AbstractAllocator"
-    );
     if (allocator != nullptr) {
         perror("Tried to reinitialize allocator");
     }

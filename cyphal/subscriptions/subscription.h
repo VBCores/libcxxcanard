@@ -31,10 +31,23 @@ class AbstractSubscription : public IListener<CanardRxTransfer*> {
         : interface(interface), port_id(port_id), kind(kind), extent(extent) {
         subscribe();
     };
-    virtual void subscribe();
-    virtual void accept(CanardRxTransfer*);
+    virtual void subscribe() {
+        CanardRxSubscription* sub = new CanardRxSubscription();
+        sub->user_reference = (void*)this;
+        interface->subscribe(
+            port_id,
+            extent,
+            kind,
+            sub
+        );
+    }
+    virtual void accept(CanardRxTransfer* transfer) {
+        T object;
+        deserialize(&object, transfer);
+        handler(object, transfer);
+    }
     virtual void deserialize(T*, CanardRxTransfer*) = 0;
-    virtual void handler(const T&) = 0;
+    virtual void handler(const T&, CanardRxTransfer*) = 0;
 };
 
 /*

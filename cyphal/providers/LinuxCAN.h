@@ -11,7 +11,8 @@ class LinuxCAN : public AbstractCANProvider {
     int socketcan_handler;
 
    public:
-    LinuxCAN(const std::string& can_interface);
+    typedef const std::string& Handler;
+    LinuxCAN(Handler can_interface);
     uint32_t len_to_dlc(size_t len) override;
     size_t dlc_to_len(uint32_t dlc) override;
     void can_loop() override;
