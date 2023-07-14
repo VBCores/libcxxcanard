@@ -85,14 +85,33 @@ class AbstractSubscription : public IListener<CanardRxTransfer*> {
 #define SUBSCRIPTION_BODY_FIXED_MESSAGE(CLASS_NAME, TYPE) \
     SUBSCRIPTION_BODY_MESSAGE(CLASS_NAME, TYPE, TYPE##_FIXED_PORT_ID_)
 
-/*
-#include "uavcan/_register/Access_1_0.h"
-class MotorService : public AbstractSubscription<uavcan_register_Access_Request_1_0> {
-    SUBSCRIPTION_BODY_RESPONSE(
-        MotorService,
-        uavcan_register_Access_Request_1_0,
-        uavcan_register_Access_1_0_FIXED_PORT_ID_
-    )
-    void handler(const uavcan_register_Access_Request_1_0&);
+
+#define SUBSCRIPTION_CLASS(CLASS_NAME, TYPE, TRANSFER_KIND, PORT_ID)                       \
+class CLASS_NAME : public AbstractSubscription<TYPE> {                                     \
+private:                                                                                   \
+    DESERIALIZE_TYPE(TYPE, interface)                                                      \
+public:                                                                                    \
+    CLASS_NAME(CyphalInterface* interface)                                                 \
+        : AbstractSubscription(interface, TRANSFER_KIND, PORT_ID, TYPE##_EXTENT_BYTES_){}; \
+                                                                                           \
+public:                                                                                    \
+    void handler(                                                                          \
+        const uavcan_node_Heartbeat_1_0& hbeat,                                            \
+        CanardRxTransfer* transfer                                                         \
+    ) override;                                                                            \
 };
- */
+
+#define SUBSCRIPTION_CLASS_FIXED(CLASS_NAME, TYPE, TRANSFER_KIND) \
+    SUBSCRIPTION_CLASS(CLASS_NAME, TYPE, TRANSFER_KIND, TYPE##_FIXED_PORT_ID_)
+
+#define SUBSCRIPTION_CLASS_RESPONSE(CLASS_NAME, TYPE, PORT_ID) \
+    SUBSCRIPTION_CLASS(CLASS_NAME, TYPE, CanardTransferKindResponse, PORT_ID)
+
+#define SUBSCRIPTION_CLASS_MESSAGE(CLASS_NAME, TYPE, PORT_ID) \
+    SUBSCRIPTION_CLASS(CLASS_NAME, TYPE, CanardTransferKindMessage, PORT_ID)
+
+#define SUBSCRIPTION_CLASS_FIXED_RESPONSE(CLASS_NAME, TYPE) \
+    SUBSCRIPTION_CLASS_RESPONSE(CLASS_NAME, TYPE, TYPE##_FIXED_PORT_ID_)
+
+#define SUBSCRIPTION_CLASS_FIXED_MESSAGE(CLASS_NAME, TYPE) \
+    SUBSCRIPTION_CLASS_MESSAGE(CLASS_NAME, TYPE, TYPE##_FIXED_PORT_ID_)
