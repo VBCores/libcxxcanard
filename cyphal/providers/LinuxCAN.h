@@ -1,5 +1,5 @@
 #pragma once
-#include "definitions.h"
+#include "cyphal/definitions.h"
 #ifdef LINUX_CAN
 
 #include <string>

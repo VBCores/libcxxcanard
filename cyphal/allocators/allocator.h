@@ -3,7 +3,7 @@
 #include <tuple>
 #include <type_traits>
 
-#include "definitions.h"
+#include "cyphal/definitions.h"
 #include "libcanard/canard.h"
 
 class AbstractAllocator {

@@ -1,5 +1,5 @@
 #pragma once
-#include "definitions.h"
+#include "cyphal/definitions.h"
 #if (defined(STM32F446xx) || defined(STM32_F)) && defined(HAL_CAN_MODULE_ENABLED)
 
 #include "provider.h"

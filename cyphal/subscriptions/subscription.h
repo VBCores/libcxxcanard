@@ -1,7 +1,7 @@
 #pragma once
 
-#include "cyphal.h"
-#include "interfaces.h"
+#include "cyphal/cyphal.h"
+#include "cyphal/interfaces.h"
 #include "libcanard/canard.h"
 
 template <typename T>

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "allocators/allocator.h"
-#include "definitions.h"
+#include "cyphal/allocators/allocator.h"
+#include "cyphal/definitions.h"
 #include "libcanard/canard.h"
 
 class AbstractCANProvider {
