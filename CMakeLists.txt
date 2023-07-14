@@ -1,12 +1,17 @@
-cmake_minimum_required(VERSION 3.23)
-project(libcyphal)
+include_directories(.)
+file(GLOB_RECURSE SOURCES "cyphal/*.c" "cyphal/*.cpp")
 
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_C_STANDARD 11)
+if(DEFINED ENV{<VBLIB_DIR>})
+    set(VBLIB_DIR $ENV{VBLIB_DIR})
+else()
+    get_filename_component(VBLIB_DIR
+            "../libvoltbro"
+            ABSOLUTE)
+endif()
+message("${CMAKE_CURRENT_LIST_DIR} | Using <${VBLIB_DIR}> as directory of libvoltbro")
 
-include_directories(cyphal)
-include_directories(libs)
+include_directories(${VBLIB_DIR})
+add_subdirectory(${VBLIB_DIR}/libcanard ${PROJECT_BINARY_DIR}/build/libcanard)
+add_subdirectory(${VBLIB_DIR}/o1heap ${PROJECT_BINARY_DIR}/build/o1heap)
 
-file(GLOB_RECURSE SOURCES "Cyphal/*.c" "Cyphal/*.cpp" "Cyphal/*.hpp"  "Cyphal/*.h" "Cyphal/*.tpp")
-
-add_executable(libcyphal ${SOURCES})
+add_library(libcyphal ${SOURCES} $<TARGET_OBJECTS:libcanard> $<TARGET_OBJECTS:o1heap>)
