@@ -1,3 +1,6 @@
+project(libcyphal)
+cmake_minimum_required(VERSION 3.15)
+
 include_directories(.)
 file(GLOB_RECURSE SOURCES "cyphal/*.c" "cyphal/*.cpp")
 

@@ -14,7 +14,7 @@ size_t G4CAN::dlc_to_len(uint32_t dlc) {
 
 void G4CAN::can_loop() {
     while (HAL_FDCAN_GetRxFifoFillLevel(handler, FDCAN_RX_FIFO0) != 0) {
-        CanardFrame* frame = read();
+        CanardFrame* frame = read_frame();
         if (frame == nullptr)
             break;
         process_canard_rx(frame);
@@ -24,7 +24,8 @@ void G4CAN::can_loop() {
     process_canard_tx();
 }
 
-CanardFrame* G4CAN::read() {
+uint8_t RxData[64] = {};
+CanardFrame* G4CAN::read_frame() {
     // may want to check 2 FIFOs in the future
     uint32_t rx_fifo = -1;
     if (HAL_FDCAN_GetRxFifoFillLevel(handler, FDCAN_RX_FIFO0)) {
@@ -34,23 +35,22 @@ CanardFrame* G4CAN::read() {
     }
 
     if (rx_fifo == (uint32_t)-1) {
-        return nullptr
+        return nullptr;
     }
 
     FDCAN_RxHeaderTypeDef RxHeader = {};
-    uint8_t RxData[64] = {};
     if (HAL_FDCAN_GetRxMessage(handler, rx_fifo, &RxHeader, RxData) != HAL_OK) {
         Error_Handler();
     }
 
     auto rxf = new CanardFrame{};
-    rxf.extended_can_id = RxHeader->Identifier;
-    rxf.payload_size = CanardDLCToFDCANLength(RxHeader->DataLength);
-    rxf.payload = (void*)RxData;
-    return rxf
+    rxf->extended_can_id = RxHeader.Identifier;
+    rxf->payload_size = dlc_to_len(RxHeader.DataLength);
+    rxf->payload = (void*)RxData;
+    return rxf;
 }
 
-int G4CAN::write(const CanardTxQueueItem* ti) {
+int G4CAN::write_frame(const CanardTxQueueItem* ti) {
     FDCAN_TxHeaderTypeDef TxHeader;
 
     TxHeader.Identifier = ti->frame.extended_can_id;

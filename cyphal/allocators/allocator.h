@@ -22,7 +22,7 @@ inline void free(CanardInstance* ins, void* ptr) {
 template <class T>
 std::tuple<CanardMemoryAllocate, CanardMemoryFree> get_memory_pair() {
     if (allocator != nullptr) {
-        perror("Tried to reinitialize allocator");
+        Error_Handler();
     }
     allocator = new T();
     return {allocate, free};
