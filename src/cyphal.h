@@ -23,7 +23,7 @@
 #define SEC_TO_US(sec) ((sec)*1000000)
 #define NS_TO_US(ns) ((ns) / 1000)
 
-extern void Error_Handler();
+extern void error_handler();
 template <typename T>
 class IListener {
    public:
@@ -50,7 +50,7 @@ inline void free(CanardInstance* ins, void* ptr) {
 template <class T>
 std::tuple<CanardMemoryAllocate, CanardMemoryFree> get_memory_pair() {
     if (allocator != nullptr) {
-        Error_Handler();
+        error_handler();
     }
     allocator = new T();
     return {allocate, free};
@@ -235,7 +235,7 @@ inline void CyphalInterface::send_cyphal(
 ) {
     size_t cyphal_buf_size = buffer_size;
     if (serializer(obj, buf, &cyphal_buf_size) < 0) {
-        Error_Handler();
+        error_handler();
     }
     const CanardTransferMetadata cyphal_transfer_metadata = {
         .priority = priority,
@@ -315,7 +315,7 @@ inline void CyphalInterface::send_cyphal_response(
 ) {
     size_t cyphal_buf_size = buffer_size;
     if (serializer(obj, buf, &cyphal_buf_size) < 0) {
-        Error_Handler();
+        error_handler();
     }
     const CanardTransferMetadata cyphal_transfer_metadata = {
             .priority = CanardPriorityNominal,
@@ -343,7 +343,7 @@ inline void CyphalInterface::cyphal_deserialize_transfer(
 ) {
     size_t inout_buf_size = buf_size;
     if( deserializer(obj,(uint8_t *) transfer->payload, &inout_buf_size) < 0 ) {
-        Error_Handler();
+        error_handler();
     }
 }
 #define DESERIALIZE_TRANSFER(TYPE, obj, transfer) \

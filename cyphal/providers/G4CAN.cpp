@@ -40,7 +40,7 @@ CanardFrame* G4CAN::read_frame() {
 
     FDCAN_RxHeaderTypeDef RxHeader = {};
     if (HAL_FDCAN_GetRxMessage(handler, rx_fifo, &RxHeader, RxData) != HAL_OK) {
-        Error_Handler();
+        error_handler();
     }
 
     auto rxf = new CanardFrame{};

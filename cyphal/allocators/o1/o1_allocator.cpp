@@ -6,7 +6,7 @@ void* O1Allocator::allocate(CanardInstance* ins, size_t amount) {
 
     CRITICAL_SECTION({ mem = o1heapAllocate(o1heap, amount); })
     if (mem == nullptr) {
-        Error_Handler();
+        error_handler();
     }
     return mem;
 }
@@ -20,7 +20,7 @@ O1Allocator::O1Allocator(size_t size) {
     memory_arena = new uint8_t[size];
     O1HeapInstance* out = o1heapInit(memory_arena, size);
     if (out == nullptr) {
-        Error_Handler();
+        error_handler();
     }
     o1heap = out;
 }

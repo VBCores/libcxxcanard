@@ -37,7 +37,7 @@ CanardFrame* F4CAN::read() {
     CAN_RxHeaderTypeDef RxHeader = {};
     uint8_t RxData[64] = {};
     if (HAL_CAN_GetRxMessage(handler, rx_fifo, &RxHeader, RxData) != HAL_OK) {
-        Error_Handler();
+        error_handler();
     }
 
     auto rxf = new CanardFrame{};

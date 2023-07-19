@@ -8,7 +8,7 @@ void* O1Allocator::allocate(CanardInstance* ins, size_t amount) {
 
     CRITICAL_SECTION({ mem = o1heapAllocate(o1heap, amount); })
     if (mem == nullptr) {
-        Error_Handler();
+        error_handler();
     }
     return mem;
 }
@@ -22,7 +22,7 @@ O1Allocator::O1Allocator(size_t size) {
     memory_arena = new uint8_t[size];
     O1HeapInstance* out = o1heapInit(memory_arena, size);
     if (out == nullptr) {
-        Error_Handler();
+        error_handler();
     }
     o1heap = out;
 }
@@ -38,7 +38,7 @@ void* SystemAllocator::allocate(CanardInstance* const ins, const size_t amount) 
 
     CRITICAL_SECTION({ mem = std::malloc(amount); })
     if (mem == nullptr) {
-        Error_Handler();
+        error_handler();
     }
     return mem;
 }
@@ -257,7 +257,7 @@ CanardFrame* G4CAN::read_frame() {
 
     FDCAN_RxHeaderTypeDef RxHeader = {};
     if (HAL_FDCAN_GetRxMessage(handler, rx_fifo, &RxHeader, RxData) != HAL_OK) {
-        Error_Handler();
+        error_handler();
     }
 
     auto rxf = new CanardFrame{};
@@ -313,7 +313,7 @@ void CyphalInterface::push(
         payload
     );
     if (push_state < 0) {
-        Error_Handler();
+        error_handler();
     }
 }
 
@@ -331,7 +331,7 @@ void CyphalInterface::subscribe(
             CANARD_DEFAULT_TRANSFER_ID_TIMEOUT_USEC,
             subscription
         ) != 1) {
-        Error_Handler();
+        error_handler();
     }
 }
 

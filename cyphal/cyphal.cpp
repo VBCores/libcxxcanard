@@ -15,7 +15,7 @@ void CyphalInterface::push(
         payload
     );
     if (push_state < 0) {
-        Error_Handler();
+        error_handler();
     }
 }
 
@@ -33,7 +33,7 @@ void CyphalInterface::subscribe(
             CANARD_DEFAULT_TRANSFER_ID_TIMEOUT_USEC,
             subscription
         ) != 1) {
-        Error_Handler();
+        error_handler();
     }
 }
 

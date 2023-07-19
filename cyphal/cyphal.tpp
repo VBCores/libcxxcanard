@@ -12,7 +12,7 @@ inline void CyphalInterface::send_cyphal(
 ) {
     size_t cyphal_buf_size = buffer_size;
     if (serializer(obj, buf, &cyphal_buf_size) < 0) {
-        Error_Handler();
+        error_handler();
     }
     const CanardTransferMetadata cyphal_transfer_metadata = {
         .priority = priority,
@@ -92,7 +92,7 @@ inline void CyphalInterface::send_cyphal_response(
 ) {
     size_t cyphal_buf_size = buffer_size;
     if (serializer(obj, buf, &cyphal_buf_size) < 0) {
-        Error_Handler();
+        error_handler();
     }
     const CanardTransferMetadata cyphal_transfer_metadata = {
             .priority = CanardPriorityNominal,
@@ -120,7 +120,7 @@ inline void CyphalInterface::cyphal_deserialize_transfer(
 ) {
     size_t inout_buf_size = buf_size;
     if( deserializer(obj,(uint8_t *) transfer->payload, &inout_buf_size) < 0 ) {
-        Error_Handler();
+        error_handler();
     }
 }
 #define DESERIALIZE_TRANSFER(TYPE, obj, transfer) \
