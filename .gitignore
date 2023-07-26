@@ -2,7 +2,6 @@
 *.db
 Debug*/
 stuff
-libs
 
 ### IDE
 # STM32CubeIDE
