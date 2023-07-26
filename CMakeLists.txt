@@ -5,7 +5,7 @@ include_directories(.)
 file(GLOB_RECURSE SOURCES "cyphal/*.c" "cyphal/*.cpp")
 
 if(DEFINED ENV{<COMMON_LIBS_DIR>})
-    set(VBLIB_DIR $ENV{COMMON_LIBS_DIR})
+    set(COMMON_LIBS_DIR $ENV{COMMON_LIBS_DIR})
 else()
     get_filename_component(COMMON_LIBS_DIR
             "./libs"
