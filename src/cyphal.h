@@ -403,9 +403,9 @@ class AbstractSubscription : public IListener<CanardRxTransfer*> {
  * Если макросы вам мешают - просто не используйте их.
  */
 
-#define DESERIALIZE_TYPE(TYPE, INTERFACE_POINTER)                        \
-    inline void deserialize(TYPE* object, CanardRxTransfer* transfer) {  \
-        INTERFACE_POINTER->DESERIALIZE_TRANSFER(TYPE, object, transfer); \
+#define DESERIALIZE_TYPE(TYPE, INTERFACE_POINTER)                                 \
+    inline void deserialize(TYPE* object, CanardRxTransfer* transfer) override {  \
+        INTERFACE_POINTER->DESERIALIZE_TRANSFER(TYPE, object, transfer);          \
     }
 
 #define SUBSCRIPTION_BODY(CLASS_NAME, TYPE, TRANSFER_KIND, PORT_ID)                        \
@@ -443,7 +443,7 @@ public:                                                                         
                                                                                            \
 public:                                                                                    \
     void handler(                                                                          \
-        const uavcan_node_Heartbeat_1_0& hbeat,                                            \
+        const TYPE & object,                                                                \
         CanardRxTransfer* transfer                                                         \
     ) override;                                                                            \
 };
@@ -451,8 +451,8 @@ public:                                                                         
 #define SUBSCRIPTION_CLASS_FIXED(CLASS_NAME, TYPE, TRANSFER_KIND) \
     SUBSCRIPTION_CLASS(CLASS_NAME, TYPE, TRANSFER_KIND, TYPE##_FIXED_PORT_ID_)
 
-#define SUBSCRIPTION_CLASS_RESPONSE(CLASS_NAME, TYPE, PORT_ID) \
-    SUBSCRIPTION_CLASS(CLASS_NAME, TYPE, CanardTransferKindResponse, PORT_ID)
+#define SUBSCRIPTION_CLASS_REQUEST(CLASS_NAME, TYPE, PORT_ID) \
+    SUBSCRIPTION_CLASS(CLASS_NAME, TYPE, CanardTransferKindRequest, PORT_ID)
 
 #define SUBSCRIPTION_CLASS_MESSAGE(CLASS_NAME, TYPE, PORT_ID) \
     SUBSCRIPTION_CLASS(CLASS_NAME, TYPE, CanardTransferKindMessage, PORT_ID)

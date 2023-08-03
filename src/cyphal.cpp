@@ -157,16 +157,14 @@ CanardTxQueue queue{};
 CanardInstance canard{};
 
 #ifdef LINUX_CAN
-uint64_t micros() {
+uint64_t micros_64() {
     struct timespec ts {};
     timespec_get(&ts, TIME_UTC);
     uint64_t us = SEC_TO_US((uint64_t)ts.tv_sec) + NS_TO_US((uint64_t)ts.tv_nsec);
     return us;
 }
 #else
-uint64_t micros() {
-    return 0;
-}
+extern uint64_t micros_64();
 #endif
 
 #include <iostream>
@@ -178,7 +176,7 @@ void AbstractCANProvider::process_canard_rx(CanardFrame* frame) {
 
     const int8_t accept_result = canardRxAccept(
         (CanardInstance* const)&canard,
-        micros(),
+        micros_64(),
         frame,
         0,
         &transfer,
@@ -206,7 +204,7 @@ void AbstractCANProvider::process_canard_tx() {
     while (queue.size != 0) {
         const CanardTxQueueItem* ti = canardTxPeek(&queue);
 
-        if (0U == ti->tx_deadline_usec || ti->tx_deadline_usec > micros()) {
+        if (0U == ti->tx_deadline_usec || ti->tx_deadline_usec > micros_64()) {
             int written = write_frame(ti);
             if (written < 0) {
                 break;
