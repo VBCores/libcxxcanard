@@ -16,7 +16,7 @@
 #endif
 
 // timestamp conversion macros
-#define SEC_TO_US(sec) ((sec)*1000000)
+#define SEC_TO_US(sec) ((sec) * 1000000)
 #define NS_TO_US(ns) ((ns) / 1000)
 
 extern void error_handler();

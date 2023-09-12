@@ -7,10 +7,10 @@
 #include "provider.h"
 
 class LinuxCAN : public AbstractCANProvider {
-   private:
+private:
     int socketcan_handler;
 
-   public:
+public:
     typedef const std::string& Handler;
     LinuxCAN(Handler can_interface);
     uint32_t len_to_dlc(size_t len) override;

@@ -7,13 +7,13 @@
 class AbstractCANProvider {
     friend class CyphalInterface;
 
-   protected:
+protected:
     const size_t CANARD_MTU;
     const size_t WIRE_MTU;
     CanardTxQueue queue;
     CanardInstance canard;
 
-   public:
+public:
     typedef void Handler;
 
     AbstractCANProvider() = delete;

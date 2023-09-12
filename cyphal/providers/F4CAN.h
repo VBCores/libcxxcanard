@@ -5,13 +5,12 @@
 #include "provider.h"
 
 class F4CAN : public AbstractCANProvider {
-   private:
+private:
     const CAN_HandleTypeDef* handler;
 
-   public:
+public:
     typedef CAN_HandleTypeDef* Handler;
-    F4CAN(Handler handler)
-        : AbstractCANProvider(CANARD_MTU_CAN_CLASSIC, 16), handler(handler){};
+    F4CAN(Handler handler) : AbstractCANProvider(CANARD_MTU_CAN_CLASSIC, 16), handler(handler){};
     uint32_t len_to_dlc(size_t len) override;
     size_t dlc_to_len(uint32_t dlc) override;
     void can_loop() override;

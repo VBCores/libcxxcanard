@@ -7,7 +7,7 @@
 #include "libcanard/canard.h"
 
 class AbstractAllocator {
-   public:
+public:
     virtual void* allocate(CanardInstance* ins, size_t amount) = 0;
     virtual void free(CanardInstance* ins, void* pointer) = 0;
 };

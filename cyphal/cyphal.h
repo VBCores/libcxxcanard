@@ -11,17 +11,17 @@ class CyphalInterface {
     const CanardNodeID node_id;
     AbstractCANProvider* provider = nullptr;
 
-   public:
+public:
     CyphalInterface(CanardNodeID node_id) : node_id(node_id){};
-    bool is_up() {
-        return provider != nullptr;
-    }
+    bool is_up() { return provider != nullptr; }
     bool has_unsent_frames() {
-        if (provider == nullptr) return false;
+        if (provider == nullptr)
+            return false;
         return canardTxPeek(&provider->queue) != NULL;
     }
     void process_tx_once() {  // needed for finalization of the whole programm
-        if (provider == nullptr) return;
+        if (provider == nullptr)
+            return;
         provider->process_canard_tx();
     }
     template <typename Provider, class Allocator>

@@ -2,6 +2,6 @@
 
 template <typename T>
 class IListener {
-   public:
+public:
     virtual void accept(T) = 0;
 };

@@ -6,14 +6,14 @@
 
 template <typename T>
 class AbstractSubscription : public IListener<CanardRxTransfer*> {
-   protected:
+protected:
     const CanardPortID port_id;
     const size_t extent;
     const CanardTransferKind kind = CanardTransferKindMessage;
     const CanardMicrosecond timeout = CANARD_DEFAULT_TRANSFER_ID_TIMEOUT_USEC;
     CyphalInterface* interface;
 
-   public:
+public:
     AbstractSubscription(CyphalInterface* interface)
         : interface(interface), port_id(0), kind(CanardTransferKindMessage), extent(0) {
         subscribe();
@@ -34,12 +34,7 @@ class AbstractSubscription : public IListener<CanardRxTransfer*> {
     virtual void subscribe() {
         CanardRxSubscription* sub = new CanardRxSubscription();
         sub->user_reference = (void*)this;
-        interface->subscribe(
-            port_id,
-            extent,
-            kind,
-            sub
-        );
+        interface->subscribe(port_id, extent, kind, sub);
     }
     virtual void accept(CanardRxTransfer* transfer) {
         T object;
@@ -56,19 +51,19 @@ class AbstractSubscription : public IListener<CanardRxTransfer*> {
  * Если макросы вам мешают - просто не используйте их.
  */
 
-#define DESERIALIZE_TYPE(TYPE, INTERFACE_POINTER)                                 \
-    inline void deserialize(TYPE* object, CanardRxTransfer* transfer) override {  \
-        INTERFACE_POINTER->DESERIALIZE_TRANSFER(TYPE, object, transfer);          \
+#define DESERIALIZE_TYPE(TYPE, INTERFACE_POINTER)                                \
+    inline void deserialize(TYPE* object, CanardRxTransfer* transfer) override { \
+        INTERFACE_POINTER->DESERIALIZE_TRANSFER(TYPE, object, transfer);         \
     }
 
 #define SUBSCRIPTION_BODY(CLASS_NAME, TYPE, TRANSFER_KIND, PORT_ID)                        \
-   private:                                                                                \
+private:                                                                                   \
     DESERIALIZE_TYPE(TYPE, interface)                                                      \
-   public:                                                                                 \
+public:                                                                                    \
     CLASS_NAME(CyphalInterface* interface)                                                 \
         : AbstractSubscription(interface, TRANSFER_KIND, PORT_ID, TYPE##_EXTENT_BYTES_){}; \
                                                                                            \
-   private:
+private:
 
 #define SUBSCRIPTION_BODY_FIXED(CLASS_NAME, TYPE, TRANSFER_KIND) \
     SUBSCRIPTION_BODY(CLASS_NAME, TYPE, TRANSFER_KIND, TYPE##_FIXED_PORT_ID_)
@@ -85,21 +80,17 @@ class AbstractSubscription : public IListener<CanardRxTransfer*> {
 #define SUBSCRIPTION_BODY_FIXED_MESSAGE(CLASS_NAME, TYPE) \
     SUBSCRIPTION_BODY_MESSAGE(CLASS_NAME, TYPE, TYPE##_FIXED_PORT_ID_)
 
-
-#define SUBSCRIPTION_CLASS(CLASS_NAME, TYPE, TRANSFER_KIND, PORT_ID)                       \
-class CLASS_NAME : public AbstractSubscription<TYPE> {                                     \
-private:                                                                                   \
-    DESERIALIZE_TYPE(TYPE, interface)                                                      \
-public:                                                                                    \
-    CLASS_NAME(CyphalInterface* interface)                                                 \
-        : AbstractSubscription(interface, TRANSFER_KIND, PORT_ID, TYPE##_EXTENT_BYTES_){}; \
-                                                                                           \
-public:                                                                                    \
-    void handler(                                                                          \
-        const TYPE & object,                                                                \
-        CanardRxTransfer* transfer                                                         \
-    ) override;                                                                            \
-};
+#define SUBSCRIPTION_CLASS(CLASS_NAME, TYPE, TRANSFER_KIND, PORT_ID)                           \
+    class CLASS_NAME : public AbstractSubscription<TYPE> {                                     \
+    private:                                                                                   \
+        DESERIALIZE_TYPE(TYPE, interface)                                                      \
+    public:                                                                                    \
+        CLASS_NAME(CyphalInterface* interface)                                                 \
+            : AbstractSubscription(interface, TRANSFER_KIND, PORT_ID, TYPE##_EXTENT_BYTES_){}; \
+                                                                                               \
+    public:                                                                                    \
+        void handler(const TYPE& object, CanardRxTransfer* transfer) override;                 \
+    };
 
 #define SUBSCRIPTION_CLASS_FIXED(CLASS_NAME, TYPE, TRANSFER_KIND) \
     SUBSCRIPTION_CLASS(CLASS_NAME, TYPE, TRANSFER_KIND, TYPE##_FIXED_PORT_ID_)

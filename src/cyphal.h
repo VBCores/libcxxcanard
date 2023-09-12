@@ -148,6 +148,17 @@ class CyphalInterface {
 
    public:
     CyphalInterface(CanardNodeID node_id) : node_id(node_id){};
+    bool is_up() {
+        return provider != nullptr;
+    }
+    bool has_unsent_frames() {
+        if (provider == nullptr) return false;
+        return canardTxPeek(&provider->queue) != NULL;
+    }
+    void process_tx_once() {  // needed for finalization of the whole programm
+        if (provider == nullptr) return;
+        provider->process_canard_tx();
+    }
     template <typename Provider, class Allocator>
     void setup(typename Provider::Handler handler) {
         provider = new Provider(handler);
