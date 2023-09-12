@@ -1,6 +1,8 @@
 project(libcyphal)
 cmake_minimum_required(VERSION 3.15)
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 include_directories(.)
 file(GLOB_RECURSE SOURCES "cyphal/*.c" "cyphal/*.cpp")
 
@@ -11,6 +13,7 @@ else()
             "./libs"
             ABSOLUTE)
 endif()
+set(COMMON_LIBS_DIR ${COMMON_LIBS_DIR} PARENT_SCOPE)
 message("${CMAKE_CURRENT_LIST_DIR} | Using <${COMMON_LIBS_DIR}> as directory of common libs")
 
 include_directories(${COMMON_LIBS_DIR})
