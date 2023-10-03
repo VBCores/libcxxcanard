@@ -2,6 +2,8 @@
 
 AbstractAllocator* allocator = nullptr;
 
+#include <new>
+
 void* O1Allocator::allocate(CanardInstance* ins, size_t amount) {
     (void)ins;
     void* mem;
@@ -19,7 +21,7 @@ void O1Allocator::free(CanardInstance* ins, void* pointer) {
 }
 
 O1Allocator::O1Allocator(size_t size) {
-    memory_arena = new uint8_t[size];
+    memory_arena = new(std::align_val_t{O1HEAP_ALIGNMENT}) uint8_t[size];
     O1HeapInstance* out = o1heapInit(memory_arena, size);
     if (out == nullptr) {
         error_handler();
@@ -28,7 +30,7 @@ O1Allocator::O1Allocator(size_t size) {
 }
 
 O1Allocator::~O1Allocator() {
-    delete (uint8_t*)memory_arena;
+    ::operator delete[](memory_arena, std::align_val_t{O1HEAP_ALIGNMENT});
 }
 #include <cstdlib>
 
@@ -49,15 +51,15 @@ void SystemAllocator::free(CanardInstance* const ins, void* const pointer) {
 }
 
 #ifdef LINUX_CAN
-#define FDCAN_DLC_BYTES_0  ((uint32_t)0x00000000U) /*!< 0 bytes data field  */
-#define FDCAN_DLC_BYTES_1  ((uint32_t)0x00010000U) /*!< 1 bytes data field  */
-#define FDCAN_DLC_BYTES_2  ((uint32_t)0x00020000U) /*!< 2 bytes data field  */
-#define FDCAN_DLC_BYTES_3  ((uint32_t)0x00030000U) /*!< 3 bytes data field  */
-#define FDCAN_DLC_BYTES_4  ((uint32_t)0x00040000U) /*!< 4 bytes data field  */
-#define FDCAN_DLC_BYTES_5  ((uint32_t)0x00050000U) /*!< 5 bytes data field  */
-#define FDCAN_DLC_BYTES_6  ((uint32_t)0x00060000U) /*!< 6 bytes data field  */
-#define FDCAN_DLC_BYTES_7  ((uint32_t)0x00070000U) /*!< 7 bytes data field  */
-#define FDCAN_DLC_BYTES_8  ((uint32_t)0x00080000U) /*!< 8 bytes data field  */
+#define FDCAN_DLC_BYTES_0 ((uint32_t)0x00000000U)  /*!< 0 bytes data field  */
+#define FDCAN_DLC_BYTES_1 ((uint32_t)0x00010000U)  /*!< 1 bytes data field  */
+#define FDCAN_DLC_BYTES_2 ((uint32_t)0x00020000U)  /*!< 2 bytes data field  */
+#define FDCAN_DLC_BYTES_3 ((uint32_t)0x00030000U)  /*!< 3 bytes data field  */
+#define FDCAN_DLC_BYTES_4 ((uint32_t)0x00040000U)  /*!< 4 bytes data field  */
+#define FDCAN_DLC_BYTES_5 ((uint32_t)0x00050000U)  /*!< 5 bytes data field  */
+#define FDCAN_DLC_BYTES_6 ((uint32_t)0x00060000U)  /*!< 6 bytes data field  */
+#define FDCAN_DLC_BYTES_7 ((uint32_t)0x00070000U)  /*!< 7 bytes data field  */
+#define FDCAN_DLC_BYTES_8 ((uint32_t)0x00080000U)  /*!< 8 bytes data field  */
 #define FDCAN_DLC_BYTES_12 ((uint32_t)0x00090000U) /*!< 12 bytes data field */
 #define FDCAN_DLC_BYTES_16 ((uint32_t)0x000A0000U) /*!< 16 bytes data field */
 #define FDCAN_DLC_BYTES_20 ((uint32_t)0x000B0000U) /*!< 20 bytes data field */

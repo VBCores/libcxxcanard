@@ -1,5 +1,9 @@
 #include "cyphal.h"
 
+#ifdef LINUX_CAN
+#include <iostream>
+#endif
+
 void CyphalInterface::push(
     const CanardMicrosecond tx_deadline_usec,
     const CanardTransferMetadata* const metadata,
@@ -14,6 +18,13 @@ void CyphalInterface::push(
         payload_size,
         payload
     );
+    if (push_state == -CANARD_ERROR_OUT_OF_MEMORY) {
+#ifdef LINUX_CAN
+        std::cerr << "[Error: OOM] Tried to send to port: " << metadata->port_id << ", node: " 
+<< +metadata->remote_node_id << std::endl;
+#endif
+        return;
+    }
     if (push_state < 0) {
         error_handler();
     }

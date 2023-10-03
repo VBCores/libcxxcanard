@@ -11,7 +11,7 @@ private:
 
 public:
     explicit O1Allocator(size_t size);
-    O1Allocator() : O1Allocator(10240){};
+    O1Allocator() : O1Allocator(200*64){};
     ~O1Allocator();
 
     void* allocate(CanardInstance* ins, size_t amount) override;
