@@ -85,7 +85,7 @@ private:
     private:                                                                                   \
         DESERIALIZE_TYPE(TYPE, interface)                                                      \
     public:                                                                                    \
-        CLASS_NAME(CyphalInterface* interface)                                                 \
+        explicit CLASS_NAME(CyphalInterface* interface)                                        \
             : AbstractSubscription(interface, TRANSFER_KIND, PORT_ID, TYPE##_EXTENT_BYTES_){}; \
                                                                                                \
     public:                                                                                    \

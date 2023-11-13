@@ -1,15 +1,15 @@
-import pathlib
-import sys
 import re
 import pathlib
 
 DIR = pathlib.Path(__file__).parent.resolve()
 SRC_DIR = DIR / 'cyphal'
 
-def subdir_names(dir):
-    for subdir in [d for d in dir.iterdir() if d.is_dir()]:
+
+def subdir_names(dir_):
+    for subdir in [d for d in dir_.iterdir() if d.is_dir()]:
         yield subdir.name
         yield from subdir_names(subdir)
+
 
 SUBDIRS = tuple(subdir_names(SRC_DIR))
 print(f"Known first-party: {SUBDIRS}\n")
@@ -27,7 +27,6 @@ print(f"Processing files: {[f.name for f in TARGET_FILES]}\n")
 
 REMOVE_TEMPLATES = [re.compile(reg) for reg in (
     r"^#pragma.*",
- #   r"^extern void Error_Handler\(\);.*",
     *(f"^#include (<|\"){inner_include}/.*(>|\").*"
       for inner_include in SUBDIRS + (SRC_DIR.name,)),
     *(f"^#include (<|\")(../)*{inner_file.name}(>|\").*"
@@ -35,22 +34,27 @@ REMOVE_TEMPLATES = [re.compile(reg) for reg in (
     r"^#include (<|\")(../)*FDCAN_generic.h(>|\").*"
 )]
 
-def matches(line):
+
+def matches(line_):
     for template in REMOVE_TEMPLATES:
-        if template.match(line):
+        if template.match(line_):
             return True
     return False
 
+
 processed = []
+
+
 def process_file(path):
     if path in processed:
         return
     processed.append(path)
     with open(path, 'r') as file:
-        for line in file:
-            if matches(line):
+        for line_ in file:
+            if matches(line_):
                 continue
-            yield line
+            yield line_
+
 
 with open(OUT_H, 'w+t') as out_h, open(OUT_CPP, 'w+t') as out_cpp:
     out_cpp.write('#include "cyphal.h"\n')

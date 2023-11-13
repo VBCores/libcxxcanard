@@ -22,7 +22,7 @@ inline void CyphalInterface::send_cyphal(
         .transfer_id = *transfer_id,
     };
     push(
-        0,
+        DEFAULT_TIMEOUT_MICROS,
         &cyphal_transfer_metadata,
         cyphal_buf_size,
         buf
@@ -102,7 +102,7 @@ inline void CyphalInterface::send_cyphal_response(
             .transfer_id = transfer->metadata.transfer_id,
     };
     push(
-        0,
+        DEFAULT_TIMEOUT_MICROS,
         &cyphal_transfer_metadata,
         cyphal_buf_size,
         buf

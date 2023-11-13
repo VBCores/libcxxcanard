@@ -2,6 +2,8 @@
 
 #include "providers/provider.h"
 
+#define DEFAULT_TIMEOUT_MICROS 1000000 // 1 sec
+
 template <typename ObjType>
 using cyphal_serializer = int8_t (*)(const ObjType* const, uint8_t* const, size_t* const);
 template <typename ObjType>
