@@ -20,3 +20,14 @@
 #define NS_TO_US(ns) ((ns) / 1000)
 
 extern void error_handler();
+
+#ifdef LINUX_CAN
+uint64_t micros_64() {
+    struct timespec ts {};
+    timespec_get(&ts, TIME_UTC);
+    uint64_t us = SEC_TO_US((uint64_t)ts.tv_sec) + NS_TO_US((uint64_t)ts.tv_nsec);
+    return us;
+}
+#else
+extern uint64_t micros_64();
+#endif
