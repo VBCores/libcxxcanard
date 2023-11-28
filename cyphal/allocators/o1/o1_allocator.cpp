@@ -19,16 +19,7 @@ void O1Allocator::free(CanardInstance* ins, void* pointer) {
     CRITICAL_SECTION({ o1heapFree(o1heap, pointer); })
 }
 
-O1Allocator::O1Allocator(size_t size) {
-#ifdef LINUX_CAN
-    memory_arena = new(std::align_val_t{O1HEAP_ALIGNMENT}) uint8_t[size];
-#else
-    memory_arena = std::malloc(size);
-#endif
-    if (memory_arena == nullptr) {
-        error_handler();
-    }
-
+void O1Allocator::align_self(size_t size) {
 #ifndef LINUX_CAN
     auto shift = (int)((uint8_t*)memory_arena) % O1HEAP_ALIGNMENT;
     if (shift != 0) {
@@ -44,7 +35,28 @@ O1Allocator::O1Allocator(size_t size) {
     o1heap = out;
 }
 
+O1Allocator::O1Allocator(void* memory, size_t size): memory_arena(memory) {
+    align_self(size);
+}
+
+O1Allocator::O1Allocator(size_t size) {
+#ifdef LINUX_CAN
+    memory_arena = new(std::align_val_t{O1HEAP_ALIGNMENT}) uint8_t[size];
+#else
+    memory_arena = std::malloc(size);
+#endif
+    if (memory_arena == nullptr) {
+        error_handler();
+    }
+    is_self_allocated = true;
+
+    align_self(size);
+}
+
 O1Allocator::~O1Allocator() {
+    if (!is_self_allocated) {
+        return;
+    }
 #ifdef LINUX_CAN
     ::operator delete[](memory_arena, std::align_val_t{O1HEAP_ALIGNMENT});
 #else

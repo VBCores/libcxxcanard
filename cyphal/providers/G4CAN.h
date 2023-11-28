@@ -14,7 +14,7 @@ public:
     uint32_t len_to_dlc(size_t len) override;
     size_t dlc_to_len(uint32_t dlc) override;
     void can_loop() override;
-    CanardFrame* read_frame() override;
+    bool read_frame(CanardFrame*)  override;
     int write_frame(const CanardTxQueueItem* ti) override;
 };
 

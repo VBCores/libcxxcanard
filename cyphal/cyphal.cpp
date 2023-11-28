@@ -35,7 +35,7 @@ void CyphalInterface::subscribe(
     size_t extent,
     CanardTransferKind kind,
     CanardRxSubscription* subscription
-) {
+) const {
     if (canardRxSubscribe(
             (CanardInstance* const)&provider->canard,
             kind,

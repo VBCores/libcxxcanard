@@ -56,31 +56,30 @@ size_t LinuxCAN::dlc_to_len(uint32_t dlc) {
 }
 
 void LinuxCAN::can_loop() {
-    CanardFrame* frame = read_frame();
-    if (frame != nullptr) {
-        process_canard_rx(frame);
-        delete frame;
-    }
+        CanardFrame frame;
+        bool has_read = read_frame(&frame);
+        if (!has_read)
+            break;
+        process_canard_rx(&frame);
 
     process_canard_tx();
 }
 
 struct canfd_frame rxframe;
-CanardFrame* LinuxCAN::read_frame() {
+bool LinuxCAN::read_frame(CanardFrame* rxf) () {
     uint8_t nbytes = read(socketcan_handler, &rxframe, WIRE_MTU);
     if (nbytes != WIRE_MTU) {  // only complete CAN frames are accepted
-        return nullptr;
+        return false;
     }
 
     auto msg_id = (uint32_t)rxframe.can_id;
     msg_id = msg_id & ~(1 << 31);  // clear EFF flag
 
-    auto rxf = new CanardFrame();
     rxf->extended_can_id = msg_id;
     rxf->payload_size = (size_t)rxframe.len;
     rxf->payload = (void*)&rxframe.data;
 
-    return rxf;
+    return true;
 }
 
 int LinuxCAN::write_frame(const CanardTxQueueItem* ti) {

@@ -21,16 +21,22 @@ public:
             return false;
         return canardTxPeek(&provider->queue) != NULL;
     }
-    void process_tx_once() {  // needed for finalization of the whole programm
+    void process_tx_once() {  // needed for finalization of the whole program
         if (provider == nullptr)
             return;
         provider->process_canard_tx();
     }
-    template <typename Provider, class Allocator>
-    void setup(typename Provider::Handler handler) {
+
+    template <typename Provider, class Allocator, class... Args>
+    void setup(typename Provider::Handler handler, Args&&... args) {
         provider = new Provider(handler);
-        provider->setup<Allocator>(node_id);
+        provider->setup<Allocator>(node_id, args...);
     }
+
+    ~CyphalInterface() {
+        delete provider;
+    }
+
     void loop();
     void push(
         CanardMicrosecond tx_deadline_usec,
@@ -43,7 +49,7 @@ public:
         size_t extent,
         CanardTransferKind kind,
         CanardRxSubscription* subscription
-    );
+    ) const;
 
     // TEMPLATES
     template <typename ObjType>

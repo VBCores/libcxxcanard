@@ -680,7 +680,7 @@ CanardFilter canardMakeFilterForServices(const CanardNodeID local_node_id);
 ///
 /// Complex applications will likely subscribe to more subject IDs than there are
 /// acceptance filters available in the CAN hardware. In this case, the application
-/// should implement filter consolidation. While this may make it impossible to setup
+/// should implement filter consolidation. While this may make it impossible to create
 /// a 'perfect' filter that only accepts desired subject IDs, the application should apply
 /// consolidation in a manner that minimizes the number of undesired messages that pass
 /// through the hardware acceptance filters and require software filtering (implemented by canardRxSubscribe).

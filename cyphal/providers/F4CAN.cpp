@@ -12,17 +12,17 @@ size_t F4CAN::dlc_to_len(uint32_t dlc) {
 
 void F4CAN::can_loop() {
     while (HAL_CAN_GetRxFifoFillLevel(handler, FDCAN_RX_FIFO0) != 0) {
-        CanardFrame* frame = read();
-        if (frame == nullptr)
+        CanardFrame frame;
+        bool has_read = read_frame(&frame);
+        if (!has_read)
             break;
-        process_canard_rx(frame);
-        delete frame;
+        process_canard_rx(&frame);
     }
 
     process_canard_tx();
 }
 
-CanardFrame* F4CAN::read() {
+bool F4CAN::read_frame(CanardFrame* rxf) () {
     uint32_t rx_fifo = -1;
     if (HAL_CAN_GetRxFifoFillLevel(handler, CAN_RX_FIFO0)) {
         rx_fifo = CAN_RX_FIFO0;
@@ -31,7 +31,7 @@ CanardFrame* F4CAN::read() {
     }
 
     if (rx_fifo == (uint32_t)-1) {
-        return nullptr
+        return false;
     }
 
     CAN_RxHeaderTypeDef RxHeader = {};
@@ -40,11 +40,10 @@ CanardFrame* F4CAN::read() {
         error_handler();
     }
 
-    auto rxf = new CanardFrame{};
     rxf->extended_can_id = RxHeader->ExtId;
     rxf->payload_size = CanardCANDLCToLength[RxHeader->DLC];
     rxf->payload = (void*)RxData;
-    return rxf;
+    return true;
 }
 
 int F4CAN::write(const CanardTxQueueItem* ti) {
