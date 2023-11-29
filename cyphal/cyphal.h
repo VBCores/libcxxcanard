@@ -43,7 +43,7 @@ public:
         const CanardTransferMetadata* metadata,
         size_t payload_size,
         const void* payload
-    );
+    ) const;
     void subscribe(
         CanardPortID port_id,
         size_t extent,
@@ -63,7 +63,7 @@ public:
         CanardNodeID to_node_id,
         unsigned long buffer_size,
         cyphal_serializer<ObjType> serializer
-    );
+    ) const;
     template <typename ObjType>
     inline void send_cyphal_default_msg(
         ObjType* obj,
@@ -72,7 +72,7 @@ public:
         CanardTransferID* transfer_id,
         unsigned long buffer_size,
         cyphal_serializer<ObjType> serializer
-    );
+    ) const;
     template <typename ObjType>
     inline void send_cyphal_default_msg_to(
         ObjType* obj,
@@ -82,7 +82,7 @@ public:
         CanardNodeID to_node_id,
         unsigned long buffer_size,
         cyphal_serializer<ObjType> serializer
-    );
+    ) const;
     template <typename ObjType>
     inline void send_cyphal_response(
         ObjType* obj,
@@ -91,14 +91,14 @@ public:
         CanardPortID port,
         unsigned long buffer_size,
         cyphal_serializer<ObjType> serializer
-    );
+    ) const;
     template <typename ObjType>
     inline void cyphal_deserialize_transfer(
         ObjType* obj,
         CanardRxTransfer* transfer,
         size_t buf_size,
         cyphal_deserializer<ObjType> deserializer
-    );
+    ) const;
 };
 
 #include "cyphal.tpp"
