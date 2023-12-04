@@ -15,7 +15,7 @@ else()
             ABSOLUTE)
 endif()
 set(COMMON_LIBS_DIR ${COMMON_LIBS_DIR} PARENT_SCOPE)
-message("${CMAKE_CURRENT_LIST_DIR} | Using <${COMMON_LIBS_DIR}> as directory of common libs")
+message(STATUS "${CMAKE_CURRENT_LIST_DIR} | Using <${COMMON_LIBS_DIR}> as directory of common libs")
 
 include_directories(${COMMON_LIBS_DIR})
 add_subdirectory(${COMMON_LIBS_DIR}/libcanard ${PROJECT_BINARY_DIR}/build/libcanard)

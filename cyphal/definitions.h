@@ -7,12 +7,12 @@
 #include "stm32f4xx_hal.h"
 #include "utils.h"
 #else
-#define LINUX_CAN
 #define CRITICAL_SECTION(code) code
 #include <unistd.h>
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
+#include <stdint.h>
 #endif
 
 // timestamp conversion macros
@@ -21,13 +21,8 @@
 
 extern void error_handler();
 
-#ifdef LINUX_CAN
-uint64_t micros_64() {
-    struct timespec ts {};
-    timespec_get(&ts, TIME_UTC);
-    uint64_t us = SEC_TO_US((uint64_t)ts.tv_sec) + NS_TO_US((uint64_t)ts.tv_nsec);
-    return us;
-}
+#ifdef __linux__
+uint64_t micros_64();
 #else
 extern uint64_t micros_64();
 #endif

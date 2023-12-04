@@ -1,6 +1,6 @@
 #pragma once
 #include "cyphal/definitions.h"
-#ifdef LINUX_CAN
+#ifdef __linux__
 
 #include <string>
 

@@ -11,12 +11,12 @@
 #include "stm32f4xx_hal.h"
 #include "utils.h"
 #else
-#define LINUX_CAN
 #define CRITICAL_SECTION(code) code
 #include <unistd.h>
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
+#include <stdint.h>
 #endif
 
 // timestamp conversion macros
@@ -24,6 +24,13 @@
 #define NS_TO_US(ns) ((ns) / 1000)
 
 extern void error_handler();
+
+#ifdef __linux__
+uint64_t micros_64();
+#else
+extern uint64_t micros_64();
+#endif
+
 template <typename T>
 class IListener {
 public:
@@ -136,6 +143,8 @@ public:
 };
 
 #endif
+
+#define DEFAULT_TIMEOUT_MICROS 1000000 // 1 sec
 
 template <typename ObjType>
 using cyphal_serializer = int8_t (*)(const ObjType* const, uint8_t* const, size_t* const);
@@ -256,7 +265,7 @@ inline void CyphalInterface::send_cyphal(
         .transfer_id = *transfer_id,
     };
     push(
-        0,
+        micros_64() + DEFAULT_TIMEOUT_MICROS,
         &cyphal_transfer_metadata,
         cyphal_buf_size,
         buf
@@ -336,7 +345,7 @@ inline void CyphalInterface::send_cyphal_response(
             .transfer_id = transfer->metadata.transfer_id,
     };
     push(
-        0,
+        DEFAULT_TIMEOUT_MICROS,
         &cyphal_transfer_metadata,
         cyphal_buf_size,
         buf
@@ -443,7 +452,7 @@ private:
     private:                                                                                   \
         DESERIALIZE_TYPE(TYPE, interface)                                                      \
     public:                                                                                    \
-        CLASS_NAME(CyphalInterface* interface)                                                 \
+        explicit CLASS_NAME(CyphalInterface* interface)                                        \
             : AbstractSubscription(interface, TRANSFER_KIND, PORT_ID, TYPE##_EXTENT_BYTES_){}; \
                                                                                                \
     public:                                                                                    \

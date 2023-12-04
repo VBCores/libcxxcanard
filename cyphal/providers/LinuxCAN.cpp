@@ -1,5 +1,5 @@
 #include "LinuxCAN.h"
-#ifdef LINUX_CAN
+#ifdef __linux__
 #include <fcntl.h>
 #include <linux/can.h>
 #include <linux/can/raw.h>

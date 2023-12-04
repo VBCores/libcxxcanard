@@ -1,8 +1,22 @@
 #include "cyphal.h"
 
+#ifdef __linux__
+
+uint64_t micros_64() {
+    struct timespec ts {};
+    timespec_get(&ts, TIME_UTC);
+    uint64_t us = SEC_TO_US((uint64_t)ts.tv_sec) + NS_TO_US((uint64_t)ts.tv_nsec);
+    return us;
+}
+
+#endif
+
 AbstractAllocator* allocator = nullptr;
 
+#ifdef __linux__
 #include <new>
+#endif
+#include <stdlib.h>
 
 void* O1Allocator::allocate(CanardInstance* ins, size_t amount) {
     (void)ins;
@@ -19,7 +33,23 @@ void O1Allocator::free(CanardInstance* ins, void* pointer) {
 }
 
 O1Allocator::O1Allocator(size_t size) {
+#ifdef __linux__
     memory_arena = new(std::align_val_t{O1HEAP_ALIGNMENT}) uint8_t[size];
+#else
+    memory_arena = std::malloc(size);
+#endif
+    if (memory_arena == nullptr) {
+        error_handler();
+    }
+
+#ifndef __linux__
+    auto shift = (int)((uint8_t*)memory_arena) % O1HEAP_ALIGNMENT;
+    if (shift != 0) {
+        memory_arena = (void*)((uint8_t*)memory_arena + shift);
+        size -= shift;
+    }
+#endif
+
     O1HeapInstance* out = o1heapInit(memory_arena, size);
     if (out == nullptr) {
         error_handler();
@@ -28,7 +58,11 @@ O1Allocator::O1Allocator(size_t size) {
 }
 
 O1Allocator::~O1Allocator() {
+#ifdef __linux__
     ::operator delete[](memory_arena, std::align_val_t{O1HEAP_ALIGNMENT});
+#else
+	std::free(memory_arena);
+#endif
 }
 #include <cstdlib>
 
@@ -48,7 +82,7 @@ void SystemAllocator::free(CanardInstance* const ins, void* const pointer) {
     CRITICAL_SECTION({ std::free(pointer); })
 }
 
-#ifdef LINUX_CAN
+#ifdef __linux__
 #define FDCAN_DLC_BYTES_0 ((uint32_t)0x00000000U)  /*!< 0 bytes data field  */
 #define FDCAN_DLC_BYTES_1 ((uint32_t)0x00010000U)  /*!< 1 bytes data field  */
 #define FDCAN_DLC_BYTES_2 ((uint32_t)0x00020000U)  /*!< 2 bytes data field  */
@@ -153,19 +187,9 @@ size_t fdcan_dlc_to_len(uint32_t dlc) {
     }
     return 32 + 16 * (dlc_index - 13);
 }
+
 CanardTxQueue queue{};
 CanardInstance canard{};
-
-#ifdef LINUX_CAN
-uint64_t micros_64() {
-    struct timespec ts {};
-    timespec_get(&ts, TIME_UTC);
-    uint64_t us = SEC_TO_US((uint64_t)ts.tv_sec) + NS_TO_US((uint64_t)ts.tv_nsec);
-    return us;
-}
-#else
-extern uint64_t micros_64();
-#endif
 
 #include <iostream>
 void AbstractCANProvider::process_canard_rx(CanardFrame* frame) {
@@ -296,7 +320,7 @@ int G4CAN::write_frame(const CanardTxQueueItem* ti) {
 }
 #endif
 
-#ifdef LINUX_CAN
+#ifdef __linux__
 #include <iostream>
 #endif
 
@@ -315,8 +339,8 @@ void CyphalInterface::push(
         payload
     );
     if (push_state == -CANARD_ERROR_OUT_OF_MEMORY) {
-#ifdef LINUX_CAN
-        std::cerr << "[Error: OOM] Tried to send to port: " << metadata->port_id << ", node: " 
+#ifdef __linux__
+        std::cerr << "[Error: OOM] Tried to send to port: " << metadata->port_id << ", node: "
 << +metadata->remote_node_id << std::endl;
 #endif
         return;

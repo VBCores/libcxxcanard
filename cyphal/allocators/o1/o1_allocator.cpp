@@ -1,6 +1,6 @@
 #include "o1_allocator.h"
 
-#ifdef LINUX_CAN
+#ifdef __linux__
 #include <new>
 #endif
 #include <stdlib.h>
@@ -20,7 +20,7 @@ void O1Allocator::free(CanardInstance* ins, void* pointer) {
 }
 
 O1Allocator::O1Allocator(size_t size) {
-#ifdef LINUX_CAN
+#ifdef __linux__
     memory_arena = new(std::align_val_t{O1HEAP_ALIGNMENT}) uint8_t[size];
 #else
     memory_arena = std::malloc(size);
@@ -29,7 +29,7 @@ O1Allocator::O1Allocator(size_t size) {
         error_handler();
     }
 
-#ifndef LINUX_CAN
+#ifndef __linux__
     auto shift = (int)((uint8_t*)memory_arena) % O1HEAP_ALIGNMENT;
     if (shift != 0) {
         memory_arena = (void*)((uint8_t*)memory_arena + shift);
@@ -45,7 +45,7 @@ O1Allocator::O1Allocator(size_t size) {
 }
 
 O1Allocator::~O1Allocator() {
-#ifdef LINUX_CAN
+#ifdef __linux__
     ::operator delete[](memory_arena, std::align_val_t{O1HEAP_ALIGNMENT});
 #else
 	std::free(memory_arena);

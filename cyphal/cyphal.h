@@ -1,6 +1,7 @@
 #pragma once
 
 #include "providers/provider.h"
+#include "cyphal/definitions.h"
 
 #define DEFAULT_TIMEOUT_MICROS 1000000 // 1 sec
 
