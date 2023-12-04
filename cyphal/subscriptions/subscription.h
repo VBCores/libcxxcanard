@@ -12,19 +12,19 @@ protected:
     const size_t extent;
     const CanardTransferKind kind = CanardTransferKindMessage;
     const CanardMicrosecond timeout = CANARD_DEFAULT_TRANSFER_ID_TIMEOUT_USEC;
-    const CyphalInterface* interface;
+    const std::shared_ptr<CyphalInterface> interface;
 
 public:
-    AbstractSubscription(const CyphalInterface* interface)
+    AbstractSubscription(const std::shared_ptr<CyphalInterface> interface)
         : interface(interface), port_id(0), kind(CanardTransferKindMessage), extent(0) {
         subscribe();
     };
-    AbstractSubscription(const CyphalInterface* interface, CanardPortID port_id, size_t extent)
+    AbstractSubscription(const std::shared_ptr<CyphalInterface> interface, CanardPortID port_id, size_t extent)
         : interface(interface), port_id(port_id), kind(CanardTransferKindMessage), extent(extent) {
         subscribe();
     };
     AbstractSubscription(
-        const CyphalInterface* interface,
+        const std::shared_ptr<CyphalInterface> interface,
         CanardTransferKind kind,
         CanardPortID port_id,
         size_t extent
@@ -60,7 +60,7 @@ public:
 private:                                                                                   \
     DESERIALIZE_TYPE(TYPE, interface)                                                      \
 public:                                                                                    \
-    CLASS_NAME(CyphalInterface* interface)                                                 \
+    CLASS_NAME(const std::shared_ptr<CyphalInterface> interface)                                                 \
         : AbstractSubscription(interface, TRANSFER_KIND, PORT_ID, TYPE##_EXTENT_BYTES_){}; \
                                                                                            \
 private:
@@ -85,7 +85,7 @@ private:
     private:                                                                                   \
         DESERIALIZE_TYPE(TYPE, interface)                                                      \
     public:                                                                                    \
-        explicit CLASS_NAME(CyphalInterface* interface)                                        \
+        explicit CLASS_NAME(const std::shared_ptr<CyphalInterface> interface)                                        \
             : AbstractSubscription(interface, TRANSFER_KIND, PORT_ID, TYPE##_EXTENT_BYTES_){}; \
                                                                                                \
     public:                                                                                    \
