@@ -1,3 +1,7 @@
+# Local keys
+*.pub
+*.key
+
 ### Custom
 *.db
 Debug*/
