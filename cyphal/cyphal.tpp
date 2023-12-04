@@ -9,7 +9,7 @@ inline void CyphalInterface::send_cyphal(
     CanardNodeID to_node_id,
     unsigned long buffer_size,
     cyphal_serializer<ObjType> serializer
-) {
+) const {
     size_t cyphal_buf_size = buffer_size;
     if (serializer(obj, buf, &cyphal_buf_size) < 0) {
         error_handler();
@@ -40,7 +40,7 @@ inline void CyphalInterface::send_cyphal_default_msg(
     CanardTransferID *transfer_id,
     unsigned long buffer_size,
     cyphal_serializer<ObjType> serializer
-) {
+) const {
     send_cyphal<ObjType>(
         obj,
         buf,
@@ -65,7 +65,7 @@ inline void CyphalInterface::send_cyphal_default_msg_to(
     CanardNodeID to_node_id,
     unsigned long buffer_size,
     cyphal_serializer<ObjType> serializer
-) {
+) const {
     send_cyphal<ObjType>(
         obj,
         buf,
@@ -89,7 +89,7 @@ inline void CyphalInterface::send_cyphal_response(
     CanardPortID port,
     unsigned long buffer_size,
     cyphal_serializer<ObjType> serializer
-) {
+) const {
     size_t cyphal_buf_size = buffer_size;
     if (serializer(obj, buf, &cyphal_buf_size) < 0) {
         error_handler();
@@ -117,7 +117,7 @@ inline void CyphalInterface::cyphal_deserialize_transfer(
     CanardRxTransfer* transfer,
     size_t buf_size,
     cyphal_deserializer<ObjType> deserializer
-) {
+) const {
     size_t inout_buf_size = buf_size;
     if( deserializer(obj,(uint8_t *) transfer->payload, &inout_buf_size) < 0 ) {
         error_handler();

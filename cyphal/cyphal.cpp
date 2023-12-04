@@ -9,7 +9,7 @@ void CyphalInterface::push(
     const CanardTransferMetadata* const metadata,
     const size_t payload_size,
     const void* const payload
-) {
+) const {
     int32_t push_state = canardTxPush(
         &provider->queue,
         &provider->canard,
@@ -35,7 +35,7 @@ void CyphalInterface::subscribe(
     size_t extent,
     CanardTransferKind kind,
     CanardRxSubscription* subscription
-) {
+) const {
     if (canardRxSubscribe(
             (CanardInstance* const)&provider->canard,
             kind,

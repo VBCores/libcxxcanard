@@ -7,23 +7,24 @@
 template <typename T>
 class AbstractSubscription : public IListener<CanardRxTransfer*> {
 protected:
+    CanardRxSubscription sub = {};
     const CanardPortID port_id;
     const size_t extent;
     const CanardTransferKind kind = CanardTransferKindMessage;
     const CanardMicrosecond timeout = CANARD_DEFAULT_TRANSFER_ID_TIMEOUT_USEC;
-    CyphalInterface* interface;
+    const CyphalInterface* interface;
 
 public:
-    AbstractSubscription(CyphalInterface* interface)
+    AbstractSubscription(const CyphalInterface* interface)
         : interface(interface), port_id(0), kind(CanardTransferKindMessage), extent(0) {
         subscribe();
     };
-    AbstractSubscription(CyphalInterface* interface, CanardPortID port_id, size_t extent)
+    AbstractSubscription(const CyphalInterface* interface, CanardPortID port_id, size_t extent)
         : interface(interface), port_id(port_id), kind(CanardTransferKindMessage), extent(extent) {
         subscribe();
     };
     AbstractSubscription(
-        CyphalInterface* interface,
+        const CyphalInterface* interface,
         CanardTransferKind kind,
         CanardPortID port_id,
         size_t extent
@@ -31,10 +32,9 @@ public:
         : interface(interface), port_id(port_id), kind(kind), extent(extent) {
         subscribe();
     };
-    virtual void subscribe() {
-        CanardRxSubscription* sub = new CanardRxSubscription();
-        sub->user_reference = (void*)this;
-        interface->subscribe(port_id, extent, kind, sub);
+    void subscribe() {
+        sub.user_reference = (void*)this;
+        interface->subscribe(port_id, extent, kind, &sub);
     }
     virtual void accept(CanardRxTransfer* transfer) {
         T object;
