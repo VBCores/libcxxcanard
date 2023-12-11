@@ -7,8 +7,9 @@
 // Language Options
 //     target_endianness:  little
 //     omit_float_serialization_support:  False
-//     enable_serialization_asserts:  True
+//     enable_serialization_asserts:  False
 //     enable_override_variable_array_capacity:  False
+//     cast_format:  (({type}) {value})
 
 #ifndef NUNAVUT_SUPPORT_SERIALIZATION_H_INCLUDED
 #define NUNAVUT_SUPPORT_SERIALIZATION_H_INCLUDED
@@ -43,8 +44,8 @@ static_assert(sizeof(size_t) >= sizeof(size_t),
 #define NUNAVUT_SUPPORT_LANGUAGE_OPTION_TARGET_ENDIANNESS 434322821
 #define NUNAVUT_SUPPORT_LANGUAGE_OPTION_OMIT_FLOAT_SERIALIZATION_SUPPORT 0
 #define NUNAVUT_SUPPORT_LANGUAGE_OPTION_ENABLE_SERIALIZATION_ASSERTS 0
-#define NUNAVUT_SUPPORT_LANGUAGE_OPTION_CAST_FORMAT 2368206204
 #define NUNAVUT_SUPPORT_LANGUAGE_OPTION_ENABLE_OVERRIDE_VARIABLE_ARRAY_CAPACITY 0
+#define NUNAVUT_SUPPORT_LANGUAGE_OPTION_CAST_FORMAT 2368206204
 
 /// Nunavut returns 0 for success and < 0 for any failure. It is always adequate to check that error_value < 0
 /// to detect errors or error_value == 0 for success.
@@ -67,15 +68,6 @@ static_assert(sizeof(size_t) >= sizeof(size_t),
     ((FLT_RADIX == 2) && (FLT_MANT_DIG == 24) && (FLT_MIN_EXP == -125) && (FLT_MAX_EXP == 128))
 #define NUNAVUT_PLATFORM_IEEE754_DOUBLE \
     ((FLT_RADIX == 2) && (DBL_MANT_DIG == 53) && (DBL_MIN_EXP == -1021) && (DBL_MAX_EXP == 1024))
-
-#define NUNAVUT_ASSERT(x) assert(x)
-#ifndef NUNAVUT_ASSERT
-// By default Nunavut does not generate assert statements since the logic to halt a program is platform
-// dependent and because this header requires an absolute minimum from a platform and from the C standard library.
-// Most platforms can simply define "NUNAVUT_ASSERT(x)=assert(x)" (<assert.h> is always included by Nunavut).
-#   error "You must either define NUNAVUT_ASSERT or you need to disable assertions" \
-          " when generating serialization support code using Nunavut language options"
-#endif
 
 #if defined(__BYTE_ORDER__) && defined(__ORDER_LITTLE_ENDIAN__) && (__BYTE_ORDER__ != __ORDER_LITTLE_ENDIAN__)
 #   error "This code has been generated for little-endian platforms only. " \
@@ -127,9 +119,9 @@ static inline void nunavutCopyBits(void* const dst,
                                    const void* const src,
                                    const size_t src_offset_bits)
 {
-    NUNAVUT_ASSERT(src != NULL);
-    NUNAVUT_ASSERT(dst != NULL);
-    NUNAVUT_ASSERT(src != dst);
+
+
+
     if ((0U == (src_offset_bits % 8U)) && (0U == (dst_offset_bits % 8U)))  // Aligned copy, optimized, most common case.
     {
         const size_t length_bytes = (size_t)(length_bits / 8U);
@@ -144,7 +136,7 @@ static inline void nunavutCopyBits(void* const dst,
             // Intentional violation of MISRA: Pointer arithmetics. It is unavoidable in this context.
             const uint8_t* const last_src = psrc + length_bytes;  // NOLINT NOSONAR
             uint8_t* const last_dst       = pdst + length_bytes;  // NOLINT NOSONAR
-            NUNAVUT_ASSERT(length_mod < 8U);
+
             const uint8_t mask = (uint8_t)((1U << length_mod) - 1U);
             *last_dst = (*last_dst & (uint8_t)~mask) | (*last_src & mask);
         }
@@ -152,26 +144,26 @@ static inline void nunavutCopyBits(void* const dst,
     else
     {
         // The algorithm was originally designed by Ben Dyer for Libuavcan v0:
-        // https://github.com/UAVCAN/libuavcan/blob/legacy-v0/libuavcan/src/marshal/uc_bit_array_copy.cpp
+        // https://github.com/OpenCyphal/libuavcan/blob/legacy-v0/libuavcan/src/marshal/uc_bit_array_copy.cpp
         // This version is modified for v1 where the bit order is the opposite.
         const uint8_t* const psrc = (const uint8_t*) src;
         uint8_t*       const pdst =       (uint8_t*) dst;
         size_t       src_off  = src_offset_bits;
         size_t       dst_off  = dst_offset_bits;
         const size_t last_bit = src_off + length_bits;
-        NUNAVUT_ASSERT(((psrc < pdst) ? ((uintptr_t)(psrc + ((src_offset_bits + length_bits + 8U) / 8U)) <= (uintptr_t)pdst) : 1));
-        NUNAVUT_ASSERT(((psrc > pdst) ? ((uintptr_t)(pdst + ((dst_offset_bits + length_bits + 8U) / 8U)) <= (uintptr_t)psrc) : 1));
+
+
         while (last_bit > src_off)
         {
             const uint8_t src_mod = (uint8_t)(src_off % 8U);
             const uint8_t dst_mod = (uint8_t)(dst_off % 8U);
             const uint8_t max_mod = (src_mod > dst_mod) ? src_mod : dst_mod;
             const uint8_t size = (uint8_t) nunavutChooseMin(8U - max_mod, last_bit - src_off);
-            NUNAVUT_ASSERT(size > 0U);
-            NUNAVUT_ASSERT(size <= 8U);
+
+
             // Suppress a false warning from Clang-Tidy & Sonar that size is being over-shifted. It's not.
             const uint8_t mask = (uint8_t)((((1U << size) - 1U) << dst_mod) & 0xFFU);  // NOLINT NOSONAR
-            NUNAVUT_ASSERT(mask > 0U);
+
             // Intentional violation of MISRA: indexing on a pointer.
             // This simplifies the implementation greatly and avoids pointer arithmetics.
             const uint8_t in = (uint8_t)((uint8_t)(psrc[src_off / 8U] >> src_mod) << dst_mod) & 0xFFU;  // NOSONAR
@@ -185,7 +177,7 @@ static inline void nunavutCopyBits(void* const dst,
             src_off += size;
             dst_off += size;
         }
-        NUNAVUT_ASSERT(last_bit == src_off);
+
     }
 }
 
@@ -201,8 +193,8 @@ static inline void nunavutGetBits(void* const output,
                                   const size_t off_bits,
                                   const size_t len_bits)
 {
-    NUNAVUT_ASSERT(output != NULL);
-    NUNAVUT_ASSERT(buf != NULL);
+
+
     const size_t sat_bits = nunavutSaturateBufferFragmentBitLength(buf_size_bytes, off_bits, len_bits);
     // Apply implicit zero extension. Normally, this is a no-op unless (len_bits > sat_bits) or (len_bits % 8 != 0).
     // The former case ensures that if we're copying <8 bits, the MSB in the destination will be zeroed out.
@@ -229,7 +221,7 @@ static inline int8_t nunavutSetBit(
     const size_t off_bits,
     const bool value)
 {
-    NUNAVUT_ASSERT(buf != NULL);
+
     if ((buf_size_bytes * 8) <= off_bits)
     {
         return -NUNAVUT_ERROR_SERIALIZATION_BUFFER_TOO_SMALL;
@@ -247,7 +239,7 @@ static inline int8_t nunavutSetUxx(
     const uint8_t len_bits)
 {
     static_assert(64U == (sizeof(uint64_t) * 8U), "Unexpected size of uint64_t");
-    NUNAVUT_ASSERT(buf != NULL);
+
     if ((buf_size_bytes * 8) < (off_bits + len_bits))
     {
         return -NUNAVUT_ERROR_SERIALIZATION_BUFFER_TOO_SMALL;
@@ -283,7 +275,7 @@ static inline int8_t nunavutSetIxx(
 /// One-bit-wide signed integers are processed without raising an error but the result is unspecified.
 ///
 /// Arguments:
-///     buf             Source buffer where the serialized representation will be read_frame from.
+///     buf             Source buffer where the serialized representation will be read from.
 ///     buf_size_bytes  The size of the source buffer, in bytes. Reads past this limit will return zero bits.
 ///     off_bits        Offset, in bits, from the beginning of the buffer. May exceed one byte.
 ///     len_bits        Length of the serialized representation, in bits. Zero returns 0. Out-of-range values saturated.
@@ -305,9 +297,9 @@ static inline uint8_t nunavutGetU8(const uint8_t* const buf,
                                    const size_t off_bits,
                                    const uint8_t len_bits)
 {
-    NUNAVUT_ASSERT(buf != NULL);
+
     const size_t bits = nunavutSaturateBufferFragmentBitLength(buf_size_bytes, off_bits, nunavutChooseMin(len_bits, 8U));
-    NUNAVUT_ASSERT(bits <= (sizeof(uint8_t) * 8U));
+
     uint8_t val = 0;
     nunavutCopyBits(&val, 0U, bits, buf, off_bits);
     return val;
@@ -318,9 +310,9 @@ static inline uint16_t nunavutGetU16(const uint8_t* const buf,
                                      const size_t off_bits,
                                      const uint8_t len_bits)
 {
-    NUNAVUT_ASSERT(buf != NULL);
+
     const size_t bits = nunavutSaturateBufferFragmentBitLength(buf_size_bytes, off_bits, nunavutChooseMin(len_bits, 16U));
-    NUNAVUT_ASSERT(bits <= (sizeof(uint16_t) * 8U));
+
     uint16_t val = 0U;
     nunavutCopyBits(&val, 0U, bits, buf, off_bits);
     return val;
@@ -331,9 +323,9 @@ static inline uint32_t nunavutGetU32(const uint8_t* const buf,
                                      const size_t off_bits,
                                      const uint8_t len_bits)
 {
-    NUNAVUT_ASSERT(buf != NULL);
+
     const size_t bits = nunavutSaturateBufferFragmentBitLength(buf_size_bytes, off_bits, nunavutChooseMin(len_bits, 32U));
-    NUNAVUT_ASSERT(bits <= (sizeof(uint32_t) * 8U));
+
     uint32_t val = 0U;
     nunavutCopyBits(&val, 0U, bits, buf, off_bits);
     return val;
@@ -344,9 +336,9 @@ static inline uint64_t nunavutGetU64(const uint8_t* const buf,
                                      const size_t off_bits,
                                      const uint8_t len_bits)
 {
-    NUNAVUT_ASSERT(buf != NULL);
+
     const size_t bits = nunavutSaturateBufferFragmentBitLength(buf_size_bytes, off_bits, nunavutChooseMin(len_bits, 64U));
-    NUNAVUT_ASSERT(bits <= (sizeof(uint64_t) * 8U));
+
     uint64_t val = 0U;
     nunavutCopyBits(&val, 0U, bits, buf, off_bits);
     return val;
