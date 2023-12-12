@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include "cyphal/cyphal.h"
 #include "cyphal/interfaces.h"
 #include "libcanard/canard.h"
@@ -85,7 +86,7 @@ private:
     private:                                                                                   \
         DESERIALIZE_TYPE(TYPE, interface)                                                      \
     public:                                                                                    \
-        explicit CLASS_NAME(const std::shared_ptr<CyphalInterface> interface)                                        \
+        explicit CLASS_NAME(const std::shared_ptr<CyphalInterface> interface)                  \
             : AbstractSubscription(interface, TRANSFER_KIND, PORT_ID, TYPE##_EXTENT_BYTES_){}; \
                                                                                                \
     public:                                                                                    \
