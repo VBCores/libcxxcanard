@@ -57,10 +57,10 @@ size_t LinuxCAN::dlc_to_len(uint32_t dlc) {
 
 void LinuxCAN::can_loop() {
     CanardFrame frame;
-    bool has_read = read_frame(&frame);
-    if (!has_read)
-        return;
-    process_canard_rx(&frame);
+    // read frames, but no more then 10 in a row
+    for (int i = 0; i < 10 && read_frame(&frame); i++) {
+        process_canard_rx(&frame);
+    }
 
     process_canard_tx();
 }
