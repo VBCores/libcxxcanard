@@ -43,3 +43,39 @@ public:
         }
     };
 };
+
+// Time to transmit one frame + delay for 25ns bit time ~ (25*29 (ext id) + 25*64 (body)) * 1.5
+#define ONE_FULL_FRAME_T 2620
+// Cycles = ONE_FULL_FRAME_T / 200 * 32
+#define ONE_FULL_FRAME_CYCLES 420
+
+// 32 cycles ~~ 200 ns delay for 160Mhz core clock
+__attribute__((optimize("O1"))) static inline void delay_cycles(uint16_t cycles = 32) {
+    /* Reference: https://developer.arm.com/documentation/ddi0439/b/Programmers-Model/Instruction-set-summary/Cortex-M4-instructions?lang=en
+     *
+     * // 6 тактов на (cycles - 8) / 5
+       sub     r3, r0, #5         // 1 такт
+       ldr     r2, .L6            // 2 такта
+       smull   r1, r2, r3, r2     // 1 такт
+       asr     r3, r3, #31        // 1 такт
+       rsb     r3, r3, r2, asr #1 // 1 такт
+     *
+     * // 2 такта на стартовую проверку
+       ands    r3, r3, #255       // 1 такт
+       bxeq    lr                 // 1 такт ("Conditional branch completes in a single cycle if the branch is not taken.")
+     *
+     * // ~5 тактов на цикл
+       .L3:
+       nop                       // 1 такт
+       sub     r3, r3, #1        // 1 такт
+       ands    r3, r3, #255      // 1 такт
+       bne     .L3               // 1 + 1-3 такта, в среднем 2(3?)
+     *
+     * Всего 5 тактов на цикл + 8 в начале.
+     */
+
+    uint8_t real_cycles = (cycles - 8) / 5;
+    while (real_cycles--) {
+        __asm__("nop");
+    }
+}
