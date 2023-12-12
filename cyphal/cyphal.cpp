@@ -22,6 +22,8 @@ void CyphalInterface::push(
 #ifdef LINUX_CAN
         std::cerr << "[Error: OOM] Tried to send to port: " << metadata->port_id << ", node: " 
 << +metadata->remote_node_id << std::endl;
+#else
+        error_handler();
 #endif
         return;
     }
