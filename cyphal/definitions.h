@@ -2,10 +2,12 @@
 
 #if defined(STM32G474xx) || defined(STM32_G)
 #include "stm32g4xx_hal.h"
+// TODO: rework this dependency
+#if __has_include("utils.h")
 #include "utils.h"
-#elif defined(STM32F446xx) || defined(STM32_F)
-#include "stm32f4xx_hal.h"
-#include "utils.h"
+#else
+#define CRITICAL_SECTION(code) code
+#endif
 #else
 #define CRITICAL_SECTION(code) code
 #include <unistd.h>
