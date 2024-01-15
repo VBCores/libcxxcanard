@@ -11,8 +11,8 @@
 
 #include "FDCAN_generic.h"
 
-LinuxCAN::LinuxCAN(const std::string& can_interface)
-    : AbstractCANProvider(CANARD_MTU_CAN_FD, CANFD_MTU) {
+LinuxCAN::LinuxCAN(const std::string& can_interface, size_t queue_len)
+    : AbstractCANProvider(CANARD_MTU_CAN_FD, CANFD_MTU, queue_len) {
     struct sockaddr_can addr;
     if ((socketcan_handler = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) {
         perror("Socket");

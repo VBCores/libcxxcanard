@@ -10,7 +10,8 @@ private:
 
 public:
     typedef FDCAN_HandleTypeDef* Handler;
-    G4CAN(Handler handler) : AbstractCANProvider(CANARD_MTU_CAN_FD, 72), handler(handler){};
+    G4CAN(Handler handler) : G4CAN(handler, 200) {};
+    G4CAN(Handler handler, size_t queue_len) : AbstractCANProvider(CANARD_MTU_CAN_FD, 72, queue_len), handler(handler){};
     uint32_t len_to_dlc(size_t len) override;
     size_t dlc_to_len(uint32_t dlc) override;
     void can_loop() override;

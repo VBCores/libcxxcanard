@@ -4,6 +4,8 @@
 CanardTxQueue queue{};
 CanardInstance canard{};
 
+std::unique_ptr<AbstractAllocator> _alloc_ptr;
+
 #include <iostream>
 void AbstractCANProvider::process_canard_rx(CanardFrame* frame) {
     CanardRxTransfer transfer = {.payload = nullptr};

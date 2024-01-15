@@ -12,7 +12,8 @@ private:
 
 public:
     typedef const std::string& Handler;
-    LinuxCAN(Handler can_interface);
+    LinuxCAN(Handler can_interface) : LinuxCAN(can_interface, 200) {};
+    LinuxCAN(Handler can_interface, size_t queue_len);
     uint32_t len_to_dlc(size_t len) override;
     size_t dlc_to_len(uint32_t dlc) override;
     void can_loop() override;

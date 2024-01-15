@@ -1,8 +1,35 @@
 #pragma once
 
+#include <memory>
+#include <functional>
+#ifdef __linux__
+#include <iostream>
+#endif
+
 #include "cyphal/allocators/allocator.h"
 #include "cyphal/definitions.h"
 #include "libcanard/canard.h"
+
+extern std::unique_ptr<AbstractAllocator> _alloc_ptr;
+
+inline void* alloc_f (CanardInstance* ins, size_t amount) {
+    if (!_alloc_ptr) {
+        #ifdef __linux__
+        std::cerr << "Tried to allocate canard memory before creating provider&allocator!" << std::endl;
+        #endif
+        error_handler();  // noreturn
+    }
+    return _alloc_ptr->allocate(ins, amount);
+}
+inline void free_f (CanardInstance* ins, void* pointer) {
+    if (!_alloc_ptr) {
+        #ifdef __linux__
+        std::cerr << "Tried to free (?) canard memory before creating provider&allocator!" << std::endl;
+        #endif
+        error_handler();  // noreturn
+    }
+    return _alloc_ptr->free(ins, pointer);
+}
 
 class AbstractCANProvider {
     friend class CyphalInterface;
@@ -12,20 +39,33 @@ protected:
     const size_t WIRE_MTU;
     CanardTxQueue queue;
     CanardInstance canard;
-
 public:
     typedef void Handler;
 
     AbstractCANProvider() = delete;
-    AbstractCANProvider(size_t canard_mtu, size_t wire_mtu)
-        : WIRE_MTU(wire_mtu), CANARD_MTU(canard_mtu), canard{}, queue{} {};
+
+    AbstractCANProvider(size_t canard_mtu, size_t wire_mtu, size_t queue_len) :
+        WIRE_MTU(wire_mtu),
+        CANARD_MTU(canard_mtu),
+        queue(canardTxInit(queue_len, CANARD_MTU))
+    {};
+
+    AbstractCANProvider(size_t canard_mtu, size_t wire_mtu) : AbstractCANProvider(canard_mtu, wire_mtu, 200) {};
 
     template <class T, class... Args>
     void setup(CanardNodeID node_id, Args&&... args) {
-        auto memory_pair = get_memory_pair<T>(args...);
-        canard = canardInit(std::get<0>(memory_pair), std::get<1>(memory_pair));
+        using namespace std::placeholders;
+
+        if (_alloc_ptr) {
+            #ifdef __linux__
+            std::cerr << "Tried to call setup in provider twice!" << std::endl;
+            #endif
+            error_handler();
+        }
+        _alloc_ptr = std::make_unique<T>(args...);
+
+        canard = canardInit(alloc_f, free_f);
         canard.node_id = node_id;
-        queue = canardTxInit(200, CANARD_MTU);
     }
 
     virtual uint32_t len_to_dlc(size_t len) = 0;
@@ -35,13 +75,6 @@ public:
     virtual int write_frame(const CanardTxQueueItem* ti) = 0;
     void process_canard_rx(CanardFrame*);
     void process_canard_tx();
-
-    virtual ~AbstractCANProvider() {
-        auto allocator_obj = get_allocator();
-        if (allocator_obj != nullptr) {
-            delete allocator_obj;
-        }
-    };
 };
 
 // Time to transmit one frame + delay for 25ns bit time ~ (25*29 (ext id) + 25*64 (body)) * 1.5

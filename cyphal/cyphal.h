@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "providers/provider.h"
 #include "cyphal/definitions.h"
 
@@ -12,30 +14,26 @@ using cyphal_deserializer = int8_t (*)(ObjType* const, const uint8_t*, size_t* c
 
 class CyphalInterface {
     const CanardNodeID node_id;
-    AbstractCANProvider* provider = nullptr;
+    std::unique_ptr<AbstractCANProvider> provider;
 
 public:
     CyphalInterface(CanardNodeID node_id) : node_id(node_id){};
     bool is_up() { return provider != nullptr; }
     bool has_unsent_frames() {
-        if (provider == nullptr)
+        if (!provider)
             return false;
         return canardTxPeek(&provider->queue) != NULL;
     }
     void process_tx_once() {  // needed for finalization of the whole program
-        if (provider == nullptr)
+        if (!provider)
             return;
         provider->process_canard_tx();
     }
 
     template <typename Provider, class Allocator, class... Args>
     void setup(typename Provider::Handler handler, Args&&... args) {
-        provider = new Provider(handler);
+        provider = std::make_unique<Provider>(handler);
         provider->setup<Allocator>(node_id, args...);
-    }
-
-    ~CyphalInterface() {
-        delete provider;
     }
 
     void loop();
