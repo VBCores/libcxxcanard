@@ -35,13 +35,13 @@ void O1Allocator::align_self(size_t size) {
     o1heap = out;
 }
 
-O1Allocator::O1Allocator(void* memory, size_t size): memory_arena(memory) {
+O1Allocator::O1Allocator(size_t size, void* memory): AbstractAllocator(size), memory_arena(memory) {
     align_self(size);
 }
 
-O1Allocator::O1Allocator(size_t size) {
+O1Allocator::O1Allocator(size_t size): AbstractAllocator(size) {
 #ifdef __linux__
-    memory_arena = new(std::align_val_t{O1HEAP_ALIGNMENT}) uint8_t[size];
+    memory_arena = new (std::align_val_t{O1HEAP_ALIGNMENT}) uint8_t[size];
 #else
     memory_arena = std::malloc(size);
 #endif

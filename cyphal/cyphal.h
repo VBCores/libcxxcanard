@@ -13,12 +13,26 @@ template <typename ObjType>
 using cyphal_deserializer = int8_t (*)(ObjType* const, const uint8_t*, size_t* const);
 
 class CyphalInterface {
+private:
     const CanardNodeID node_id;
     std::unique_ptr<AbstractCANProvider> provider;
-
-public:
     CyphalInterface(CanardNodeID node_id) : node_id(node_id){};
-    bool is_up() { return provider != nullptr; }
+public:
+    template <typename Provider, class Allocator, class... Args> static CyphalInterface* create(
+        std::byte* buffer, CanardNodeID node_id, typename Provider::Handler handler, size_t queue_len, Args&&... args
+    ) {
+        std::byte** inout_buffer = &buffer;
+        auto provider  = std::unique_ptr<Provider>(Provider::template create<Allocator>(inout_buffer, handler, node_id, queue_len, args...));
+    
+        std::byte* interface_ptr = *inout_buffer;
+        auto interface = new (interface_ptr) CyphalInterface(node_id);
+
+        interface->provider = std::move(provider);
+        return interface;
+    }
+
+    bool is_up() { return bool(provider); }
+    size_t queue_size() { return provider->queue.size; }
     bool has_unsent_frames() {
         if (!provider)
             return false;
@@ -28,12 +42,6 @@ public:
         if (!provider)
             return;
         provider->process_canard_tx();
-    }
-
-    template <typename Provider, class Allocator, class... Args>
-    void setup(typename Provider::Handler handler, Args&&... args) {
-        provider = std::make_unique<Provider>(handler);
-        provider->setup<Allocator>(node_id, args...);
     }
 
     void loop();

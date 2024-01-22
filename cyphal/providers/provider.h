@@ -39,8 +39,6 @@ protected:
     const size_t WIRE_MTU;
     CanardTxQueue queue;
     CanardInstance canard;
-public:
-    typedef void Handler;
 
     AbstractCANProvider() = delete;
 
@@ -52,8 +50,8 @@ public:
 
     AbstractCANProvider(size_t canard_mtu, size_t wire_mtu) : AbstractCANProvider(canard_mtu, wire_mtu, 200) {};
 
-    template <class T, class... Args>
-    void setup(CanardNodeID node_id, Args&&... args) {
+    template <class T>
+    void setup(T* ptr, CanardNodeID node_id) {
         using namespace std::placeholders;
 
         if (_alloc_ptr) {
@@ -62,11 +60,13 @@ public:
             #endif
             error_handler();
         }
-        _alloc_ptr = std::make_unique<T>(args...);
+        _alloc_ptr = std::unique_ptr<T>(ptr);
 
         canard = canardInit(alloc_f, free_f);
         canard.node_id = node_id;
     }
+public:
+    typedef void Handler;
 
     virtual uint32_t len_to_dlc(size_t len) = 0;
     virtual size_t dlc_to_len(uint32_t dlc) = 0;

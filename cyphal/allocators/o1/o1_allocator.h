@@ -11,9 +11,8 @@ private:
     void align_self(size_t size);
     bool is_self_allocated = false;
 public:
-    O1Allocator(void* memory, size_t size);
+    O1Allocator(size_t size, void* memory);
     explicit O1Allocator(size_t size);
-    O1Allocator() : O1Allocator(200*72){};
     ~O1Allocator();
 
     void* allocate(CanardInstance* ins, size_t amount) override;

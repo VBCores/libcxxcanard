@@ -5,13 +5,28 @@
 #include "provider.h"
 
 class G4CAN : public AbstractCANProvider {
-private:
-    FDCAN_HandleTypeDef* handler;
-
 public:
     typedef FDCAN_HandleTypeDef* Handler;
-    G4CAN(Handler handler) : G4CAN(handler, 200) {};
+private:
+    FDCAN_HandleTypeDef* handler;
     G4CAN(Handler handler, size_t queue_len) : AbstractCANProvider(CANARD_MTU_CAN_FD, 72, queue_len), handler(handler){};
+public:
+    
+    template <class T, class... Args> static G4CAN* create(
+        std::byte** inout_buffer, Handler handler, CanardNodeID node_id, size_t queue_len, Args&&... args
+    ) {
+        std::byte* allocator_loc = *inout_buffer;
+        auto allocator_ptr = new (allocator_loc) T(queue_len * sizeof(CanardTxQueueItem), args...);
+    
+        std::byte* provider_loc = allocator_loc + sizeof(T);
+        auto ptr = new (provider_loc) G4CAN(handler, queue_len / 2);
+    
+        ptr->setup<T>(allocator_ptr, node_id);
+
+        *inout_buffer = provider_loc + sizeof(G4CAN);
+        return ptr;
+    }
+
     uint32_t len_to_dlc(size_t len) override;
     size_t dlc_to_len(uint32_t dlc) override;
     void can_loop() override;

@@ -8,6 +8,7 @@
 
 class AbstractAllocator {
 public:
+    explicit AbstractAllocator(size_t size) {};
     virtual void* allocate(CanardInstance* ins, size_t amount) = 0;
     virtual void free(CanardInstance* ins, void* pointer) = 0;
     virtual ~AbstractAllocator() {}
