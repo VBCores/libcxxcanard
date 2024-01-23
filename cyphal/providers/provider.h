@@ -17,7 +17,7 @@ inline void* alloc_f (CanardInstance* ins, size_t amount) {
         #ifdef __linux__
         std::cerr << "Tried to allocate canard memory before creating provider&allocator!" << std::endl;
         #endif
-        error_handler();  // noreturn
+        exit(1);
     }
     return _alloc_ptr->allocate(ins, amount);
 }
@@ -26,7 +26,7 @@ inline void free_f (CanardInstance* ins, void* pointer) {
         #ifdef __linux__
         std::cerr << "Tried to free (?) canard memory before creating provider&allocator!" << std::endl;
         #endif
-        error_handler();  // noreturn
+        exit(1);
     }
     return _alloc_ptr->free(ins, pointer);
 }
@@ -39,26 +39,28 @@ protected:
     const size_t WIRE_MTU;
     CanardTxQueue queue;
     CanardInstance canard;
+    UtilityConfig& utilities;
 
     AbstractCANProvider() = delete;
 
-    AbstractCANProvider(size_t canard_mtu, size_t wire_mtu, size_t queue_len) :
+    AbstractCANProvider(size_t canard_mtu, size_t wire_mtu, size_t queue_len, UtilityConfig& utilities) :
         WIRE_MTU(wire_mtu),
         CANARD_MTU(canard_mtu),
-        queue(canardTxInit(queue_len, CANARD_MTU))
+        queue(canardTxInit(queue_len, CANARD_MTU)),
+        utilities(utilities)
     {};
 
-    AbstractCANProvider(size_t canard_mtu, size_t wire_mtu) : AbstractCANProvider(canard_mtu, wire_mtu, 200) {};
+    AbstractCANProvider(size_t canard_mtu, size_t wire_mtu, UtilityConfig& utilities) : AbstractCANProvider(canard_mtu, wire_mtu, 200, utilities) {};
 
     template <class T>
     void setup(T* ptr, CanardNodeID node_id) {
         using namespace std::placeholders;
 
         if (_alloc_ptr) {
-            #ifdef __linux__
+#ifdef __linux__
             std::cerr << "Tried to call setup in provider twice!" << std::endl;
-            #endif
-            error_handler();
+#endif
+            utilities.error_handler();
         }
         _alloc_ptr = std::unique_ptr<T>(ptr);
 

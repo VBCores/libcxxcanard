@@ -11,17 +11,22 @@ public:
     typedef const std::string& Handler;
 private:
     int socketcan_handler;
-    LinuxCAN(Handler can_interface, size_t queue_len);
+    LinuxCAN(Handler can_interface, size_t queue_len, UtilityConfig& utilities);
 public:
 
     template <class T, class... Args> static LinuxCAN* create(
-        std::byte** inout_buffer, Handler handler, CanardNodeID node_id, size_t queue_len, Args&&... args
+        std::byte** inout_buffer,
+        Handler handler,
+        CanardNodeID node_id,
+        size_t queue_len,
+        Args&&... args,
+        UtilityConfig& utilities
     ) {
         std::byte* allocator_loc = *inout_buffer;
-        auto allocator_ptr = new (allocator_loc) T(queue_len * sizeof(CanardTxQueueItem), args...);
+        auto allocator_ptr = new (allocator_loc) T(queue_len * sizeof(CanardTxQueueItem), args..., utilities);
     
         std::byte* provider_loc = allocator_loc + sizeof(T);
-        auto ptr = new (provider_loc) LinuxCAN(handler, queue_len / 2);
+        auto ptr = new (provider_loc) LinuxCAN(handler, queue_len / 2, utilities);
     
         ptr->setup<T>(allocator_ptr, node_id);
 

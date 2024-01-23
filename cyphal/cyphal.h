@@ -12,20 +12,38 @@ using cyphal_serializer = int8_t (*)(const ObjType* const, uint8_t* const, size_
 template <typename ObjType>
 using cyphal_deserializer = int8_t (*)(ObjType* const, const uint8_t*, size_t* const);
 
+#define TYPE_ALIAS(ALIAS_NAME, T)                                               \
+class ALIAS_NAME {                                                              \
+public:                                                                         \
+    typedef T Type;                                                             \
+    typedef cyphal_serializer<T> serializer_type;                               \
+    typedef cyphal_deserializer<T> deserializer_type;                           \
+    static constexpr serializer_type serializer = T##_serialize_;               \
+    static constexpr deserializer_type deserializer = T##_deserialize_;         \
+    static constexpr size_t extent = T##_EXTENT_BYTES_;                         \
+    static constexpr size_t buffer_size = T##_SERIALIZATION_BUFFER_SIZE_BYTES_; \
+};
+
 class CyphalInterface {
 private:
     const CanardNodeID node_id;
     std::unique_ptr<AbstractCANProvider> provider;
-    CyphalInterface(CanardNodeID node_id) : node_id(node_id){};
+    CyphalInterface(CanardNodeID node_id, UtilityConfig& config) : node_id(node_id), utilities(config) {};
+    UtilityConfig& utilities;
 public:
     template <typename Provider, class Allocator, class... Args> static CyphalInterface* create(
-        std::byte* buffer, CanardNodeID node_id, typename Provider::Handler handler, size_t queue_len, Args&&... args
+        std::byte* buffer,
+        CanardNodeID node_id,
+        typename Provider::Handler handler,
+        size_t queue_len,
+        Args&&... args,
+        UtilityConfig& config
     ) {
         std::byte** inout_buffer = &buffer;
-        auto provider  = std::unique_ptr<Provider>(Provider::template create<Allocator>(inout_buffer, handler, node_id, queue_len, args...));
+        auto provider  = std::unique_ptr<Provider>(Provider::template create<Allocator>(inout_buffer, handler, node_id, queue_len, args..., config));
     
         std::byte* interface_ptr = *inout_buffer;
-        auto interface = new (interface_ptr) CyphalInterface(node_id);
+        auto interface = new (interface_ptr) CyphalInterface(node_id, config);
 
         interface->provider = std::move(provider);
         return interface;
@@ -59,52 +77,42 @@ public:
     ) const;
 
     // TEMPLATES
-    template <typename ObjType>
+    template <typename TypeAlias>
     inline void send_cyphal(
-        ObjType* obj,
-        uint8_t buf[],
+        typename TypeAlias::Type* obj,
+        uint8_t buffer[],
         CanardPortID port,
         CanardTransferID* transfer_id,
         CanardPriority priority,
         CanardTransferKind transfer_kind,
-        CanardNodeID to_node_id,
-        unsigned long buffer_size,
-        cyphal_serializer<ObjType> serializer
+        CanardNodeID to_node_id
     ) const;
-    template <typename ObjType>
+    template <typename TypeAlias>
     inline void send_cyphal_default_msg(
-        ObjType* obj,
-        uint8_t buf[],
+        typename TypeAlias::Type* obj,
+        uint8_t buffer[],
         CanardPortID port,
-        CanardTransferID* transfer_id,
-        unsigned long buffer_size,
-        cyphal_serializer<ObjType> serializer
+        CanardTransferID* transfer_id
     ) const;
-    template <typename ObjType>
+    template <typename TypeAlias>
     inline void send_cyphal_default_msg_to(
-        ObjType* obj,
-        uint8_t buf[],
+        typename TypeAlias::Type* obj,
+        uint8_t buffer[],
         CanardPortID port,
         CanardTransferID* transfer_id,
-        CanardNodeID to_node_id,
-        unsigned long buffer_size,
-        cyphal_serializer<ObjType> serializer
+        CanardNodeID to_node_id
     ) const;
-    template <typename ObjType>
+    template <typename TypeAlias>
     inline void send_cyphal_response(
-        ObjType* obj,
-        uint8_t buf[],
+        typename TypeAlias::Type* obj,
+        uint8_t buffer[],
         CanardRxTransfer* transfer,
-        CanardPortID port,
-        unsigned long buffer_size,
-        cyphal_serializer<ObjType> serializer
+        CanardPortID port
     ) const;
-    template <typename ObjType>
+    template <typename TypeAlias>
     inline void cyphal_deserialize_transfer (
-        ObjType* obj,
-        CanardRxTransfer* transfer,
-        size_t buf_size,
-        cyphal_deserializer<ObjType> deserializer
+        typename TypeAlias::Type* obj,
+        CanardRxTransfer* transfer
     ) const;
 };
 

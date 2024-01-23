@@ -6,7 +6,7 @@ CanardInstance canard{};
 
 std::unique_ptr<AbstractAllocator> _alloc_ptr;
 
-#include <iostream>
+
 void AbstractCANProvider::process_canard_rx(CanardFrame* frame) {
     CanardRxTransfer transfer = {.payload = nullptr};
     CanardRxSubscription* subscription = nullptr;
@@ -15,7 +15,7 @@ void AbstractCANProvider::process_canard_rx(CanardFrame* frame) {
 
     const int8_t accept_result = canardRxAccept(
         (CanardInstance* const)&canard,
-        micros_64(),
+        utilities.micros_64(),
         frame,
         0,
         &transfer,
@@ -28,7 +28,7 @@ void AbstractCANProvider::process_canard_rx(CanardFrame* frame) {
     if (accept_result < 0) goto exit;
     if (subscription == nullptr) goto exit;
 
-    listener = (IListener<CanardRxTransfer*>*)subscription->user_reference;
+    listener = reinterpret_cast<IListener<CanardRxTransfer*>*>(subscription->user_reference);
     if (listener == nullptr) goto exit;
     listener->accept(&transfer);
 
@@ -43,7 +43,7 @@ void AbstractCANProvider::process_canard_tx() {
     while (queue.size != 0) {
         const CanardTxQueueItem* ti = canardTxPeek(&queue);
 
-        if (0U == ti->tx_deadline_usec || ti->tx_deadline_usec > micros_64()) {
+        if (0U == ti->tx_deadline_usec || ti->tx_deadline_usec > utilities.micros_64()) {
             int written = write_frame(ti);
             if (written < 0) {
                 break;

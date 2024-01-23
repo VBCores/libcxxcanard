@@ -9,17 +9,23 @@ public:
     typedef FDCAN_HandleTypeDef* Handler;
 private:
     FDCAN_HandleTypeDef* handler;
-    G4CAN(Handler handler, size_t queue_len) : AbstractCANProvider(CANARD_MTU_CAN_FD, 72, queue_len), handler(handler){};
+    G4CAN(Handler handler, size_t queue_len, UtilityConfig& utilities):
+        AbstractCANProvider(CANARD_MTU_CAN_FD, 72, queue_len, utilities), handler(handler) {};
 public:
     
     template <class T, class... Args> static G4CAN* create(
-        std::byte** inout_buffer, Handler handler, CanardNodeID node_id, size_t queue_len, Args&&... args
+        std::byte** inout_buffer,
+        Handler handler,
+        CanardNodeID node_id,
+        size_t queue_len,
+        Args&&... args,
+        UtilityConfig& utilities
     ) {
         std::byte* allocator_loc = *inout_buffer;
-        auto allocator_ptr = new (allocator_loc) T(queue_len * sizeof(CanardTxQueueItem), args...);
+        auto allocator_ptr = new (allocator_loc) T(queue_len * sizeof(CanardTxQueueItem), args..., utilities);
     
         std::byte* provider_loc = allocator_loc + sizeof(T);
-        auto ptr = new (provider_loc) G4CAN(handler, queue_len / 2);
+        auto ptr = new (provider_loc) G4CAN(handler, queue_len / 2, utilities);
     
         ptr->setup<T>(allocator_ptr, node_id);
 

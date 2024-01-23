@@ -7,7 +7,7 @@ void* SystemAllocator::allocate(CanardInstance* const ins, const size_t amount) 
 
     CRITICAL_SECTION({ mem = std::malloc(amount); })
     if (mem == nullptr) {
-        error_handler();
+        utilities.error_handler();
     }
     return mem;
 }

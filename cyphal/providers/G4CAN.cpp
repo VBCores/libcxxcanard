@@ -40,7 +40,7 @@ bool G4CAN::read_frame(CanardFrame* rxf) {
 
     FDCAN_RxHeaderTypeDef RxHeader = {};
     if (HAL_FDCAN_GetRxMessage(handler, rx_fifo, &RxHeader, RxData) != HAL_OK) {
-        error_handler();
+        utilities.error_handler();
     }
 
     rxf->extended_can_id = RxHeader.Identifier;
