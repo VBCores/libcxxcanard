@@ -54,3 +54,7 @@ void AbstractCANProvider::process_canard_tx() {
         canard.memory_free(&canard, canardTxPop(&queue, ti));
     }
 }
+
+AbstractCANProvider::~AbstractCANProvider() {
+
+}

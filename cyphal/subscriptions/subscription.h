@@ -33,7 +33,7 @@ public:
 
     void accept(CanardRxTransfer* transfer) {
         Type object;
-        interface->cyphal_deserialize_transfer<T>(&object, transfer);
+        interface->deserialize_transfer<T>(&object, transfer);
         handler(object, transfer);
     }
 };

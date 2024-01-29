@@ -42,15 +42,13 @@ protected:
     UtilityConfig& utilities;
 
     AbstractCANProvider() = delete;
-
+    AbstractCANProvider(size_t canard_mtu, size_t wire_mtu, UtilityConfig& utilities) : AbstractCANProvider(canard_mtu, wire_mtu, 200, utilities) {};
     AbstractCANProvider(size_t canard_mtu, size_t wire_mtu, size_t queue_len, UtilityConfig& utilities) :
         WIRE_MTU(wire_mtu),
         CANARD_MTU(canard_mtu),
         queue(canardTxInit(queue_len, CANARD_MTU)),
         utilities(utilities)
     {};
-
-    AbstractCANProvider(size_t canard_mtu, size_t wire_mtu, UtilityConfig& utilities) : AbstractCANProvider(canard_mtu, wire_mtu, 200, utilities) {};
 
     template <class T>
     void setup(T* ptr, CanardNodeID node_id) {
@@ -77,6 +75,8 @@ public:
     virtual int write_frame(const CanardTxQueueItem* ti) = 0;
     void process_canard_rx(CanardFrame*);
     void process_canard_tx();
+
+    virtual ~AbstractCANProvider();
 };
 
 // Time to transmit one frame + delay for 25ns bit time ~ (25*29 (ext id) + 25*64 (body)) * 1.5

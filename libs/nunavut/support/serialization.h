@@ -47,7 +47,7 @@ static_assert(sizeof(size_t) >= sizeof(size_t),
 #define NUNAVUT_SUPPORT_LANGUAGE_OPTION_ENABLE_OVERRIDE_VARIABLE_ARRAY_CAPACITY 0
 #define NUNAVUT_SUPPORT_LANGUAGE_OPTION_CAST_FORMAT 2368206204
 
-#define NUNAVUT_ASSERT(x) true
+#define NUNAVUT_ASSERT(x)
 /// Nunavut returns 0 for success and < 0 for any failure. It is always adequate to check that error_value < 0
 /// to detect errors or error_value == 0 for success.
 ///
