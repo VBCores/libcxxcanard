@@ -10,8 +10,6 @@ std::unique_ptr<AbstractAllocator> _alloc_ptr;
 void AbstractCANProvider::process_canard_rx(CanardFrame* frame) {
     CanardRxTransfer transfer = {.payload = nullptr};
     CanardRxSubscription* subscription = nullptr;
-    void (*processor)(CanardRxTransfer*) = nullptr;
-    IListener<CanardRxTransfer*>* listener = nullptr;
 
     const int8_t accept_result = canardRxAccept(
         (CanardInstance* const)&canard,
@@ -21,18 +19,17 @@ void AbstractCANProvider::process_canard_rx(CanardFrame* frame) {
         &transfer,
         &subscription
     );
-    if (accept_result == 0 || accept_result > 1) {
+    if (accept_result == 1) {
+        IListener<CanardRxTransfer*>* listener = reinterpret_cast<IListener<CanardRxTransfer*>*>(subscription->user_reference);
+        if (listener != nullptr) {
+            listener->accept(&transfer);
+        }
+    }
+    else if (accept_result == 0 || accept_result > 1) {
         // The received frame is either invalid or it's a non-last frame of a multi-frame transfer.
         return;
     }
-    if (accept_result < 0) goto exit;
-    if (subscription == nullptr) goto exit;
 
-    listener = reinterpret_cast<IListener<CanardRxTransfer*>*>(subscription->user_reference);
-    if (listener == nullptr) goto exit;
-    listener->accept(&transfer);
-
-exit:
     if (transfer.payload != nullptr) {
         canard.memory_free(&canard, transfer.payload);
     }

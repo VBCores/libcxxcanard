@@ -26,7 +26,6 @@ void G4CAN::can_loop() {
 
 static uint8_t RxData[64] = {};
 bool G4CAN::read_frame(CanardFrame* rxf) {
-    // may want to check 2 FIFOs in the future
     uint32_t rx_fifo = -1;
     if (HAL_FDCAN_GetRxFifoFillLevel(handler, FDCAN_RX_FIFO0)) {
         rx_fifo = FDCAN_RX_FIFO0;
