@@ -23,10 +23,10 @@ public:
         UtilityConfig& utilities
     ) {
         std::byte* allocator_loc = *inout_buffer;
-        auto allocator_ptr = new (allocator_loc) T(queue_len * sizeof(CanardTxQueueItem), args..., utilities);
+        auto allocator_ptr = new (allocator_loc) T(queue_len * sizeof(CanardTxQueueItem) * 2.5, args..., utilities);
     
         std::byte* provider_loc = allocator_loc + sizeof(T);
-        auto ptr = new (provider_loc) LinuxCAN(handler, queue_len / 2, utilities);
+        auto ptr = new (provider_loc) LinuxCAN(handler, queue_len, utilities);
     
         ptr->setup<T>(allocator_ptr, node_id);
 
