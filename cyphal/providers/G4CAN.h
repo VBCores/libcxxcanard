@@ -13,7 +13,7 @@ private:
         AbstractCANProvider(CANARD_MTU_CAN_FD, 72, queue_len, utilities), handler(handler) {};
 public:
     
-    template <class T, class... Args> static G4CAN* create(
+    template <class T, class... Args> static G4CAN* create_bss(
         std::byte** inout_buffer,
         Handler handler,
         CanardNodeID node_id,
@@ -30,6 +30,20 @@ public:
         ptr->setup<T>(allocator_ptr, node_id);
 
         *inout_buffer = provider_loc + sizeof(G4CAN);
+        return ptr;
+    }
+
+    template <class T, class... Args> static G4CAN* create_heap(
+        Handler handler,
+        CanardNodeID node_id,
+        size_t queue_len,
+        Args&&... args,
+        UtilityConfig& utilities
+    ) {
+        auto allocator_ptr = new T(queue_len * sizeof(CanardTxQueueItem) * 2.5, args..., utilities);
+        auto ptr = new G4CAN(handler, queue_len, utilities);
+        ptr->setup<T>(allocator_ptr, node_id);
+
         return ptr;
     }
 
