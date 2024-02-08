@@ -2,16 +2,16 @@
 
 #ifdef __linux__
 
-uint64_t micros_64() {
+uint64_t _micros_64() {
     struct timespec ts {};
     timespec_get(&ts, TIME_UTC);
     uint64_t us = SEC_TO_US((uint64_t)ts.tv_sec) + NS_TO_US((uint64_t)ts.tv_nsec);
     return us;
 }
 
-#endif
+UtilityConfig DEFAULT_CONFIG (_micros_64, [](){ exit(1); });
 
-AbstractAllocator* allocator = nullptr;
+#endif
 
 #ifdef __linux__
 #include <new>
@@ -32,37 +32,47 @@ void O1Allocator::free(CanardInstance* ins, void* pointer) {
     CRITICAL_SECTION({ o1heapFree(o1heap, pointer); })
 }
 
-O1Allocator::O1Allocator(size_t size) {
-#ifdef __linux__
-    memory_arena = new(std::align_val_t{O1HEAP_ALIGNMENT}) uint8_t[size];
-#else
-    memory_arena = std::malloc(size);
-#endif
-    if (memory_arena == nullptr) {
-        error_handler();
+void O1Allocator::align_self(size_t size) {
+    if (!is_self_allocated) {
+        uintptr_t loc = (uintptr_t)memory_arena;
+        auto shift = loc % O1HEAP_ALIGNMENT;
+        if (shift != 0) {
+            memory_arena = (void*)(loc + shift);
+            size -= shift;
+        }
     }
-
-#ifndef __linux__
-    auto shift = (int)((uint8_t*)memory_arena) % O1HEAP_ALIGNMENT;
-    if (shift != 0) {
-        memory_arena = (void*)((uint8_t*)memory_arena + shift);
-        size -= shift;
-    }
-#endif
 
     O1HeapInstance* out = o1heapInit(memory_arena, size);
     if (out == nullptr) {
-        error_handler();
+        utilities.error_handler();
     }
     o1heap = out;
 }
 
+O1Allocator::O1Allocator(size_t size, void* memory, UtilityConfig& utilities):
+    AbstractAllocator(size, utilities),
+    memory_arena(memory)
+    {
+    align_self(size);
+}
+
+O1Allocator::O1Allocator(size_t size, UtilityConfig& utilities): AbstractAllocator(size, utilities) {
+    memory_arena = operator new (size, std::align_val_t{O1HEAP_ALIGNMENT});
+
+    if (memory_arena == nullptr) {
+        utilities.error_handler();
+    }
+    is_self_allocated = true;
+
+    align_self(size);
+}
+
 O1Allocator::~O1Allocator() {
-#ifdef __linux__
-    ::operator delete[](memory_arena, std::align_val_t{O1HEAP_ALIGNMENT});
-#else
-	std::free(memory_arena);
-#endif
+    if (!is_self_allocated) {
+        return;
+    }
+    operator delete(memory_arena, std::align_val_t{O1HEAP_ALIGNMENT});
+
 }
 #include <cstdlib>
 
@@ -72,7 +82,7 @@ void* SystemAllocator::allocate(CanardInstance* const ins, const size_t amount) 
 
     CRITICAL_SECTION({ mem = std::malloc(amount); })
     if (mem == nullptr) {
-        error_handler();
+        utilities.error_handler();
     }
     return mem;
 }
@@ -191,7 +201,9 @@ size_t fdcan_dlc_to_len(uint32_t dlc) {
 CanardTxQueue queue{};
 CanardInstance canard{};
 
-#include <iostream>
+std::unique_ptr<AbstractAllocator> _alloc_ptr;
+
+
 void AbstractCANProvider::process_canard_rx(CanardFrame* frame) {
     CanardRxTransfer transfer = {.payload = nullptr};
     CanardRxSubscription* subscription = nullptr;
@@ -200,23 +212,23 @@ void AbstractCANProvider::process_canard_rx(CanardFrame* frame) {
 
     const int8_t accept_result = canardRxAccept(
         (CanardInstance* const)&canard,
-        micros_64(),
+        utilities.micros_64(),
         frame,
         0,
         &transfer,
         &subscription
     );
-    if (accept_result != 1) {
-        goto exit;
-    }
-    if (subscription == nullptr) {
-        goto exit;
-    }
-    listener = (IListener<CanardRxTransfer*>*)subscription->user_reference;
-    if (listener == nullptr) {
+    if (accept_result == 0 || accept_result > 1) {
+        // The received frame is either invalid or it's a non-last frame of a multi-frame transfer.
         return;
     }
+    if (accept_result < 0) goto exit;
+    if (subscription == nullptr) goto exit;
+
+    listener = reinterpret_cast<IListener<CanardRxTransfer*>*>(subscription->user_reference);
+    if (listener == nullptr) goto exit;
     listener->accept(&transfer);
+
 exit:
     if (transfer.payload != nullptr) {
         canard.memory_free(&canard, transfer.payload);
@@ -228,7 +240,7 @@ void AbstractCANProvider::process_canard_tx() {
     while (queue.size != 0) {
         const CanardTxQueueItem* ti = canardTxPeek(&queue);
 
-        if (0U == ti->tx_deadline_usec || ti->tx_deadline_usec > micros_64()) {
+        if (0U == ti->tx_deadline_usec || ti->tx_deadline_usec > utilities.micros_64()) {
             int written = write_frame(ti);
             if (written < 0) {
                 break;
@@ -238,6 +250,10 @@ void AbstractCANProvider::process_canard_tx() {
         // pop it from the queue and deallocate:
         canard.memory_free(&canard, canardTxPop(&queue, ti));
     }
+}
+
+AbstractCANProvider::~AbstractCANProvider() {
+
 }
 #if (defined(STM32G474xx) || defined(STM32_G)) && defined(HAL_FDCAN_MODULE_ENABLED)
 #include <cstring>
@@ -253,18 +269,18 @@ size_t G4CAN::dlc_to_len(uint32_t dlc) {
 
 void G4CAN::can_loop() {
     while (HAL_FDCAN_GetRxFifoFillLevel(handler, FDCAN_RX_FIFO0) != 0) {
-        CanardFrame* frame = read_frame();
-        if (frame == nullptr)
+        CanardFrame frame;
+        bool has_read = read_frame(&frame);
+        if (!has_read)
             break;
-        process_canard_rx(frame);
-        delete frame;
+        process_canard_rx(&frame);
     }
 
     process_canard_tx();
 }
 
-uint8_t RxData[64] = {};
-CanardFrame* G4CAN::read_frame() {
+static uint8_t RxData[64] = {};
+bool G4CAN::read_frame(CanardFrame* rxf) {
     // may want to check 2 FIFOs in the future
     uint32_t rx_fifo = -1;
     if (HAL_FDCAN_GetRxFifoFillLevel(handler, FDCAN_RX_FIFO0)) {
@@ -274,19 +290,18 @@ CanardFrame* G4CAN::read_frame() {
     }
 
     if (rx_fifo == (uint32_t)-1) {
-        return nullptr;
+        return false;
     }
 
     FDCAN_RxHeaderTypeDef RxHeader = {};
     if (HAL_FDCAN_GetRxMessage(handler, rx_fifo, &RxHeader, RxData) != HAL_OK) {
-        error_handler();
+        utilities.error_handler();
     }
 
-    auto rxf = new CanardFrame{};
     rxf->extended_can_id = RxHeader.Identifier;
     rxf->payload_size = dlc_to_len(RxHeader.DataLength);
     rxf->payload = (void*)RxData;
-    return rxf;
+    return true;
 }
 
 int G4CAN::write_frame(const CanardTxQueueItem* ti) {
@@ -299,21 +314,20 @@ int G4CAN::write_frame(const CanardTxQueueItem* ti) {
     TxHeader.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
     TxHeader.BitRateSwitch = FDCAN_BRS_ON;
     TxHeader.FDFormat = FDCAN_FD_CAN;
-    TxHeader.TxEventFifoControl = FDCAN_NO_TX_EVENTS;
+    TxHeader.TxEventFifoControl = FDCAN_STORE_TX_EVENTS;
     TxHeader.MessageMarker = 0x0;
-
-    uint8_t TxData[64];
-
-    std::memcpy(TxData, (uint8_t*)ti->frame.payload, ti->frame.payload_size);
 
     // all mailboxes should be free -
     // https://forum.opencyphal.org/t/uavcan-v0-found-data-transfer-reversal/1476/6
-    // "Reduce the number of enqueued frames to 1" - fix to inner
-    // priority inversion
-    while (HAL_FDCAN_GetTxFifoFreeLevel(handler) != 3) {
-    }  // wait for message to transmit
+    // "Reduce the number of enqueued frames to 1" - fix to inner priority inversion
+    for (int i = 0; HAL_FDCAN_GetTxFifoFreeLevel(handler) != 3 && i < 3; i++) {
+        delay_cycles(ONE_FULL_FRAME_CYCLES);
+    } // wait for message to transmit
+    if (HAL_FDCAN_GetTxFifoFreeLevel(handler) != 3) {
+        return -1;
+    }
 
-    if (HAL_FDCAN_AddMessageToTxFifoQ(handler, &TxHeader, TxData) != HAL_OK) {
+    if (HAL_FDCAN_AddMessageToTxFifoQ(handler, &TxHeader, (uint8_t *)ti->frame.payload) != HAL_OK) {
         return -1;
     }
     return TxHeader.DataLength;
@@ -329,7 +343,7 @@ void CyphalInterface::push(
     const CanardTransferMetadata* const metadata,
     const size_t payload_size,
     const void* const payload
-) {
+) const {
     int32_t push_state = canardTxPush(
         &provider->queue,
         &provider->canard,
@@ -340,13 +354,14 @@ void CyphalInterface::push(
     );
     if (push_state == -CANARD_ERROR_OUT_OF_MEMORY) {
 #ifdef __linux__
-        std::cerr << "[Error: OOM] Tried to send to port: " << metadata->port_id << ", node: "
-<< +metadata->remote_node_id << std::endl;
+        std::cerr << "[Error: OOM] Tried to send to port: " << metadata->port_id << ", node: " << +metadata->remote_node_id << std::endl;
+#else
+        utilities.error_handler();
 #endif
         return;
     }
     if (push_state < 0) {
-        error_handler();
+        utilities.error_handler();
     }
 }
 
@@ -355,7 +370,7 @@ void CyphalInterface::subscribe(
     size_t extent,
     CanardTransferKind kind,
     CanardRxSubscription* subscription
-) {
+) const {
     if (canardRxSubscribe(
             (CanardInstance* const)&provider->canard,
             kind,
@@ -364,7 +379,7 @@ void CyphalInterface::subscribe(
             CANARD_DEFAULT_TRANSFER_ID_TIMEOUT_USEC,
             subscription
         ) != 1) {
-        error_handler();
+        utilities.error_handler();
     }
 }
 

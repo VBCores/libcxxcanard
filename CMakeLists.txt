@@ -1,4 +1,4 @@
-project(libcyphal)
+project(libcxxcanard)
 cmake_minimum_required(VERSION 3.15)
 
 set (CMAKE_CXX_STANDARD 17)
@@ -21,4 +21,4 @@ include_directories(${COMMON_LIBS_DIR})
 add_subdirectory(${COMMON_LIBS_DIR}/libcanard ${PROJECT_BINARY_DIR}/build/libcanard)
 add_subdirectory(${COMMON_LIBS_DIR}/o1heap ${PROJECT_BINARY_DIR}/build/o1heap)
 
-add_library(libcyphal ${SOURCES} $<TARGET_OBJECTS:libcanard> $<TARGET_OBJECTS:o1heap>)
+add_library(libcxxcanard ${SOURCES} $<TARGET_OBJECTS:libcanard> $<TARGET_OBJECTS:o1heap>)

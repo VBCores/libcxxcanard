@@ -28,11 +28,11 @@ class CyphalInterface {
 private:
     const CanardNodeID node_id;
     std::unique_ptr<AbstractCANProvider> provider;
-    CyphalInterface(CanardNodeID node_id, UtilityConfig& config, AbstractCANProvider* provider) :
-        node_id(node_id), utilities(config), provider(provider) {};
     UtilityConfig& utilities;
 public:
-    template <typename Provider, class Allocator, class... Args> static CyphalInterface* create(
+    CyphalInterface(CanardNodeID node_id, UtilityConfig& config, AbstractCANProvider* provider) :
+		node_id(node_id), utilities(config), provider(provider) {};
+    template <typename Provider, class Allocator, class... Args> static CyphalInterface* create_bss(
         std::byte* buffer,
         CanardNodeID node_id,
         typename Provider::Handler handler,
@@ -41,13 +41,24 @@ public:
         UtilityConfig& config
     ) {
         std::byte** inout_buffer = &buffer;
-        AbstractCANProvider* provider  = Provider::template create<Allocator>(inout_buffer, handler, node_id, queue_len, args..., config);
+        AbstractCANProvider* provider  = Provider::template create_bss<Allocator>(inout_buffer, handler, node_id, queue_len, args..., config);
     
         std::byte* interface_ptr = *inout_buffer;
         auto interface = new (interface_ptr) CyphalInterface(node_id, config, provider);
 
         return interface;
     }
+    template <typename Provider, class Allocator, class... Args> static std::shared_ptr<CyphalInterface> create_heap(
+		CanardNodeID node_id,
+		typename Provider::Handler handler,
+		size_t queue_len,
+		Args&&... args,
+		UtilityConfig& config
+	) {
+		AbstractCANProvider* provider  = Provider::template create_heap<Allocator>(handler, node_id, queue_len, args..., config);
+
+		return std::make_shared<CyphalInterface>(node_id, config, provider);
+	}
 
     bool is_up() { return bool(provider); }
     size_t queue_size() { return provider->queue.size; }
