@@ -1,0 +1,6 @@
+*
+!.gitignore
+!Doxyfile
+!conf.py
+!index.rst
+!Makefile

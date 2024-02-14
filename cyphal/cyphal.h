@@ -24,11 +24,14 @@ public:                                                                         
     static constexpr size_t buffer_size = T##_SERIALIZATION_BUFFER_SIZE_BYTES_; \
 };
 
+/**
+ * Main class, providing all common communication functions.
+*/
 class CyphalInterface {
 private:
     const CanardNodeID node_id;
-    std::unique_ptr<AbstractCANProvider> provider;
     UtilityConfig& utilities;
+    std::unique_ptr<AbstractCANProvider> provider;
 public:
     CyphalInterface(CanardNodeID node_id, UtilityConfig& config, AbstractCANProvider* provider) :
 		node_id(node_id), utilities(config), provider(provider) {};
@@ -42,7 +45,7 @@ public:
     ) {
         std::byte** inout_buffer = &buffer;
         AbstractCANProvider* provider  = Provider::template create_bss<Allocator>(inout_buffer, handler, node_id, queue_len, args..., config);
-    
+
         std::byte* interface_ptr = *inout_buffer;
         auto interface = new (interface_ptr) CyphalInterface(node_id, config, provider);
 
