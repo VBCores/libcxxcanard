@@ -44,8 +44,8 @@ protected:
     AbstractCANProvider() = delete;
     AbstractCANProvider(size_t canard_mtu, size_t wire_mtu, UtilityConfig& utilities) : AbstractCANProvider(canard_mtu, wire_mtu, 200, utilities) {};
     AbstractCANProvider(size_t canard_mtu, size_t wire_mtu, size_t queue_len, UtilityConfig& utilities) :
-        WIRE_MTU(wire_mtu),
         CANARD_MTU(canard_mtu),
+        WIRE_MTU(wire_mtu),
         queue(canardTxInit(queue_len, CANARD_MTU)),
         utilities(utilities)
     {};
