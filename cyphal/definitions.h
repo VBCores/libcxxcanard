@@ -12,11 +12,11 @@
 #endif
 #else
 #define CRITICAL_SECTION(code) code
+#include <stdint.h>
 #include <unistd.h>
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
-#include <stdint.h>
 #endif
 
 // timestamp conversion macros
@@ -31,10 +31,11 @@ struct UtilityConfig {
     const std::function<uint64_t()> micros_64;
     const std::function<void()> error_handler;
 
-    explicit UtilityConfig(std::function<uint64_t()>&& micros, std::function<void()>&& handler):
-        micros_64(micros),
-        error_handler(handler)
-    {};
+    explicit UtilityConfig(
+        std::function<uint64_t()>&& micros,
+        std::function<void()>&& handler
+    ) noexcept
+        : micros_64(micros), error_handler(handler){};
 };
 
 #ifdef __linux__

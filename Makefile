@@ -1,12 +1,12 @@
 FORMAT = clang-format-18
-TIDY = clang-tidy-18
+TIDY = clang-tidy-18 --config-file ./.clang-tidy -p build
 PROJECT_FILES = $(shell find cyphal -iname *.h -o -iname *.cpp -o -iname *.c)
 SHELL = bash
 
 .ONESHELL:
 .SHELLFLAGS += -e
 
-.PHONY: help format lint validate arduino-lib docs
+.PHONY: help format lint validate arduino-lib docs build
 
 help:  ## Показать это сообщение
 	@egrep -h '\s##\s' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -26,3 +26,11 @@ docs:  ## Собрать документацию
 	cd docs
 	doxygen
 	sphinx-build -b html -Dbreathe_projects.libcxxcanard=doxygen/xml . ./sphinx
+
+host-docs:  ## <dev only> Захостить документация на 8000 порту
+	cd docs/sphinx
+	python3 -m http.server 8000
+
+build:  ## <dev only> Собрать библиотку локально с compile_commands.json
+	cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -S . -B build
+	cmake  --build build

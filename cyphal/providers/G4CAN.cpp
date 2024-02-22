@@ -74,12 +74,12 @@ int G4CAN::write_frame(const CanardTxQueueItem* ti) {
     // "Reduce the number of enqueued frames to 1" - fix to inner priority inversion
     for (int i = 0; HAL_FDCAN_GetTxFifoFreeLevel(handler) != 3 && i < 3; i++) {
         delay_cycles(ONE_FULL_FRAME_CYCLES);
-    } // wait for message to transmit
+    }  // wait for message to transmit
     if (HAL_FDCAN_GetTxFifoFreeLevel(handler) != 3) {
         return -1;
     }
 
-    if (HAL_FDCAN_AddMessageToTxFifoQ(handler, &TxHeader, (uint8_t *)ti->frame.payload) != HAL_OK) {
+    if (HAL_FDCAN_AddMessageToTxFifoQ(handler, &TxHeader, (uint8_t*)ti->frame.payload) != HAL_OK) {
         return -1;
     }
     return TxHeader.DataLength;

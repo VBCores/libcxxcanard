@@ -1,7 +1,7 @@
 #pragma once
 
-#include <memory>
 #include <functional>
+#include <memory>
 #ifdef __linux__
 #include <iostream>
 #endif
@@ -12,20 +12,22 @@
 
 extern std::unique_ptr<AbstractAllocator> _alloc_ptr;
 
-inline void* alloc_f (CanardInstance* ins, size_t amount) {
+inline void* alloc_f(CanardInstance* ins, size_t amount) {
     if (!_alloc_ptr) {
-        #ifdef __linux__
-        std::cerr << "Tried to allocate canard memory before creating provider&allocator!" << std::endl;
-        #endif
+#ifdef __linux__
+        std::cerr << "Tried to allocate canard memory before creating provider&allocator!"
+                  << std::endl;
+#endif
         exit(1);
     }
     return _alloc_ptr->allocate(ins, amount);
 }
-inline void free_f (CanardInstance* ins, void* pointer) {
+inline void free_f(CanardInstance* ins, void* pointer) {
     if (!_alloc_ptr) {
-        #ifdef __linux__
-        std::cerr << "Tried to free (?) canard memory before creating provider&allocator!" << std::endl;
-        #endif
+#ifdef __linux__
+        std::cerr << "Tried to free (?) canard memory before creating provider&allocator!"
+                  << std::endl;
+#endif
         exit(1);
     }
     return _alloc_ptr->free(ins, pointer);
@@ -42,13 +44,18 @@ protected:
     UtilityConfig& utilities;
 
     AbstractCANProvider() = delete;
-    AbstractCANProvider(size_t canard_mtu, size_t wire_mtu, UtilityConfig& utilities) : AbstractCANProvider(canard_mtu, wire_mtu, 200, utilities) {};
-    AbstractCANProvider(size_t canard_mtu, size_t wire_mtu, size_t queue_len, UtilityConfig& utilities) :
-        CANARD_MTU(canard_mtu),
-        WIRE_MTU(wire_mtu),
-        queue(canardTxInit(queue_len, CANARD_MTU)),
-        utilities(utilities)
-    {};
+    AbstractCANProvider(size_t canard_mtu, size_t wire_mtu, UtilityConfig& utilities)
+        : AbstractCANProvider(canard_mtu, wire_mtu, 200, utilities){};
+    AbstractCANProvider(
+        size_t canard_mtu,
+        size_t wire_mtu,
+        size_t queue_len,
+        UtilityConfig& utilities
+    )
+        : CANARD_MTU(canard_mtu),
+          WIRE_MTU(wire_mtu),
+          queue(canardTxInit(queue_len, CANARD_MTU)),
+          utilities(utilities){};
 
     template <class T>
     void setup(T* ptr, CanardNodeID node_id) {
@@ -65,13 +72,14 @@ protected:
         canard = canardInit(alloc_f, free_f);
         canard.node_id = node_id;
     }
+
 public:
     typedef void Handler;
 
     virtual uint32_t len_to_dlc(size_t len) = 0;
     virtual size_t dlc_to_len(uint32_t dlc) = 0;
     virtual void can_loop() = 0;
-    virtual bool read_frame(CanardFrame*)  = 0;
+    virtual bool read_frame(CanardFrame*) = 0;
     virtual int write_frame(const CanardTxQueueItem* ti) = 0;
     void process_canard_rx(CanardFrame*);
     void process_canard_tx();
@@ -86,7 +94,8 @@ public:
 
 // 32 cycles ~~ 200 ns delay for 160Mhz core clock
 __attribute__((optimize("O1"))) static inline void delay_cycles(uint16_t cycles = 32) {
-    /* Reference: https://developer.arm.com/documentation/ddi0439/b/Programmers-Model/Instruction-set-summary/Cortex-M4-instructions?lang=en
+    /* Reference:
+     https://developer.arm.com/documentation/ddi0439/b/Programmers-Model/Instruction-set-summary/Cortex-M4-instructions?lang=en
      *
      * // 6 тактов на (cycles - 8) / 5
        sub     r3, r0, #5         // 1 такт
@@ -97,7 +106,8 @@ __attribute__((optimize("O1"))) static inline void delay_cycles(uint16_t cycles 
      *
      * // 2 такта на стартовую проверку
        ands    r3, r3, #255       // 1 такт
-       bxeq    lr                 // 1 такт ("Conditional branch completes in a single cycle if the branch is not taken.")
+       bxeq    lr                 // 1 такт ("Conditional branch completes in a single cycle if the
+     branch is not taken.")
      *
      * // ~5 тактов на цикл
        .L3:

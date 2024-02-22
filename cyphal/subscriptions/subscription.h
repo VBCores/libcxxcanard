@@ -21,6 +21,7 @@ typedef const std::shared_ptr<CyphalInterface> InterfacePtr;
 template <typename T>
 class AbstractSubscription : public IListener<CanardRxTransfer*> {
     typedef typename T::Type Type;
+
 protected:
     const CanardTransferKind kind;
     CanardRxSubscription sub = {};
@@ -32,6 +33,7 @@ protected:
     }
 
     virtual void handler(const Type&, CanardRxTransfer*) = 0;
+
 public:
     AbstractSubscription(InterfacePtr interface, CanardPortID port_id)
         : AbstractSubscription(interface, port_id, CanardTransferKindMessage) {};

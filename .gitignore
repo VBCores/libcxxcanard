@@ -1,3 +1,6 @@
+# Linting
+compile_commands.json
+
 # Local keys
 *.pub
 *.key

@@ -20,7 +20,8 @@ void CyphalInterface::push(
     );
     if (push_state == -CANARD_ERROR_OUT_OF_MEMORY) {
 #ifdef __linux__
-        std::cerr << "[Error: OOM] Tried to send to port: " << metadata->port_id << ", node: " << +metadata->remote_node_id << std::endl;
+        std::cerr << "[Error: OOM] Tried to send to port: " << metadata->port_id
+                  << ", node: " << +metadata->remote_node_id << std::endl;
 #else
         utilities.error_handler();
 #endif

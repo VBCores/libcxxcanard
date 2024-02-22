@@ -9,6 +9,6 @@ uint64_t _micros_64() {
     return us;
 }
 
-UtilityConfig DEFAULT_CONFIG (_micros_64, [](){ exit(1); });
+UtilityConfig DEFAULT_CONFIG(_micros_64, []() { exit(1); });
 
 #endif

@@ -6,7 +6,6 @@ CanardInstance canard{};
 
 std::unique_ptr<AbstractAllocator> _alloc_ptr;
 
-
 void AbstractCANProvider::process_canard_rx(CanardFrame* frame) {
     CanardRxTransfer transfer = {.payload = nullptr};
     CanardRxSubscription* subscription = nullptr;
@@ -58,6 +57,4 @@ void AbstractCANProvider::process_canard_tx() {
     }
 }
 
-AbstractCANProvider::~AbstractCANProvider() {
-
-}
+AbstractCANProvider::~AbstractCANProvider() {}

@@ -3,11 +3,11 @@
 #ifdef __linux__
 #include <new>
 #endif
-#include <stdlib.h>
+#include <cstdlib>
 
 void* O1Allocator::allocate(CanardInstance* ins, size_t amount) {
     (void)ins;
-    void* mem;
+    void* mem = nullptr;
 
     CRITICAL_SECTION({ mem = o1heapAllocate(o1heap, amount); })
 
@@ -21,10 +21,12 @@ void O1Allocator::free(CanardInstance* ins, void* pointer) {
 
 void O1Allocator::align_self(size_t size) {
     if (!is_self_allocated) {
-        uintptr_t loc = (uintptr_t)memory_arena;
+        auto loc = static_cast<uintptr_t>(memory_arena);
         auto shift = loc % O1HEAP_ALIGNMENT;
         if (shift != 0) {
-            memory_arena = (void*)(loc + shift);
+            // NOLINTBEGIN(performance-no-int-to-ptr)
+            memory_arena = static_cast<void*>(loc + shift);
+            // NOLINTEND(performance-no-int-to-ptr)
             size -= shift;
         }
     }
@@ -36,16 +38,14 @@ void O1Allocator::align_self(size_t size) {
     o1heap = out;
 }
 
-O1Allocator::O1Allocator(size_t size, void* memory, UtilityConfig& utilities):
-    AbstractAllocator(size, utilities),
-    memory_arena(memory)
-    {
+O1Allocator::O1Allocator(size_t size, void* memory, UtilityConfig& utilities)
+    : AbstractAllocator(size, utilities), memory_arena(memory) {
     align_self(size);
 }
 
-O1Allocator::O1Allocator(size_t size, UtilityConfig& utilities): AbstractAllocator(size, utilities) {
-    memory_arena = operator new (size, std::align_val_t{O1HEAP_ALIGNMENT});
-
+O1Allocator::O1Allocator(size_t size, UtilityConfig& utilities)
+    : AbstractAllocator(size, utilities),
+      memory_arena(operator new(size, std::align_val_t{O1HEAP_ALIGNMENT})) {
     if (memory_arena == nullptr) {
         utilities.error_handler();
     }
@@ -59,5 +59,4 @@ O1Allocator::~O1Allocator() {
         return;
     }
     operator delete(memory_arena, std::align_val_t{O1HEAP_ALIGNMENT});
-
 }
