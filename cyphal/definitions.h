@@ -12,11 +12,12 @@
 #endif
 #else
 #define CRITICAL_SECTION(code) code
-#include <stdint.h>
+#include <cstdint>
 #include <unistd.h>
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
+#include <utility>
 #endif
 
 // timestamp conversion macros
@@ -27,16 +28,22 @@
 uint64_t _micros_64();
 #endif
 
+// NOLINTBEGIN(cppcoreguidelines-avoid-const-or-ref-data-members)
 struct UtilityConfig {
-    const std::function<uint64_t()> micros_64;
-    const std::function<void()> error_handler;
+    using micros_64_type = std::function<uint64_t()>;
+    using error_handler_type = std::function<void()>;
+
+    const micros_64_type micros_64;
+    const error_handler_type error_handler;
 
     explicit UtilityConfig(
-        std::function<uint64_t()>&& micros,
-        std::function<void()>&& handler
+        micros_64_type&& micros,
+        error_handler_type&& handler
     ) noexcept
-        : micros_64(micros), error_handler(handler){};
+        : micros_64(std::forward<micros_64_type>(micros)),
+          error_handler(std::forward<error_handler_type>(handler)){};
 };
+// NOLINTEND(cppcoreguidelines-avoid-const-or-ref-data-members)
 
 #ifdef __linux__
 extern UtilityConfig DEFAULT_CONFIG;

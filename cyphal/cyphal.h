@@ -39,10 +39,6 @@ public:
     CyphalInterface(CanardNodeID node_id, UtilityConfig& config, AbstractCANProvider* provider)
         : node_id(node_id), utilities(config), provider(provider){};
 
-    CyphalInterface(const CyphalInterface&) = delete;
-    CyphalInterface& operator=(const CyphalInterface&) = delete;
-    CyphalInterface(CyphalInterface&&) = delete;
-
     template <typename Provider, class Allocator, class... Args>
     static CyphalInterface* create_bss(
         std::byte* buffer,
@@ -63,7 +59,9 @@ public:
         );
 
         std::byte* interface_ptr = *inout_buffer;
+        // NOLINTBEGIN(cppcoreguidelines-owning-memory)
         auto interface = new (interface_ptr) CyphalInterface(node_id, config, provider);
+        // NOLINTEND(cppcoreguidelines-owning-memory)
 
         return interface;
     }
@@ -95,8 +93,9 @@ public:
         return canardTxPeek(&provider->queue) != nullptr;
     }
     void process_tx_once() {  // needed for finalization of the whole program
-        if (!provider)
+        if (!provider) {
             return;
+        }
         provider->process_canard_tx();
     }
 

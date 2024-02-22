@@ -1,4 +1,4 @@
-Checks: 'clang-diagnostic-*,clang-analyzer-*,hicpp-*,performance-*,modernize-*,cert-*,cppcoreguidelines-*,bugprone-*,-cppcoreguidelines-non-private-member-variables-in-classes,-modernize-use-trailing-return-type,-performance-avoid-endl'
+Checks: 'clang-diagnostic-*,clang-analyzer-*,hicpp-*,performance-*,modernize-*,cert-*,cppcoreguidelines-*,bugprone-*,-cppcoreguidelines-non-private-member-variables-in-classes,-modernize-use-trailing-return-type,-performance-avoid-endl,-cppcoreguidelines-avoid-c-arrays,-hicpp-avoid-c-arrays,-modernize-avoid-c-arrays,-cppcoreguidelines-macro-usage,-bugprone-easily-swappable-parameters'
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
 FormatStyle: 'file'

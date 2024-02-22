@@ -9,6 +9,8 @@ uint64_t _micros_64() {
     return us;
 }
 
+// NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
 UtilityConfig DEFAULT_CONFIG(_micros_64, []() { exit(1); });
+// NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 
 #endif

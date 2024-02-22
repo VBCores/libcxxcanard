@@ -8,7 +8,7 @@
 
 class LinuxCAN : public AbstractCANProvider {
 public:
-    typedef const std::string& Handler;
+    using Handler = const std::string&;
 
 private:
     int socketcan_handler;
@@ -25,8 +25,10 @@ public:
         UtilityConfig& utilities
     ) {
         std::byte* allocator_loc = *inout_buffer;
+        // NOLINTBEGIN(cppcoreguidelines-owning-memory)
         auto allocator_ptr =
-            new (allocator_loc) T(queue_len * sizeof(CanardTxQueueItem) * 2.5, args..., utilities);
+            new (allocator_loc) T(queue_len * sizeof(CanardTxQueueItem) * 2.5, std::forward<Args>(args...), utilities);
+        // NOLINTEND(cppcoreguidelines-owning-memory)
 
         std::byte* provider_loc = allocator_loc + sizeof(T);
         auto ptr = new (provider_loc) LinuxCAN(handler, queue_len, utilities);

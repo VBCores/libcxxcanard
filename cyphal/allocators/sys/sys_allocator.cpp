@@ -18,7 +18,7 @@ void* SystemAllocator::allocate(CanardInstance* const ins, const size_t amount) 
 void SystemAllocator::free(CanardInstance* const ins, void* const pointer) {
     (void)ins;
 
-    // NOLINTBEGIN(cppcoreguidelines-owning-memory)
+    // NOLINTBEGIN(cppcoreguidelines-owning-memory,cppcoreguidelines-no-malloc,hicpp-no-malloc)
     CRITICAL_SECTION({ std::free(pointer); })
-    // NOLINTEND(cppcoreguidelines-owning-memory)
+    // NOLINTEND(cppcoreguidelines-owning-memory,cppcoreguidelines-no-malloc,hicpp-no-malloc)
 }

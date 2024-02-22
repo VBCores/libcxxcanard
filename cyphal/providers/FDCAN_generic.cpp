@@ -19,7 +19,7 @@
 #define FDCAN_DLC_BYTES_64 ((uint32_t)0x000F0000U) /*!< 64 bytes data field */
 #endif
 
-const uint32_t CanardFDCANLengthToDLC[65] = {
+const std::array<uint32_t, 65> CanardFDCANLengthToDLC = {
     // 0-8
     FDCAN_DLC_BYTES_0,
     FDCAN_DLC_BYTES_1,
@@ -95,13 +95,20 @@ const uint32_t CanardFDCANLengthToDLC[65] = {
     FDCAN_DLC_BYTES_64,
 };
 
+constexpr int MAX_16BIT = 65536;
+constexpr int GAP_1_INDICIES = 8;
+constexpr int GAP_4 = 4;
+constexpr int GAP_4_INDICIES = 12;
+constexpr int GAP_16 = 4;
+constexpr int GAP_16_INDICIES_OFFSET = 32;
+
 size_t fdcan_dlc_to_len(uint32_t dlc) {
-    auto dlc_index = (uint8_t)(dlc / 65536);
-    if (dlc_index <= 8) {
+    auto dlc_index = (uint8_t)(dlc / MAX_16BIT);
+    if (dlc_index <= GAP_1_INDICIES) {
         return dlc_index;
     }
-    if (dlc_index <= 12) {
-        return 8 + 4 * (dlc_index - 8);
+    if (dlc_index <= GAP_4_INDICIES) {
+        return GAP_1_INDICIES + GAP_4 * (dlc_index - GAP_1_INDICIES);
     }
-    return 32 + 16 * (dlc_index - 13);
+    return GAP_16_INDICIES_OFFSET + GAP_16 * (dlc_index - (GAP_4_INDICIES + 1));
 }
