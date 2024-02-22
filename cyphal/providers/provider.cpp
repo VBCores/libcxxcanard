@@ -10,8 +10,6 @@ std::unique_ptr<AbstractAllocator> _alloc_ptr;
 void AbstractCANProvider::process_canard_rx(CanardFrame* frame) {
     CanardRxTransfer transfer = {.payload = nullptr};
     CanardRxSubscription* subscription = nullptr;
-    void (*processor)(CanardRxTransfer*) = nullptr;
-    IListener<CanardRxTransfer*>* listener = nullptr;
 
     const int8_t accept_result = canardRxAccept(
         (CanardInstance* const)&canard,
@@ -31,7 +29,7 @@ void AbstractCANProvider::process_canard_rx(CanardFrame* frame) {
     }
     else if (accept_result == 1) {
         if (subscription != nullptr) {
-            listener = reinterpret_cast<IListener<CanardRxTransfer*>*>(subscription->user_reference);
+            auto listener = reinterpret_cast<IListener<CanardRxTransfer*>*>(subscription->user_reference);
             if (listener != nullptr) {
                 listener->accept(&transfer);
             }
