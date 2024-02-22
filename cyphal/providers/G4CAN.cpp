@@ -22,10 +22,17 @@ void G4CAN::can_loop() {
     }
 
     process_canard_tx();
+
+    static FDCAN_ProtocolStatusTypeDef fdcan_status;
+    HAL_FDCAN_GetProtocolStatus(handler, &fdcan_status);
+    if(fdcan_status.BusOff) {
+        CLEAR_BIT(handler->Instance->CCCR, FDCAN_CCCR_INIT);
+    }
 }
 
-static uint8_t RxData[64] = {};
 bool G4CAN::read_frame(CanardFrame* rxf) {
+    static uint8_t RxData[64] = {};
+
     // may want to check 2 FIFOs in the future
     uint32_t rx_fifo = -1;
     if (HAL_FDCAN_GetRxFifoFillLevel(handler, FDCAN_RX_FIFO0)) {
