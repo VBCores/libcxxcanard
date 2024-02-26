@@ -1,3 +1,6 @@
+import subprocess
+subprocess.call('doxygen', shell=True)
+
 # Configuration file for the Sphinx documentation builder.
 #
 # For the full list of built-in configuration values, see the documentation:
@@ -18,6 +21,9 @@ extensions = ["breathe", "sphinx_rtd_theme"]
 
 # Breathe Configuration
 breathe_default_project = "libcxxcanard"
+breathe_projects = {
+    "libcxxcanard": "doxygen/xml"
+}
 
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]

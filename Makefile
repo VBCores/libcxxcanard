@@ -24,11 +24,10 @@ arduino-lib:  ## Собрать файлы для arduino
 
 docs:  ## Собрать документацию
 	cd docs
-	doxygen
-	sphinx-build -b html -Dbreathe_projects.libcxxcanard=doxygen/xml . ./sphinx
+	make html
 
 host-docs:  ## <dev only> Захостить документация на 8000 порту
-	cd docs/sphinx
+	cd docs/_build/html
 	python3 -m http.server 8000
 
 build:  ## <dev only> Собрать библиотку локально с compile_commands.json
