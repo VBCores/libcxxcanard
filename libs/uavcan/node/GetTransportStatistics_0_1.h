@@ -1,4 +1,4 @@
-// This is an AUTO-GENERATED UAVCAN DSDL data type implementation. Curious? See https://uavcan.org.
+// This is an AUTO-GENERATED Cyphal DSDL data type implementation. Curious? See https://opencyphal.org.
 // You shouldn't attempt to edit this file.
 //
 // Checking this file under version control is not recommended unless it is used as part of a high-SIL
@@ -7,9 +7,9 @@
 // To avoid conflicts with definitions given in the source DSDL file, all entities created by the code generator
 // are named with an underscore at the end, like foo_bar_().
 //
-// Generator:     nunavut-1.6.2 (serialization was enabled)
-// Source file:   /home/user/UAVCAN_WS/public_regulated_data_types/uavcan/node/434.GetTransportStatistics.0.1.uavcan
-// Generated at:  2022-01-27 14:05:50.462237 UTC
+// Generator:     nunavut-2.3.1 (serialization was enabled)
+// Source file:   /home/pi/ws/libs/types/public_regulated_data_types/uavcan/node/434.GetTransportStatistics.0.1.dsdl
+// Generated at:  2024-02-26 15:58:40.332908 UTC
 // Is deprecated: no
 // Fixed port-ID: 434
 // Full name:     uavcan.node.GetTransportStatistics
@@ -17,39 +17,43 @@
 //
 // Platform
 //     python_implementation:  CPython
-//     python_version:  3.8.10
+//     python_version:  3.10.12
 //     python_release_level:  final
-//     python_build:  ('default', 'Nov 26 2021 20:14:08')
-//     python_compiler:  GCC 9.3.0
+//     python_build:  ('main', 'Nov 20 2023 15:14:05')
+//     python_compiler:  GCC 11.4.0
 //     python_revision:
 //     python_xoptions:  {}
-//     runtime_platform:  Linux-5.13.0-27-generic-x86_64-with-glibc2.29
+//     runtime_platform:  Linux-5.15.0-1046-raspi-aarch64-with-glibc2.35
 //
 // Language Options
 //     target_endianness:  little
 //     omit_float_serialization_support:  False
-//     enable_serialization_asserts:  True
+//     enable_serialization_asserts:  False
 //     enable_override_variable_array_capacity:  False
+//     cast_format:  (({type}) {value})
 
 #ifndef UAVCAN_NODE_GET_TRANSPORT_STATISTICS_0_1_INCLUDED_
 #define UAVCAN_NODE_GET_TRANSPORT_STATISTICS_0_1_INCLUDED_
 
 #include <nunavut/support/serialization.h>
-#include <uavcan/node/IOStatistics_0_1.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <uavcan/node/IOStatistics_0_1.h>
 
 static_assert( NUNAVUT_SUPPORT_LANGUAGE_OPTION_TARGET_ENDIANNESS == 434322821,
-              "/home/user/UAVCAN_WS/public_regulated_data_types/uavcan/node/434.GetTransportStatistics.0.1.uavcan is trying to use a serialization library that was compiled with "
+              "/home/pi/ws/libs/types/public_regulated_data_types/uavcan/node/434.GetTransportStatistics.0.1.dsdl is trying to use a serialization library that was compiled with "
               "different language options. This is dangerous and therefore not allowed." );
 static_assert( NUNAVUT_SUPPORT_LANGUAGE_OPTION_OMIT_FLOAT_SERIALIZATION_SUPPORT == 0,
-              "/home/user/UAVCAN_WS/public_regulated_data_types/uavcan/node/434.GetTransportStatistics.0.1.uavcan is trying to use a serialization library that was compiled with "
+              "/home/pi/ws/libs/types/public_regulated_data_types/uavcan/node/434.GetTransportStatistics.0.1.dsdl is trying to use a serialization library that was compiled with "
               "different language options. This is dangerous and therefore not allowed." );
-static_assert( 1 == 1,
-              "/home/user/UAVCAN_WS/public_regulated_data_types/uavcan/node/434.GetTransportStatistics.0.1.uavcan is trying to use a serialization library that was compiled with "
+static_assert( NUNAVUT_SUPPORT_LANGUAGE_OPTION_ENABLE_SERIALIZATION_ASSERTS == 0,
+              "/home/pi/ws/libs/types/public_regulated_data_types/uavcan/node/434.GetTransportStatistics.0.1.dsdl is trying to use a serialization library that was compiled with "
               "different language options. This is dangerous and therefore not allowed." );
 static_assert( NUNAVUT_SUPPORT_LANGUAGE_OPTION_ENABLE_OVERRIDE_VARIABLE_ARRAY_CAPACITY == 0,
-              "/home/user/UAVCAN_WS/public_regulated_data_types/uavcan/node/434.GetTransportStatistics.0.1.uavcan is trying to use a serialization library that was compiled with "
+              "/home/pi/ws/libs/types/public_regulated_data_types/uavcan/node/434.GetTransportStatistics.0.1.dsdl is trying to use a serialization library that was compiled with "
+              "different language options. This is dangerous and therefore not allowed." );
+static_assert( NUNAVUT_SUPPORT_LANGUAGE_OPTION_CAST_FORMAT == 2368206204,
+              "/home/pi/ws/libs/types/public_regulated_data_types/uavcan/node/434.GetTransportStatistics.0.1.dsdl is trying to use a serialization library that was compiled with "
               "different language options. This is dangerous and therefore not allowed." );
 
 #ifdef __cplusplus
@@ -59,9 +63,15 @@ extern "C" {
 #define uavcan_node_GetTransportStatistics_0_1_HAS_FIXED_PORT_ID_ true
 #define uavcan_node_GetTransportStatistics_0_1_FIXED_PORT_ID_     434U
 
+// +-------------------------------------------------------------------------------------------------------------------+
+// | uavcan.node.GetTransportStatistics.0.1
+// +-------------------------------------------------------------------------------------------------------------------+
 #define uavcan_node_GetTransportStatistics_0_1_FULL_NAME_             "uavcan.node.GetTransportStatistics"
 #define uavcan_node_GetTransportStatistics_0_1_FULL_NAME_AND_VERSION_ "uavcan.node.GetTransportStatistics.0.1"
 
+// +-------------------------------------------------------------------------------------------------------------------+
+// | uavcan.node.GetTransportStatistics.Request.0.1
+// +-------------------------------------------------------------------------------------------------------------------+
 #define uavcan_node_GetTransportStatistics_Request_0_1_FULL_NAME_             "uavcan.node.GetTransportStatistics.Request"
 #define uavcan_node_GetTransportStatistics_Request_0_1_FULL_NAME_AND_VERSION_ "uavcan.node.GetTransportStatistics.Request.0.1"
 
@@ -105,9 +115,7 @@ static inline int8_t uavcan_node_GetTransportStatistics_Request_0_1_serialize_(
     {
         return -NUNAVUT_ERROR_INVALID_ARGUMENT;
     }
-
     *inout_buffer_size_bytes = 0U;
-
     return NUNAVUT_SUCCESS;
 }
 
@@ -141,9 +149,7 @@ static inline int8_t uavcan_node_GetTransportStatistics_Request_0_1_deserialize_
     {
         buffer = (const uint8_t*)"";
     }
-
     *inout_buffer_size_bytes = 0U;
-
     return NUNAVUT_SUCCESS;
 }
 
@@ -158,13 +164,14 @@ static inline void uavcan_node_GetTransportStatistics_Request_0_1_initialize_(ua
         size_t size_bytes = 0;
         const uint8_t buf = 0;
         const int8_t err = uavcan_node_GetTransportStatistics_Request_0_1_deserialize_(out_obj, &buf, &size_bytes);
-        NUNAVUT_ASSERT(err >= 0);
+
         (void) err;
     }
 }
 
-
-
+// +-------------------------------------------------------------------------------------------------------------------+
+// | uavcan.node.GetTransportStatistics.Response.0.1
+// +-------------------------------------------------------------------------------------------------------------------+
 #define uavcan_node_GetTransportStatistics_Response_0_1_FULL_NAME_             "uavcan.node.GetTransportStatistics.Response"
 #define uavcan_node_GetTransportStatistics_Response_0_1_FULL_NAME_AND_VERSION_ "uavcan.node.GetTransportStatistics.Response.0.1"
 
@@ -223,8 +230,6 @@ static inline int8_t uavcan_node_GetTransportStatistics_Response_0_1_serialize_(
     {
         return -NUNAVUT_ERROR_INVALID_ARGUMENT;
     }
-
-
     const size_t capacity_bytes = *inout_buffer_size_bytes;
     if ((8U * (size_t) capacity_bytes) < 488UL)
     {
@@ -233,18 +238,8 @@ static inline int8_t uavcan_node_GetTransportStatistics_Response_0_1_serialize_(
     // Notice that fields that are not an integer number of bytes long may overrun the space allocated for them
     // in the serialization buffer up to the next byte boundary. This is by design and is guaranteed to be safe.
     size_t offset_bits = 0U;
-
-
-
-
-
     {   // uavcan.node.IOStatistics.0.1 transfer_statistics
-        NUNAVUT_ASSERT(offset_bits % 8U == 0U);
-        NUNAVUT_ASSERT(offset_bits % 8U == 0U);
-        NUNAVUT_ASSERT((offset_bits + 120ULL) <= (capacity_bytes * 8U));
         size_t _size_bytes0_ = 15UL;  // Nested object (max) size, in bytes.
-        NUNAVUT_ASSERT(offset_bits % 8U == 0U);
-        NUNAVUT_ASSERT((offset_bits / 8U + _size_bytes0_) <= capacity_bytes);
         int8_t _err0_ = uavcan_node_IOStatistics_0_1_serialize_(
             &obj->transfer_statistics, &buffer[offset_bits / 8U], &_size_bytes0_);
         if (_err0_ < 0)
@@ -252,29 +247,19 @@ static inline int8_t uavcan_node_GetTransportStatistics_Response_0_1_serialize_(
             return _err0_;
         }
         // It is assumed that we know the exact type of the serialized entity, hence we expect the size to match.
-        NUNAVUT_ASSERT((_size_bytes0_ * 8U) == 120ULL);
         offset_bits += _size_bytes0_ * 8U;  // Advance by the size of the nested object.
-        NUNAVUT_ASSERT(offset_bits <= (capacity_bytes * 8U));
     }
-
-
     if (offset_bits % 8U != 0U)  // Pad to 8 bits. TODO: Eliminate redundant padding checks.
     {
         const uint8_t _pad0_ = (uint8_t)(8U - offset_bits % 8U);
-        NUNAVUT_ASSERT(_pad0_ > 0);
         const int8_t _err1_ = nunavutSetUxx(&buffer[0], capacity_bytes, offset_bits, 0U, _pad0_);  // Optimize?
         if (_err1_ < 0)
         {
             return _err1_;
         }
         offset_bits += _pad0_;
-        NUNAVUT_ASSERT(offset_bits % 8U == 0U);
     }
-
     {   // uavcan.node.IOStatistics.0.1[<=3] network_interface_statistics
-        NUNAVUT_ASSERT(offset_bits % 8U == 0U);
-        NUNAVUT_ASSERT(offset_bits % 8U == 0U);
-        NUNAVUT_ASSERT((offset_bits + 368ULL) <= (capacity_bytes * 8U));
         if (obj->network_interface_statistics.count > 3)
         {
             return -NUNAVUT_ERROR_REPRESENTATION_BAD_ARRAY_LENGTH;
@@ -282,15 +267,9 @@ static inline int8_t uavcan_node_GetTransportStatistics_Response_0_1_serialize_(
         // Array length prefix: truncated uint8
         buffer[offset_bits / 8U] = (uint8_t)(obj->network_interface_statistics.count);  // C std, 6.3.1.3 Signed and unsigned integers
         offset_bits += 8U;
-        NUNAVUT_ASSERT(offset_bits % 8U == 0U);
         for (size_t _index0_ = 0U; _index0_ < obj->network_interface_statistics.count; ++_index0_)
         {
-            NUNAVUT_ASSERT(offset_bits % 8U == 0U);
-            NUNAVUT_ASSERT(offset_bits % 8U == 0U);
-            NUNAVUT_ASSERT((offset_bits + 120ULL) <= (capacity_bytes * 8U));
             size_t _size_bytes1_ = 15UL;  // Nested object (max) size, in bytes.
-            NUNAVUT_ASSERT(offset_bits % 8U == 0U);
-            NUNAVUT_ASSERT((offset_bits / 8U + _size_bytes1_) <= capacity_bytes);
             int8_t _err2_ = uavcan_node_IOStatistics_0_1_serialize_(
                 &obj->network_interface_statistics.elements[_index0_], &buffer[offset_bits / 8U], &_size_bytes1_);
             if (_err2_ < 0)
@@ -298,33 +277,21 @@ static inline int8_t uavcan_node_GetTransportStatistics_Response_0_1_serialize_(
                 return _err2_;
             }
             // It is assumed that we know the exact type of the serialized entity, hence we expect the size to match.
-            NUNAVUT_ASSERT((_size_bytes1_ * 8U) == 120ULL);
             offset_bits += _size_bytes1_ * 8U;  // Advance by the size of the nested object.
-            NUNAVUT_ASSERT(offset_bits <= (capacity_bytes * 8U));
         }
     }
-
-
     if (offset_bits % 8U != 0U)  // Pad to 8 bits. TODO: Eliminate redundant padding checks.
     {
         const uint8_t _pad1_ = (uint8_t)(8U - offset_bits % 8U);
-        NUNAVUT_ASSERT(_pad1_ > 0);
         const int8_t _err3_ = nunavutSetUxx(&buffer[0], capacity_bytes, offset_bits, 0U, _pad1_);  // Optimize?
         if (_err3_ < 0)
         {
             return _err3_;
         }
         offset_bits += _pad1_;
-        NUNAVUT_ASSERT(offset_bits % 8U == 0U);
     }
     // It is assumed that we know the exact type of the serialized entity, hence we expect the size to match.
-
-    NUNAVUT_ASSERT(offset_bits >= 128ULL);
-    NUNAVUT_ASSERT(offset_bits <= 488ULL);
-
-    NUNAVUT_ASSERT(offset_bits % 8U == 0U);
     *inout_buffer_size_bytes = (size_t) (offset_bits / 8U);
-
     return NUNAVUT_SUCCESS;
 }
 
@@ -358,22 +325,12 @@ static inline int8_t uavcan_node_GetTransportStatistics_Response_0_1_deserialize
     {
         buffer = (const uint8_t*)"";
     }
-
-
     const size_t capacity_bytes = *inout_buffer_size_bytes;
     const size_t capacity_bits = capacity_bytes * (size_t) 8U;
     size_t offset_bits = 0U;
-
-
-
-
-
     // uavcan.node.IOStatistics.0.1 transfer_statistics
-    NUNAVUT_ASSERT(offset_bits % 8U == 0U);
-    NUNAVUT_ASSERT(offset_bits % 8U == 0U);
     {
         size_t _size_bytes2_ = (size_t)(capacity_bytes - nunavutChooseMin((offset_bits / 8U), capacity_bytes));
-        NUNAVUT_ASSERT(offset_bits % 8U == 0U);
         const int8_t _err4_ = uavcan_node_IOStatistics_0_1_deserialize_(
             &out_obj->transfer_statistics, &buffer[offset_bits / 8U], &_size_bytes2_);
         if (_err4_ < 0)
@@ -382,13 +339,8 @@ static inline int8_t uavcan_node_GetTransportStatistics_Response_0_1_deserialize
         }
         offset_bits += _size_bytes2_ * 8U;  // Advance by the size of the nested serialized representation.
     }
-
-
     offset_bits = (offset_bits + 7U) & ~(size_t) 7U;  // Align on 8 bits.
-
     // uavcan.node.IOStatistics.0.1[<=3] network_interface_statistics
-    NUNAVUT_ASSERT(offset_bits % 8U == 0U);
-    NUNAVUT_ASSERT(offset_bits % 8U == 0U);
     // Array length prefix: truncated uint8
     if ((offset_bits + 8U) <= capacity_bits)
     {
@@ -403,14 +355,10 @@ static inline int8_t uavcan_node_GetTransportStatistics_Response_0_1_deserialize
     {
         return -NUNAVUT_ERROR_REPRESENTATION_BAD_ARRAY_LENGTH;
     }
-    NUNAVUT_ASSERT(offset_bits % 8U == 0U);
     for (size_t _index1_ = 0U; _index1_ < out_obj->network_interface_statistics.count; ++_index1_)
     {
-        NUNAVUT_ASSERT(offset_bits % 8U == 0U);
-        NUNAVUT_ASSERT(offset_bits % 8U == 0U);
         {
             size_t _size_bytes3_ = (size_t)(capacity_bytes - nunavutChooseMin((offset_bits / 8U), capacity_bytes));
-            NUNAVUT_ASSERT(offset_bits % 8U == 0U);
             const int8_t _err5_ = uavcan_node_IOStatistics_0_1_deserialize_(
                 &out_obj->network_interface_statistics.elements[_index1_], &buffer[offset_bits / 8U], &_size_bytes3_);
             if (_err5_ < 0)
@@ -420,13 +368,8 @@ static inline int8_t uavcan_node_GetTransportStatistics_Response_0_1_deserialize
             offset_bits += _size_bytes3_ * 8U;  // Advance by the size of the nested serialized representation.
         }
     }
-
-
     offset_bits = (offset_bits + 7U) & ~(size_t) 7U;  // Align on 8 bits.
-    NUNAVUT_ASSERT(offset_bits % 8U == 0U);
     *inout_buffer_size_bytes = (size_t) (nunavutChooseMin(offset_bits, capacity_bits) / 8U);
-    NUNAVUT_ASSERT(capacity_bytes >= *inout_buffer_size_bytes);
-
     return NUNAVUT_SUCCESS;
 }
 
@@ -441,12 +384,10 @@ static inline void uavcan_node_GetTransportStatistics_Response_0_1_initialize_(u
         size_t size_bytes = 0;
         const uint8_t buf = 0;
         const int8_t err = uavcan_node_GetTransportStatistics_Response_0_1_deserialize_(out_obj, &buf, &size_bytes);
-        NUNAVUT_ASSERT(err >= 0);
+
         (void) err;
     }
 }
-
-
 
 #ifdef __cplusplus
 }

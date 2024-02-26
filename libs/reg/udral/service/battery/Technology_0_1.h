@@ -1,4 +1,4 @@
-// This is an AUTO-GENERATED UAVCAN DSDL data type implementation. Curious? See https://uavcan.org.
+// This is an AUTO-GENERATED Cyphal DSDL data type implementation. Curious? See https://opencyphal.org.
 // You shouldn't attempt to edit this file.
 //
 // Checking this file under version control is not recommended unless it is used as part of a high-SIL
@@ -7,9 +7,9 @@
 // To avoid conflicts with definitions given in the source DSDL file, all entities created by the code generator
 // are named with an underscore at the end, like foo_bar_().
 //
-// Generator:     nunavut-1.6.2 (serialization was enabled)
-// Source file:   /home/user/UAVCAN_WS/public_regulated_data_types/reg/udral/service/battery/Technology.0.1.uavcan
-// Generated at:  2022-01-27 14:05:26.756276 UTC
+// Generator:     nunavut-2.3.1 (serialization was enabled)
+// Source file:   /home/pi/ws/libs/types/public_regulated_data_types/reg/udral/service/battery/Technology.0.1.dsdl
+// Generated at:  2024-02-26 15:58:53.751201 UTC
 // Is deprecated: no
 // Fixed port-ID: None
 // Full name:     reg.udral.service.battery.Technology
@@ -17,19 +17,20 @@
 //
 // Platform
 //     python_implementation:  CPython
-//     python_version:  3.8.10
+//     python_version:  3.10.12
 //     python_release_level:  final
-//     python_build:  ('default', 'Nov 26 2021 20:14:08')
-//     python_compiler:  GCC 9.3.0
+//     python_build:  ('main', 'Nov 20 2023 15:14:05')
+//     python_compiler:  GCC 11.4.0
 //     python_revision:
 //     python_xoptions:  {}
-//     runtime_platform:  Linux-5.13.0-27-generic-x86_64-with-glibc2.29
+//     runtime_platform:  Linux-5.15.0-1046-raspi-aarch64-with-glibc2.35
 //
 // Language Options
 //     target_endianness:  little
 //     omit_float_serialization_support:  False
-//     enable_serialization_asserts:  True
+//     enable_serialization_asserts:  False
 //     enable_override_variable_array_capacity:  False
+//     cast_format:  (({type}) {value})
 
 #ifndef REG_UDRAL_SERVICE_BATTERY_TECHNOLOGY_0_1_INCLUDED_
 #define REG_UDRAL_SERVICE_BATTERY_TECHNOLOGY_0_1_INCLUDED_
@@ -39,25 +40,31 @@
 #include <stdlib.h>
 
 static_assert( NUNAVUT_SUPPORT_LANGUAGE_OPTION_TARGET_ENDIANNESS == 434322821,
-              "/home/user/UAVCAN_WS/public_regulated_data_types/reg/udral/service/battery/Technology.0.1.uavcan is trying to use a serialization library that was compiled with "
+              "/home/pi/ws/libs/types/public_regulated_data_types/reg/udral/service/battery/Technology.0.1.dsdl is trying to use a serialization library that was compiled with "
               "different language options. This is dangerous and therefore not allowed." );
 static_assert( NUNAVUT_SUPPORT_LANGUAGE_OPTION_OMIT_FLOAT_SERIALIZATION_SUPPORT == 0,
-              "/home/user/UAVCAN_WS/public_regulated_data_types/reg/udral/service/battery/Technology.0.1.uavcan is trying to use a serialization library that was compiled with "
+              "/home/pi/ws/libs/types/public_regulated_data_types/reg/udral/service/battery/Technology.0.1.dsdl is trying to use a serialization library that was compiled with "
               "different language options. This is dangerous and therefore not allowed." );
-static_assert( 1 == 1,
-              "/home/user/UAVCAN_WS/public_regulated_data_types/reg/udral/service/battery/Technology.0.1.uavcan is trying to use a serialization library that was compiled with "
+static_assert( NUNAVUT_SUPPORT_LANGUAGE_OPTION_ENABLE_SERIALIZATION_ASSERTS == 0,
+              "/home/pi/ws/libs/types/public_regulated_data_types/reg/udral/service/battery/Technology.0.1.dsdl is trying to use a serialization library that was compiled with "
               "different language options. This is dangerous and therefore not allowed." );
 static_assert( NUNAVUT_SUPPORT_LANGUAGE_OPTION_ENABLE_OVERRIDE_VARIABLE_ARRAY_CAPACITY == 0,
-              "/home/user/UAVCAN_WS/public_regulated_data_types/reg/udral/service/battery/Technology.0.1.uavcan is trying to use a serialization library that was compiled with "
+              "/home/pi/ws/libs/types/public_regulated_data_types/reg/udral/service/battery/Technology.0.1.dsdl is trying to use a serialization library that was compiled with "
+              "different language options. This is dangerous and therefore not allowed." );
+static_assert( NUNAVUT_SUPPORT_LANGUAGE_OPTION_CAST_FORMAT == 2368206204,
+              "/home/pi/ws/libs/types/public_regulated_data_types/reg/udral/service/battery/Technology.0.1.dsdl is trying to use a serialization library that was compiled with "
               "different language options. This is dangerous and therefore not allowed." );
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/// This type does not have a fixed port-ID. See https://forum.uavcan.org/t/choosing-message-and-service-ids/889
+/// This type does not have a fixed port-ID. See https://forum.opencyphal.org/t/choosing-message-and-service-ids/889
 #define reg_udral_service_battery_Technology_0_1_HAS_FIXED_PORT_ID_ false
 
+// +-------------------------------------------------------------------------------------------------------------------+
+// | reg.udral.service.battery.Technology.0.1
+// +-------------------------------------------------------------------------------------------------------------------+
 #define reg_udral_service_battery_Technology_0_1_FULL_NAME_             "reg.udral.service.battery.Technology"
 #define reg_udral_service_battery_Technology_0_1_FULL_NAME_AND_VERSION_ "reg.udral.service.battery.Technology.0.1"
 
@@ -75,50 +82,73 @@ static_assert(reg_udral_service_battery_Technology_0_1_EXTENT_BYTES_ >= reg_udra
 
 /// saturated uint8 OTHER = 0
 #define reg_udral_service_battery_Technology_0_1_OTHER (0U)
+
 /// saturated uint8 LI_SOCL2 = 10
 #define reg_udral_service_battery_Technology_0_1_LI_SOCL2 (10U)
+
 /// saturated uint8 LI_BCX = 11
 #define reg_udral_service_battery_Technology_0_1_LI_BCX (11U)
+
 /// saturated uint8 LI_MNO2 = 12
 #define reg_udral_service_battery_Technology_0_1_LI_MNO2 (12U)
+
 /// saturated uint8 ZN_O2 = 20
 #define reg_udral_service_battery_Technology_0_1_ZN_O2 (20U)
+
 /// saturated uint8 AL_O2 = 21
 #define reg_udral_service_battery_Technology_0_1_AL_O2 (21U)
+
 /// saturated uint8 ZN_MNO2_NH4CL = 30
 #define reg_udral_service_battery_Technology_0_1_ZN_MNO2_NH4CL (30U)
+
 /// saturated uint8 ZN_MNO2_ZNCL2 = 31
 #define reg_udral_service_battery_Technology_0_1_ZN_MNO2_ZNCL2 (31U)
+
 /// saturated uint8 ZN_MNO2_KOH = 32
 #define reg_udral_service_battery_Technology_0_1_ZN_MNO2_KOH (32U)
+
 /// saturated uint8 LI_LCO = 100
 #define reg_udral_service_battery_Technology_0_1_LI_LCO (100U)
+
 /// saturated uint8 LI_LFP = 101
 #define reg_udral_service_battery_Technology_0_1_LI_LFP (101U)
+
 /// saturated uint8 LI_NMC = 102
 #define reg_udral_service_battery_Technology_0_1_LI_NMC (102U)
+
 /// saturated uint8 LI_NCA = 103
 #define reg_udral_service_battery_Technology_0_1_LI_NCA (103U)
+
 /// saturated uint8 LI_LMO = 104
 #define reg_udral_service_battery_Technology_0_1_LI_LMO (104U)
+
 /// saturated uint8 LI_S = 105
 #define reg_udral_service_battery_Technology_0_1_LI_S (105U)
+
 /// saturated uint8 LI_LCO_POUCH = 110
 #define reg_udral_service_battery_Technology_0_1_LI_LCO_POUCH (110U)
+
 /// saturated uint8 LI_LFP_POUCH = 111
 #define reg_udral_service_battery_Technology_0_1_LI_LFP_POUCH (111U)
+
 /// saturated uint8 NI_MH = 120
 #define reg_udral_service_battery_Technology_0_1_NI_MH (120U)
+
 /// saturated uint8 NI_CD = 121
 #define reg_udral_service_battery_Technology_0_1_NI_CD (121U)
+
 /// saturated uint8 NI_ZN = 122
 #define reg_udral_service_battery_Technology_0_1_NI_ZN (122U)
+
 /// saturated uint8 NI_FE = 123
 #define reg_udral_service_battery_Technology_0_1_NI_FE (123U)
+
 /// saturated uint8 PB_AC = 130
 #define reg_udral_service_battery_Technology_0_1_PB_AC (130U)
+
 /// saturated uint8 PB_AC_SEALED = 131
 #define reg_udral_service_battery_Technology_0_1_PB_AC_SEALED (131U)
+
 /// saturated uint8 EDLC = 200
 #define reg_udral_service_battery_Technology_0_1_EDLC (200U)
 
@@ -151,8 +181,6 @@ static inline int8_t reg_udral_service_battery_Technology_0_1_serialize_(
     {
         return -NUNAVUT_ERROR_INVALID_ARGUMENT;
     }
-
-
     const size_t capacity_bytes = *inout_buffer_size_bytes;
     if ((8U * (size_t) capacity_bytes) < 8UL)
     {
@@ -161,39 +189,23 @@ static inline int8_t reg_udral_service_battery_Technology_0_1_serialize_(
     // Notice that fields that are not an integer number of bytes long may overrun the space allocated for them
     // in the serialization buffer up to the next byte boundary. This is by design and is guaranteed to be safe.
     size_t offset_bits = 0U;
-
-
-
-
-
     {   // saturated uint8 value
-        NUNAVUT_ASSERT(offset_bits % 8U == 0U);
-        NUNAVUT_ASSERT((offset_bits + 8ULL) <= (capacity_bytes * 8U));
         // Saturation code not emitted -- native representation matches the serialized representation.
         buffer[offset_bits / 8U] = (uint8_t)(obj->value);  // C std, 6.3.1.3 Signed and unsigned integers
         offset_bits += 8U;
     }
-
-
     if (offset_bits % 8U != 0U)  // Pad to 8 bits. TODO: Eliminate redundant padding checks.
     {
         const uint8_t _pad0_ = (uint8_t)(8U - offset_bits % 8U);
-        NUNAVUT_ASSERT(_pad0_ > 0);
         const int8_t _err0_ = nunavutSetUxx(&buffer[0], capacity_bytes, offset_bits, 0U, _pad0_);  // Optimize?
         if (_err0_ < 0)
         {
             return _err0_;
         }
         offset_bits += _pad0_;
-        NUNAVUT_ASSERT(offset_bits % 8U == 0U);
     }
     // It is assumed that we know the exact type of the serialized entity, hence we expect the size to match.
-
-    NUNAVUT_ASSERT(offset_bits == 8ULL);
-
-    NUNAVUT_ASSERT(offset_bits % 8U == 0U);
     *inout_buffer_size_bytes = (size_t) (offset_bits / 8U);
-
     return NUNAVUT_SUCCESS;
 }
 
@@ -227,18 +239,10 @@ static inline int8_t reg_udral_service_battery_Technology_0_1_deserialize_(
     {
         buffer = (const uint8_t*)"";
     }
-
-
     const size_t capacity_bytes = *inout_buffer_size_bytes;
     const size_t capacity_bits = capacity_bytes * (size_t) 8U;
     size_t offset_bits = 0U;
-
-
-
-
-
     // saturated uint8 value
-    NUNAVUT_ASSERT(offset_bits % 8U == 0U);
     if ((offset_bits + 8U) <= capacity_bits)
     {
         out_obj->value = buffer[offset_bits / 8U] & 255U;
@@ -248,13 +252,8 @@ static inline int8_t reg_udral_service_battery_Technology_0_1_deserialize_(
         out_obj->value = 0U;
     }
     offset_bits += 8U;
-
-
     offset_bits = (offset_bits + 7U) & ~(size_t) 7U;  // Align on 8 bits.
-    NUNAVUT_ASSERT(offset_bits % 8U == 0U);
     *inout_buffer_size_bytes = (size_t) (nunavutChooseMin(offset_bits, capacity_bits) / 8U);
-    NUNAVUT_ASSERT(capacity_bytes >= *inout_buffer_size_bytes);
-
     return NUNAVUT_SUCCESS;
 }
 
@@ -269,12 +268,10 @@ static inline void reg_udral_service_battery_Technology_0_1_initialize_(reg_udra
         size_t size_bytes = 0;
         const uint8_t buf = 0;
         const int8_t err = reg_udral_service_battery_Technology_0_1_deserialize_(out_obj, &buf, &size_bytes);
-        NUNAVUT_ASSERT(err >= 0);
+
         (void) err;
     }
 }
-
-
 
 #ifdef __cplusplus
 }

@@ -1,4 +1,4 @@
-// This is an AUTO-GENERATED UAVCAN DSDL data type implementation. Curious? See https://uavcan.org.
+// This is an AUTO-GENERATED Cyphal DSDL data type implementation. Curious? See https://opencyphal.org.
 // You shouldn't attempt to edit this file.
 //
 // Checking this file under version control is not recommended unless it is used as part of a high-SIL
@@ -7,57 +7,73 @@
 // To avoid conflicts with definitions given in the source DSDL file, all entities created by the code generator
 // are named with an underscore at the end, like foo_bar_().
 //
-// Generator:     nunavut-1.6.2 (serialization was enabled)
-// Source file:   /home/user/UAVCAN_WS/public_regulated_data_types/uavcan/si/sample/magnetic_field_strength/Scalar.1.0.uavcan
-// Generated at:  2022-01-27 14:05:50.963684 UTC
-// Is deprecated: no
+// Generator:     nunavut-2.3.1 (serialization was enabled)
+// Source file:   /home/pi/ws/libs/types/public_regulated_data_types/uavcan/si/sample/magnetic_field_strength/Scalar.1.0.dsdl
+// Generated at:  2024-02-26 15:58:42.185560 UTC
+// Is deprecated: yes
 // Fixed port-ID: None
 // Full name:     uavcan.si.sample.magnetic_field_strength.Scalar
 // Version:       1.0
 //
 // Platform
 //     python_implementation:  CPython
-//     python_version:  3.8.10
+//     python_version:  3.10.12
 //     python_release_level:  final
-//     python_build:  ('default', 'Nov 26 2021 20:14:08')
-//     python_compiler:  GCC 9.3.0
+//     python_build:  ('main', 'Nov 20 2023 15:14:05')
+//     python_compiler:  GCC 11.4.0
 //     python_revision:
 //     python_xoptions:  {}
-//     runtime_platform:  Linux-5.13.0-27-generic-x86_64-with-glibc2.29
+//     runtime_platform:  Linux-5.15.0-1046-raspi-aarch64-with-glibc2.35
 //
 // Language Options
 //     target_endianness:  little
 //     omit_float_serialization_support:  False
-//     enable_serialization_asserts:  True
+//     enable_serialization_asserts:  False
 //     enable_override_variable_array_capacity:  False
+//     cast_format:  (({type}) {value})
+
+//           _____  ______ _____  _____  ______ _____       _______ ______ _____
+//          |  __ `|  ____|  __ `|  __ `|  ____/ ____|   /`|__   __|  ____|  __ `
+//          | |  | | |__  | |__) | |__) | |__ | |       /  `  | |  | |__  | |  | |
+//          | |  | |  __| |  ___/|  _  /|  __|| |      / /` ` | |  |  __| | |  | |
+//          | |__| | |____| |    | | ` `| |___| |____ / ____ `| |  | |____| |__| |
+//          |_____/|______|_|    |_|  `_`______`_____/_/    `_`_|  |______|_____/
+//
+// WARNING: this data type is deprecated and is nearing the end of its life cycle. Seek replacement.
 
 #ifndef UAVCAN_SI_SAMPLE_MAGNETIC_FIELD_STRENGTH_SCALAR_1_0_INCLUDED_
 #define UAVCAN_SI_SAMPLE_MAGNETIC_FIELD_STRENGTH_SCALAR_1_0_INCLUDED_
 
 #include <nunavut/support/serialization.h>
-#include <uavcan/time/SynchronizedTimestamp_1_0.h>
 #include <stdlib.h>
+#include <uavcan/time/SynchronizedTimestamp_1_0.h>
 
 static_assert( NUNAVUT_SUPPORT_LANGUAGE_OPTION_TARGET_ENDIANNESS == 434322821,
-              "/home/user/UAVCAN_WS/public_regulated_data_types/uavcan/si/sample/magnetic_field_strength/Scalar.1.0.uavcan is trying to use a serialization library that was compiled with "
+              "/home/pi/ws/libs/types/public_regulated_data_types/uavcan/si/sample/magnetic_field_strength/Scalar.1.0.dsdl is trying to use a serialization library that was compiled with "
               "different language options. This is dangerous and therefore not allowed." );
 static_assert( NUNAVUT_SUPPORT_LANGUAGE_OPTION_OMIT_FLOAT_SERIALIZATION_SUPPORT == 0,
-              "/home/user/UAVCAN_WS/public_regulated_data_types/uavcan/si/sample/magnetic_field_strength/Scalar.1.0.uavcan is trying to use a serialization library that was compiled with "
+              "/home/pi/ws/libs/types/public_regulated_data_types/uavcan/si/sample/magnetic_field_strength/Scalar.1.0.dsdl is trying to use a serialization library that was compiled with "
               "different language options. This is dangerous and therefore not allowed." );
-static_assert( 1 == 1,
-              "/home/user/UAVCAN_WS/public_regulated_data_types/uavcan/si/sample/magnetic_field_strength/Scalar.1.0.uavcan is trying to use a serialization library that was compiled with "
+static_assert( NUNAVUT_SUPPORT_LANGUAGE_OPTION_ENABLE_SERIALIZATION_ASSERTS == 0,
+              "/home/pi/ws/libs/types/public_regulated_data_types/uavcan/si/sample/magnetic_field_strength/Scalar.1.0.dsdl is trying to use a serialization library that was compiled with "
               "different language options. This is dangerous and therefore not allowed." );
 static_assert( NUNAVUT_SUPPORT_LANGUAGE_OPTION_ENABLE_OVERRIDE_VARIABLE_ARRAY_CAPACITY == 0,
-              "/home/user/UAVCAN_WS/public_regulated_data_types/uavcan/si/sample/magnetic_field_strength/Scalar.1.0.uavcan is trying to use a serialization library that was compiled with "
+              "/home/pi/ws/libs/types/public_regulated_data_types/uavcan/si/sample/magnetic_field_strength/Scalar.1.0.dsdl is trying to use a serialization library that was compiled with "
+              "different language options. This is dangerous and therefore not allowed." );
+static_assert( NUNAVUT_SUPPORT_LANGUAGE_OPTION_CAST_FORMAT == 2368206204,
+              "/home/pi/ws/libs/types/public_regulated_data_types/uavcan/si/sample/magnetic_field_strength/Scalar.1.0.dsdl is trying to use a serialization library that was compiled with "
               "different language options. This is dangerous and therefore not allowed." );
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/// This type does not have a fixed port-ID. See https://forum.uavcan.org/t/choosing-message-and-service-ids/889
+/// This type does not have a fixed port-ID. See https://forum.opencyphal.org/t/choosing-message-and-service-ids/889
 #define uavcan_si_sample_magnetic_field_strength_Scalar_1_0_HAS_FIXED_PORT_ID_ false
 
+// +-------------------------------------------------------------------------------------------------------------------+
+// | uavcan.si.sample.magnetic_field_strength.Scalar.1.0
+// +-------------------------------------------------------------------------------------------------------------------+
 #define uavcan_si_sample_magnetic_field_strength_Scalar_1_0_FULL_NAME_             "uavcan.si.sample.magnetic_field_strength.Scalar"
 #define uavcan_si_sample_magnetic_field_strength_Scalar_1_0_FULL_NAME_AND_VERSION_ "uavcan.si.sample.magnetic_field_strength.Scalar.1.0"
 
@@ -105,8 +121,6 @@ static inline int8_t uavcan_si_sample_magnetic_field_strength_Scalar_1_0_seriali
     {
         return -NUNAVUT_ERROR_INVALID_ARGUMENT;
     }
-
-
     const size_t capacity_bytes = *inout_buffer_size_bytes;
     if ((8U * (size_t) capacity_bytes) < 88UL)
     {
@@ -115,18 +129,8 @@ static inline int8_t uavcan_si_sample_magnetic_field_strength_Scalar_1_0_seriali
     // Notice that fields that are not an integer number of bytes long may overrun the space allocated for them
     // in the serialization buffer up to the next byte boundary. This is by design and is guaranteed to be safe.
     size_t offset_bits = 0U;
-
-
-
-
-
     {   // uavcan.time.SynchronizedTimestamp.1.0 timestamp
-        NUNAVUT_ASSERT(offset_bits % 8U == 0U);
-        NUNAVUT_ASSERT(offset_bits % 8U == 0U);
-        NUNAVUT_ASSERT((offset_bits + 56ULL) <= (capacity_bytes * 8U));
         size_t _size_bytes0_ = 7UL;  // Nested object (max) size, in bytes.
-        NUNAVUT_ASSERT(offset_bits % 8U == 0U);
-        NUNAVUT_ASSERT((offset_bits / 8U + _size_bytes0_) <= capacity_bytes);
         int8_t _err0_ = uavcan_time_SynchronizedTimestamp_1_0_serialize_(
             &obj->timestamp, &buffer[offset_bits / 8U], &_size_bytes0_);
         if (_err0_ < 0)
@@ -134,44 +138,27 @@ static inline int8_t uavcan_si_sample_magnetic_field_strength_Scalar_1_0_seriali
             return _err0_;
         }
         // It is assumed that we know the exact type of the serialized entity, hence we expect the size to match.
-        NUNAVUT_ASSERT((_size_bytes0_ * 8U) == 56ULL);
         offset_bits += _size_bytes0_ * 8U;  // Advance by the size of the nested object.
-        NUNAVUT_ASSERT(offset_bits <= (capacity_bytes * 8U));
     }
-
-
-
-
     {   // saturated float32 tesla
-        NUNAVUT_ASSERT(offset_bits % 8U == 0U);
-        NUNAVUT_ASSERT((offset_bits + 32ULL) <= (capacity_bytes * 8U));
         // Saturation code not emitted -- assume the native representation of float32 is conformant.
         static_assert(NUNAVUT_PLATFORM_IEEE754_FLOAT, "Native IEEE754 binary32 required. TODO: relax constraint");
         static_assert(NUNAVUT_PLATFORM_IEEE754_FLOAT, "Native IEEE754 binary32 required. TODO: relax constraint");
         (void) memmove(&buffer[offset_bits / 8U], &obj->tesla, 4U);
         offset_bits += 32U;
     }
-
-
     if (offset_bits % 8U != 0U)  // Pad to 8 bits. TODO: Eliminate redundant padding checks.
     {
         const uint8_t _pad0_ = (uint8_t)(8U - offset_bits % 8U);
-        NUNAVUT_ASSERT(_pad0_ > 0);
         const int8_t _err1_ = nunavutSetUxx(&buffer[0], capacity_bytes, offset_bits, 0U, _pad0_);  // Optimize?
         if (_err1_ < 0)
         {
             return _err1_;
         }
         offset_bits += _pad0_;
-        NUNAVUT_ASSERT(offset_bits % 8U == 0U);
     }
     // It is assumed that we know the exact type of the serialized entity, hence we expect the size to match.
-
-    NUNAVUT_ASSERT(offset_bits == 88ULL);
-
-    NUNAVUT_ASSERT(offset_bits % 8U == 0U);
     *inout_buffer_size_bytes = (size_t) (offset_bits / 8U);
-
     return NUNAVUT_SUCCESS;
 }
 
@@ -205,22 +192,12 @@ static inline int8_t uavcan_si_sample_magnetic_field_strength_Scalar_1_0_deseria
     {
         buffer = (const uint8_t*)"";
     }
-
-
     const size_t capacity_bytes = *inout_buffer_size_bytes;
     const size_t capacity_bits = capacity_bytes * (size_t) 8U;
     size_t offset_bits = 0U;
-
-
-
-
-
     // uavcan.time.SynchronizedTimestamp.1.0 timestamp
-    NUNAVUT_ASSERT(offset_bits % 8U == 0U);
-    NUNAVUT_ASSERT(offset_bits % 8U == 0U);
     {
         size_t _size_bytes1_ = (size_t)(capacity_bytes - nunavutChooseMin((offset_bits / 8U), capacity_bytes));
-        NUNAVUT_ASSERT(offset_bits % 8U == 0U);
         const int8_t _err2_ = uavcan_time_SynchronizedTimestamp_1_0_deserialize_(
             &out_obj->timestamp, &buffer[offset_bits / 8U], &_size_bytes1_);
         if (_err2_ < 0)
@@ -229,21 +206,11 @@ static inline int8_t uavcan_si_sample_magnetic_field_strength_Scalar_1_0_deseria
         }
         offset_bits += _size_bytes1_ * 8U;  // Advance by the size of the nested serialized representation.
     }
-
-
-
-
     // saturated float32 tesla
-    NUNAVUT_ASSERT(offset_bits % 8U == 0U);
     out_obj->tesla = nunavutGetF32(&buffer[0], capacity_bytes, offset_bits);
     offset_bits += 32U;
-
-
     offset_bits = (offset_bits + 7U) & ~(size_t) 7U;  // Align on 8 bits.
-    NUNAVUT_ASSERT(offset_bits % 8U == 0U);
     *inout_buffer_size_bytes = (size_t) (nunavutChooseMin(offset_bits, capacity_bits) / 8U);
-    NUNAVUT_ASSERT(capacity_bytes >= *inout_buffer_size_bytes);
-
     return NUNAVUT_SUCCESS;
 }
 
@@ -258,12 +225,10 @@ static inline void uavcan_si_sample_magnetic_field_strength_Scalar_1_0_initializ
         size_t size_bytes = 0;
         const uint8_t buf = 0;
         const int8_t err = uavcan_si_sample_magnetic_field_strength_Scalar_1_0_deserialize_(out_obj, &buf, &size_bytes);
-        NUNAVUT_ASSERT(err >= 0);
+
         (void) err;
     }
 }
-
-
 
 #ifdef __cplusplus
 }
