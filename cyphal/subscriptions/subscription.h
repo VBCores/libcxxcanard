@@ -38,17 +38,14 @@ protected:
     virtual void handler(const Type&, CanardRxTransfer*) = 0;
 
 public:
-// NOLINTBEGIN(modernize-pass-by-value)
+    // NOLINTBEGIN(modernize-pass-by-value)
     AbstractSubscription(InterfacePtr& interface, CanardPortID port_id)
-        : AbstractSubscription(interface, port_id, CanardTransferKindMessage) {};
-    AbstractSubscription(
-        InterfacePtr& interface,
-        CanardPortID port_id,
-        CanardTransferKind kind
-    ): interface(interface), kind(kind) {
+        : AbstractSubscription(interface, port_id, CanardTransferKindMessage){};
+    AbstractSubscription(InterfacePtr& interface, CanardPortID port_id, CanardTransferKind kind)
+        : interface(interface), kind(kind) {
         subscribe(port_id, kind);
     };
-// NOLINTEND(modernize-pass-by-value)
+    // NOLINTEND(modernize-pass-by-value)
 
     CanardFilter make_filter(CanardNodeID node_id) {
         CanardFilter out = {0};
@@ -56,8 +53,9 @@ public:
         switch (kind) {
             case CanardTransferKindMessage:
                 out.extended_can_id = (((uint32_t)sub.port_id) << OFFSET_SUBJECT_ID) |
-                                      (((uint32_t) node_id)    << OFFSET_DST_NODE_ID);
-                out.extended_mask = FLAG_SERVICE_NOT_MESSAGE | FLAG_RESERVED_07 | (CANARD_SUBJECT_ID_MAX << OFFSET_SUBJECT_ID) |
+                                      (((uint32_t)node_id) << OFFSET_DST_NODE_ID);
+                out.extended_mask = FLAG_SERVICE_NOT_MESSAGE | FLAG_RESERVED_07 |
+                                    (CANARD_SUBJECT_ID_MAX << OFFSET_SUBJECT_ID) |
                                     (CANARD_NODE_ID_MAX << OFFSET_DST_NODE_ID);
                 break;
             case CanardTransferKindRequest:

@@ -8,15 +8,17 @@
 #include <sys/socket.h>
 #include <cstring>
 #include <iostream>
-#include <cstring>
 
 #include "FDCAN_generic.h"
 
 // NOLINTBEGIN(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay,cppcoreguidelines-pro-type-cstyle-cast,cppcoreguidelines-pro-bounds-constant-array-index)
-LinuxCAN::LinuxCAN(const std::string& can_interface, size_t queue_len, const UtilityConfig& utilities):
-    AbstractCANProvider(CANARD_MTU_CAN_FD, CANFD_MTU, queue_len, utilities),
-    socketcan_handler(socket(PF_CAN, SOCK_RAW, CAN_RAW))
-{
+LinuxCAN::LinuxCAN(
+    const std::string& can_interface,
+    size_t queue_len,
+    const UtilityConfig& utilities
+)
+    : AbstractCANProvider(CANARD_MTU_CAN_FD, CANFD_MTU, queue_len, utilities),
+      socketcan_handler(socket(PF_CAN, SOCK_RAW, CAN_RAW)) {
     if (socketcan_handler < 0) {
         perror("Could not open socket");
         exit(1);
@@ -65,10 +67,8 @@ void LinuxCAN::can_loop() {
     struct canfd_frame raw_frame {};
     // read frames, but no more then 10 in a row
     constexpr size_t max_sequential_frames = 10;
-    for (int i = 0;
-         i < max_sequential_frames && read_frame(&frame, static_cast<void*>(&raw_frame));
-         i++
-    ) {
+    for (int i = 0; i < max_sequential_frames && read_frame(&frame, static_cast<void*>(&raw_frame));
+         i++) {
         process_canard_rx(&frame);
     }
 

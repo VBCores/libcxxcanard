@@ -12,8 +12,8 @@
 #endif
 #else
 #define CRITICAL_SECTION(code) code
-#include <cstdint>
 #include <unistd.h>
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
@@ -36,10 +36,7 @@ struct UtilityConfig {
     const micros_64_type micros_64;
     const error_handler_type error_handler;
 
-    explicit UtilityConfig(
-        micros_64_type&& micros,
-        error_handler_type&& handler
-    ) noexcept
+    explicit UtilityConfig(micros_64_type&& micros, error_handler_type&& handler) noexcept
         : micros_64(std::forward<micros_64_type>(micros)),
           error_handler(std::forward<error_handler_type>(handler)){};
 };

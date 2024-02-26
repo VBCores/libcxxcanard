@@ -39,7 +39,7 @@ constexpr size_t DEFAULT_QUEUE_SIZE = 200;
 
 /**
  * Абстрактная обертка вокруг основного функционала CAN.
-*/
+ */
 class AbstractCANProvider {
     friend class CyphalInterface;
 
@@ -50,11 +50,7 @@ protected:
     CanardInstance canard;
     const UtilityConfig& utilities;
 
-    AbstractCANProvider(
-        size_t canard_mtu,
-        size_t wire_mtu,
-        const UtilityConfig& utilities
-    )
+    AbstractCANProvider(size_t canard_mtu, size_t wire_mtu, const UtilityConfig& utilities)
         : AbstractCANProvider(canard_mtu, wire_mtu, DEFAULT_QUEUE_SIZE, utilities){};
     AbstractCANProvider(
         size_t canard_mtu,
@@ -110,7 +106,9 @@ constexpr int ONE_FULL_FRAME_CYCLES = 420;
 // 32 cycles ~~ 200 ns delay for 160Mhz core clock
 constexpr int CYCLES_200NS_DELAY_DEFAULT = 32;
 
-__attribute__((optimize("O1"))) static inline void delay_cycles(uint16_t cycles = CYCLES_200NS_DELAY_DEFAULT) {
+__attribute__((optimize("O1"))) static inline void delay_cycles(
+    uint16_t cycles = CYCLES_200NS_DELAY_DEFAULT
+) {
     /* Reference:
      https://developer.arm.com/documentation/ddi0439/b/Programmers-Model/Instruction-set-summary/Cortex-M4-instructions?lang=en
      *

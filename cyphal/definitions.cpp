@@ -6,7 +6,8 @@
 
 uint64_t _micros_64() {
     using namespace std::chrono;
-    int64_t microseconds_since_epoch = duration_cast<microseconds>(system_clock::now().time_since_epoch()).count();
+    int64_t microseconds_since_epoch =
+        duration_cast<microseconds>(system_clock::now().time_since_epoch()).count();
     return static_cast<uint64_t>(microseconds_since_epoch);
 }
 

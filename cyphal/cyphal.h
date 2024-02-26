@@ -36,7 +36,11 @@ private:
     std::unique_ptr<AbstractCANProvider> provider;
 
 public:
-    CyphalInterface(CanardNodeID node_id, const UtilityConfig& config, AbstractCANProvider* provider)
+    CyphalInterface(
+        CanardNodeID node_id,
+        const UtilityConfig& config,
+        AbstractCANProvider* provider
+    )
         : node_id(node_id), utilities(config), provider(provider){};
 
     template <typename Provider, class Allocator, class... Args>

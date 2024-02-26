@@ -7,20 +7,21 @@
 #include "libcanard/canard.h"
 
 /**
- * Абстрактный менеджер памяти. Сам по себе ничего не делает, вместо него надо передавать экземпляр наследника -
- * `o1` или `sys`.
-*/
+ * Абстрактный менеджер памяти. Сам по себе ничего не делает, вместо него надо передавать экземпляр
+ * наследника - `o1` или `sys`.
+ */
 class AbstractAllocator {
 protected:
     const UtilityConfig& utilities;
 
 public:
-/**
- * Этим конструктором напрямую лучше не пользоваться, его должен вызвать фабричный метод из CyphalInterface.
- *
- * @param size Максимальное количество выделямой памяти в байтах.
- * @param utilities Ссылка на UtilityConfig.
-*/
+    /**
+     * Этим конструктором напрямую лучше не пользоваться, его должен вызвать фабричный метод из
+     * CyphalInterface.
+     *
+     * @param size Максимальное количество выделямой памяти в байтах.
+     * @param utilities Ссылка на UtilityConfig.
+     */
     AbstractAllocator(size_t size, const UtilityConfig& utilities) : utilities(utilities){};
 
     AbstractAllocator(const AbstractAllocator&) = delete;

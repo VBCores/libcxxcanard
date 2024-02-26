@@ -24,7 +24,7 @@ public:
         const UtilityConfig& utilities
     ) {
         std::byte* allocator_loc = *inout_buffer;
-        // NOLINTBEGIN(cppcoreguidelines-owning-memory,cppcoreguidelines-pro-bounds-pointer-arithmetic,ugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
+        // NOLINTBEGIN(cppcoreguidelines-owning-memory,cppcoreguidelines-pro-bounds-pointer-arithmetic,bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
         auto allocator_ptr =new (allocator_loc) T(
             static_cast<size_t>(queue_len * sizeof(CanardTxQueueItem) * QUEUE_SIZE_MULT,
             args...,
@@ -33,7 +33,7 @@ public:
 
         std::byte* provider_loc = allocator_loc + sizeof(T);
         auto ptr = new (provider_loc) G4CAN(handler, queue_len, utilities);
-        // NOLINTEND(cppcoreguidelines-owning-memory,cppcoreguidelines-pro-bounds-pointer-arithmetic,ugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
+        // NOLINTEND(cppcoreguidelines-owning-memory,cppcoreguidelines-pro-bounds-pointer-arithmetic,bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
 
         ptr->setup<T>(allocator_ptr, node_id);
 
@@ -49,14 +49,14 @@ public:
         Args&&... args,
         const UtilityConfig& utilities
     ) {
-        // NOLINTBEGIN(cppcoreguidelines-owning-memory,cppcoreguidelines-pro-bounds-pointer-arithmetic,ugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
+        // NOLINTBEGIN(cppcoreguidelines-owning-memory,cppcoreguidelines-pro-bounds-pointer-arithmetic,bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
         auto allocator_ptr = new T(
             static_cast<size_t>(queue_len * sizeof(CanardTxQueueItem) * QUEUE_SIZE_MULT),
             args...,
             utilities
         );
         auto ptr = new G4CAN(handler, queue_len, utilities);
-        // NOLINTEND(cppcoreguidelines-owning-memory,cppcoreguidelines-pro-bounds-pointer-arithmetic,ugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
+        // NOLINTEND(cppcoreguidelines-owning-memory,cppcoreguidelines-pro-bounds-pointer-arithmetic,bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
         ptr->setup<T>(allocator_ptr, node_id);
 
         return ptr;

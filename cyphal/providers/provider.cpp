@@ -18,21 +18,19 @@ void AbstractCANProvider::process_canard_rx(CanardFrame* frame) {
 
     if (accept_result == -CANARD_ERROR_OUT_OF_MEMORY) {
         utilities.error_handler();
-    }
-    else if (accept_result < 0) {
+    } else if (accept_result < 0) {
         // Invalid arguments
         return;
-    }
-    else if (accept_result == 1) {
+    } else if (accept_result == 1) {
         if (subscription != nullptr) {
-            auto listener = static_cast<IListener<CanardRxTransfer*>*>(subscription->user_reference);
+            auto listener =
+                static_cast<IListener<CanardRxTransfer*>*>(subscription->user_reference);
             if (listener != nullptr) {
                 listener->accept(&transfer);
             }
         }
         canard.memory_free(&canard, transfer.payload);
-    }
-    else {  // accept_result == 0 || accept_result > 1
+    } else {  // accept_result == 0 || accept_result > 1
         // The received frame is either invalid or it's a non-last frame of a multi-frame transfer.
     }
 }

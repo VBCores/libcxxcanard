@@ -26,7 +26,7 @@ void G4CAN::can_loop() {
 
     static FDCAN_ProtocolStatusTypeDef fdcan_status;
     HAL_FDCAN_GetProtocolStatus(handler, &fdcan_status);
-    if(fdcan_status.BusOff) {
+    if (fdcan_status.BusOff) {
         CLEAR_BIT(handler->Instance->CCCR, FDCAN_CCCR_INIT);
     }
 }
