@@ -27,7 +27,7 @@ using cyphal_deserializer = int8_t (*)(ObjType* const, const uint8_t*, size_t* c
 // NOLINTEND(cppcoreguidelines-macro-usage)
 
 /**
- * Main class, providing all common communication functions.
+ * Основной класс со всей функциональностью. Это единственный класс непостредственно из этой библиотеки, экземплляр которого надо создать.
  */
 class CyphalInterface {
 private:
@@ -36,6 +36,10 @@ private:
     std::unique_ptr<AbstractCANProvider> provider;
 
 public:
+    /**
+     * Конструктор, позволяющий самому инициализировать AbstractCANProvider.
+     * Не рекомендуется к использованию, **всегда** предпочитайте `create_bss` / `create_heap`.
+    */
     CyphalInterface(
         CanardNodeID node_id,
         const UtilityConfig& config,
@@ -43,6 +47,16 @@ public:
     )
         : node_id(node_id), utilities(config), provider(provider){};
 
+    /**
+     * Инициализировать CyphalInterface в глобальной памяти (.bss), не использует кучу.
+     *
+     * @param buffer Буффер размера `sizeof(CyphalInterface) + sizeof(выбранный_провайдер) + sizeof(выбранный_аллокатор)`
+     * @param node_id ID текущей ноды
+     * @param handler Низкоуровневый интерфейс CAN. Для linux просто строка "can0"/"can1". Для stm32 - обычно `&hfdcan1`.
+     * @param queue_len Размер очереди сообщений
+     * @param args Variadic параметры, которые будут переданы в provider.
+     * @param config Ссылка на UtilityConfig.
+    */
     template <typename Provider, class Allocator, class... Args>
     static CyphalInterface* create_bss(
         std::byte* buffer,
@@ -69,6 +83,16 @@ public:
 
         return interface;
     }
+    /**
+     * Инициализировать CyphalInterface на куче. Гораздо удобнее чем .bss, выделяет память только на старте программы и столько же сколько и `create_bss`,
+     * поэтому если можете пользоваться кучей - пользуйтесь этим методом.
+     *
+     * @param node_id ID текущей ноды
+     * @param handler Низкоуровневый интерфейс CAN. Для linux просто строка "can0"/"can1". Для stm32 - обычно `&hfdcan1`.
+     * @param queue_len Размер очереди сообщений
+     * @param args Variadic параметры, которые будут переданы в provider.
+     * @param config Ссылка на UtilityConfig.
+    */
     template <typename Provider, class Allocator, class... Args>
     static std::shared_ptr<CyphalInterface> create_heap(
         CanardNodeID node_id,
@@ -88,14 +112,26 @@ public:
         return std::make_shared<CyphalInterface>(node_id, config, provider);
     }
 
+    /**
+     * Проверка, инициализирован ли интерфейс (должна быть всегда `true`, если вы использовали `create_...`).
+    */
     bool is_up() { return bool(provider); }
+    /**
+    * Количество FDCAN-сообщений в очереди на отправку.
+    */
     size_t queue_size() { return provider->queue.size; }
+    /**
+    * Есть ли еще не отправленные фреймы?
+    */
     bool has_unsent_frames() {
         if (!provider) {
             return false;
         }
         return canardTxPeek(&provider->queue) != nullptr;
     }
+    /**
+    * Прокрутить логику обработки исходящих сообщений *один раз*.
+    */
     void process_tx_once() {  // needed for finalization of the whole program
         if (!provider) {
             return;
@@ -103,7 +139,16 @@ public:
         provider->process_canard_tx();
     }
 
+    /**
+    * Обрабатывать входящие/исходящие сообщения. НЕ бесконечный цикл, характерное использование:
+    * ```
+    * while (true) {
+    *   interface->loop();
+    * }
+    * ```
+    */
     void loop();
+
     void push(
         CanardMicrosecond tx_deadline_usec,
         const CanardTransferMetadata* metadata,
@@ -118,6 +163,10 @@ public:
     ) const;
 
     // TEMPLATES
+    /**
+    * Поставить одно сообщение в очередь на отправку. Требует передать все поля `CanardTransferMetadata` как аргументы,
+    * поэтому при возможности предпочитайте `send_msg`, `send_response`, `send_request`.
+    */
     template <typename TypeAlias>
     inline void send(
         typename TypeAlias::Type* obj,
