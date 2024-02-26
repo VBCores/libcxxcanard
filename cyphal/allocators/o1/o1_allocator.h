@@ -12,8 +12,8 @@ private:
     bool is_self_allocated = false;
 
 public:
-    O1Allocator(size_t size, void* memory, UtilityConfig& utilities);
-    explicit O1Allocator(size_t size, UtilityConfig& utilities);
+    O1Allocator(size_t size, void* memory, const UtilityConfig& utilities);
+    explicit O1Allocator(size_t size, const UtilityConfig& utilities);
     ~O1Allocator() override;
 
     void* allocate(CanardInstance* ins, size_t amount) override;

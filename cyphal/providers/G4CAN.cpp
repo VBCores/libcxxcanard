@@ -15,7 +15,8 @@ size_t G4CAN::dlc_to_len(uint32_t dlc) {
 void G4CAN::can_loop() {
     while (HAL_FDCAN_GetRxFifoFillLevel(handler, FDCAN_RX_FIFO0) != 0) {
         CanardFrame frame;
-        bool has_read = read_frame(&frame);
+        uint8_t RxData[64] = {};
+        bool has_read = read_frame(&frame, static_cast<void*>(RxData));
         if (!has_read)
             break;
         process_canard_rx(&frame);
@@ -30,9 +31,8 @@ void G4CAN::can_loop() {
     }
 }
 
-bool G4CAN::read_frame(CanardFrame* rxf) {
-    static uint8_t RxData[64] = {};
-
+bool G4CAN::read_frame(CanardFrame* rxf, void* data) {
+    uint8_t* RxData = static_cast<uint8_t*>(data);
     // may want to check 2 FIFOs in the future
     uint32_t rx_fifo = -1;
     if (HAL_FDCAN_GetRxFifoFillLevel(handler, FDCAN_RX_FIFO0)) {
@@ -52,7 +52,7 @@ bool G4CAN::read_frame(CanardFrame* rxf) {
 
     rxf->extended_can_id = RxHeader.Identifier;
     rxf->payload_size = dlc_to_len(RxHeader.DataLength);
-    rxf->payload = (void*)RxData;
+    rxf->payload = data;
     return true;
 }
 

@@ -1,16 +1,17 @@
 #include "definitions.h"
 
+#include <chrono>
+
 #ifdef __linux__
 
 uint64_t _micros_64() {
-    struct timespec ts {};
-    timespec_get(&ts, TIME_UTC);
-    uint64_t us = SEC_TO_US((uint64_t)ts.tv_sec) + NS_TO_US((uint64_t)ts.tv_nsec);
-    return us;
+    using namespace std::chrono;
+    int64_t microseconds_since_epoch = duration_cast<microseconds>(system_clock::now().time_since_epoch()).count();
+    return static_cast<uint64_t>(microseconds_since_epoch);
 }
 
 // NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
-UtilityConfig DEFAULT_CONFIG(_micros_64, []() { exit(1); });
+const UtilityConfig DEFAULT_CONFIG(_micros_64, []() { exit(1); });
 // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 
 #endif

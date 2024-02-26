@@ -8,13 +8,15 @@
 #include <sys/socket.h>
 #include <cstring>
 #include <iostream>
+#include <cstring>
 
 #include "FDCAN_generic.h"
 
 // NOLINTBEGIN(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay,cppcoreguidelines-pro-type-cstyle-cast,cppcoreguidelines-pro-bounds-constant-array-index)
-LinuxCAN::LinuxCAN(const std::string& can_interface, size_t queue_len, UtilityConfig& utilities)
-    : AbstractCANProvider(CANARD_MTU_CAN_FD, CANFD_MTU, queue_len, utilities) {
-    socketcan_handler = socket(PF_CAN, SOCK_RAW, CAN_RAW);
+LinuxCAN::LinuxCAN(const std::string& can_interface, size_t queue_len, const UtilityConfig& utilities):
+    AbstractCANProvider(CANARD_MTU_CAN_FD, CANFD_MTU, queue_len, utilities),
+    socketcan_handler(socket(PF_CAN, SOCK_RAW, CAN_RAW))
+{
     if (socketcan_handler < 0) {
         perror("Could not open socket");
         exit(1);
@@ -36,10 +38,10 @@ LinuxCAN::LinuxCAN(const std::string& can_interface, size_t queue_len, UtilityCo
     fcntl(socketcan_handler, F_SETFL, O_NONBLOCK);
 
     struct ifreq ifr {};
-    strcpy(ifr.ifr_name, can_interface.c_str());
+    strncpy(ifr.ifr_name, can_interface.c_str(), IFNAMSIZ);
     ioctl(socketcan_handler, SIOCGIFINDEX, &ifr);
 
-    struct sockaddr_can addr;
+    struct sockaddr_can addr {};
     memset(&addr, 0, sizeof(addr));
     addr.can_family = AF_CAN;
     addr.can_ifindex = ifr.ifr_ifindex;
@@ -60,43 +62,41 @@ size_t LinuxCAN::dlc_to_len(uint32_t dlc) {
 
 void LinuxCAN::can_loop() {
     CanardFrame frame;
+    struct canfd_frame raw_frame {};
     // read frames, but no more then 10 in a row
     constexpr size_t max_sequential_frames = 10;
-    for (int i = 0; i < max_sequential_frames && read_frame(&frame); i++) {
+    for (int i = 0;
+         i < max_sequential_frames && read_frame(&frame, static_cast<void*>(&raw_frame));
+         i++
+    ) {
         process_canard_rx(&frame);
     }
 
     process_canard_tx();
 }
 
-bool LinuxCAN::read_frame(CanardFrame* rxf) {
-    struct canfd_frame rxframe;
-    uint8_t nbytes = read(socketcan_handler, &rxframe, WIRE_MTU);
+bool LinuxCAN::read_frame(CanardFrame* rxf, void* data) {
+    auto rxframe = static_cast<struct canfd_frame*>(data);
+    uint8_t nbytes = read(socketcan_handler, rxframe, WIRE_MTU);
     if (nbytes != WIRE_MTU) {  // only complete CAN frames are accepted
         return false;
     }
 
-    auto msg_id = (uint32_t)rxframe.can_id;
+    auto msg_id = (uint32_t)rxframe->can_id;
     // Magic line from the depths of socketcan docs
     // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers,hicpp-signed-bitwise)
     msg_id = msg_id & ~(1 << 31);  // clear EFF flag
-    // NOLINTBEND(cppcoreguidelines-avoid-magic-numbers,hicpp-signed-bitwise)
+    // NOLINTEND(cppcoreguidelines-avoid-magic-numbers,hicpp-signed-bitwise)
 
     rxf->extended_can_id = msg_id;
-    rxf->payload_size = (size_t)rxframe.len;
-
-    void* payload = malloc(rxf->payload_size);
-    if (payload == nullptr) {
-        utilities.error_handler();
-    }
-    std::memcpy(payload, &rxframe.data, rxf->payload_size);
-    rxf->payload = payload;
+    rxf->payload_size = (size_t)rxframe->len;
+    rxf->payload = static_cast<void*>(&rxframe->data);
 
     return true;
 }
 
 int LinuxCAN::write_frame(const CanardTxQueueItem* ti) {
-    struct canfd_frame txframe;
+    struct canfd_frame txframe {};
     auto frame_size = sizeof(struct canfd_frame);
     txframe.len = ti->frame.payload_size;
     txframe.can_id = ti->frame.extended_can_id | CAN_EFF_FLAG;

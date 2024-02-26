@@ -1,9 +1,6 @@
 #include "provider.h"
 #include "cyphal/interfaces.h"
 
-CanardTxQueue queue{};
-CanardInstance canard{};
-
 std::unique_ptr<AbstractAllocator> _alloc_ptr;
 
 void AbstractCANProvider::process_canard_rx(CanardFrame* frame) {
@@ -28,7 +25,7 @@ void AbstractCANProvider::process_canard_rx(CanardFrame* frame) {
     }
     else if (accept_result == 1) {
         if (subscription != nullptr) {
-            auto listener = reinterpret_cast<IListener<CanardRxTransfer*>*>(subscription->user_reference);
+            auto listener = static_cast<IListener<CanardRxTransfer*>*>(subscription->user_reference);
             if (listener != nullptr) {
                 listener->accept(&transfer);
             }
@@ -57,4 +54,4 @@ void AbstractCANProvider::process_canard_tx() {
     }
 }
 
-AbstractCANProvider::~AbstractCANProvider() {}
+AbstractCANProvider::~AbstractCANProvider() = default;

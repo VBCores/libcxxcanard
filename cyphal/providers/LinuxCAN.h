@@ -12,7 +12,7 @@ public:
 
 private:
     int socketcan_handler;
-    LinuxCAN(Handler can_interface, size_t queue_len, UtilityConfig& utilities);
+    LinuxCAN(Handler can_interface, size_t queue_len, const UtilityConfig& utilities);
 
 public:
     template <class T, class... Args>
@@ -22,20 +22,22 @@ public:
         CanardNodeID node_id,
         size_t queue_len,
         Args&&... args,
-        UtilityConfig& utilities
+        const UtilityConfig& utilities
     ) {
         std::byte* allocator_loc = *inout_buffer;
-        // NOLINTBEGIN(cppcoreguidelines-owning-memory)
-        auto allocator_ptr =
-            new (allocator_loc) T(queue_len * sizeof(CanardTxQueueItem) * 2.5, std::forward<Args>(args...), utilities);
-        // NOLINTEND(cppcoreguidelines-owning-memory)
+        // NOLINTBEGIN(cppcoreguidelines-owning-memory,cppcoreguidelines-pro-bounds-pointer-arithmetic,ugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
+        auto allocator_ptr = new (allocator_loc) T(
+                static_cast<size_t>(queue_len * sizeof(CanardTxQueueItem) * QUEUE_SIZE_MULT),
+                std::forward<Args>(args)...,
+                utilities
+            );
 
         std::byte* provider_loc = allocator_loc + sizeof(T);
         auto ptr = new (provider_loc) LinuxCAN(handler, queue_len, utilities);
-
         ptr->setup<T>(allocator_ptr, node_id);
 
         *inout_buffer = provider_loc + sizeof(LinuxCAN);
+        // NOLINTEND(cppcoreguidelines-owning-memory,cppcoreguidelines-pro-bounds-pointer-arithmetic,ugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
         return ptr;
     }
 
@@ -45,10 +47,16 @@ public:
         CanardNodeID node_id,
         size_t queue_len,
         Args&&... args,
-        UtilityConfig& utilities
+        const UtilityConfig& utilities
     ) {
-        auto allocator_ptr = new T(queue_len * sizeof(CanardTxQueueItem) * 2.5, args..., utilities);
+        // NOLINTBEGIN(cppcoreguidelines-owning-memory,cppcoreguidelines-pro-bounds-pointer-arithmetic,ugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
+        auto allocator_ptr = new T(
+            static_cast<size_t>(queue_len * sizeof(CanardTxQueueItem) * QUEUE_SIZE_MULT),
+            std::forward<Args>(args)...,
+            utilities
+        );
         auto ptr = new LinuxCAN(handler, queue_len, utilities);
+        // NOLINTEND(cppcoreguidelines-owning-memory,cppcoreguidelines-pro-bounds-pointer-arithmetic,ugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
         ptr->setup<T>(allocator_ptr, node_id);
 
         return ptr;
@@ -57,7 +65,7 @@ public:
     uint32_t len_to_dlc(size_t len) override;
     size_t dlc_to_len(uint32_t dlc) override;
     void can_loop() override;
-    bool read_frame(CanardFrame*) override;
+    bool read_frame(CanardFrame* frame, void* data) override;
     int write_frame(const CanardTxQueueItem* ti) override;
 };
 #endif

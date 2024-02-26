@@ -21,11 +21,11 @@ void O1Allocator::free(CanardInstance* ins, void* pointer) {
 
 void O1Allocator::align_self(size_t size) {
     if (!is_self_allocated) {
-        auto loc = static_cast<uintptr_t>(memory_arena);
+        auto loc = reinterpret_cast<uintptr_t>(memory_arena);
         auto shift = loc % O1HEAP_ALIGNMENT;
         if (shift != 0) {
             // NOLINTBEGIN(performance-no-int-to-ptr)
-            memory_arena = static_cast<void*>(loc + shift);
+            memory_arena = reinterpret_cast<void*>(loc + shift);
             // NOLINTEND(performance-no-int-to-ptr)
             size -= shift;
         }
@@ -38,12 +38,12 @@ void O1Allocator::align_self(size_t size) {
     o1heap = out;
 }
 
-O1Allocator::O1Allocator(size_t size, void* memory, UtilityConfig& utilities)
+O1Allocator::O1Allocator(size_t size, void* memory, const UtilityConfig& utilities)
     : AbstractAllocator(size, utilities), memory_arena(memory) {
     align_self(size);
 }
 
-O1Allocator::O1Allocator(size_t size, UtilityConfig& utilities)
+O1Allocator::O1Allocator(size_t size, const UtilityConfig& utilities)
     : AbstractAllocator(size, utilities),
       memory_arena(operator new(size, std::align_val_t{O1HEAP_ALIGNMENT})) {
     if (memory_arena == nullptr) {

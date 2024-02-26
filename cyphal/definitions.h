@@ -46,5 +46,5 @@ struct UtilityConfig {
 // NOLINTEND(cppcoreguidelines-avoid-const-or-ref-data-members)
 
 #ifdef __linux__
-extern UtilityConfig DEFAULT_CONFIG;
+extern const UtilityConfig DEFAULT_CONFIG;
 #endif

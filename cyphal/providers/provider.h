@@ -33,6 +33,13 @@ inline void free_f(CanardInstance* ins, void* pointer) {
     return _alloc_ptr->free(ins, pointer);
 }
 
+// 1 for tx, 1 for rx, 0.5 for misc (subs, multipart msgs, etc.)
+constexpr float QUEUE_SIZE_MULT = 2.5F;
+constexpr size_t DEFAULT_QUEUE_SIZE = 200;
+
+/**
+ * Абстрактная обертка вокруг основного функционала CAN.
+*/
 class AbstractCANProvider {
     friend class CyphalInterface;
 
@@ -41,16 +48,19 @@ protected:
     const size_t WIRE_MTU;
     CanardTxQueue queue;
     CanardInstance canard;
-    UtilityConfig& utilities;
+    const UtilityConfig& utilities;
 
-    AbstractCANProvider() = delete;
-    AbstractCANProvider(size_t canard_mtu, size_t wire_mtu, UtilityConfig& utilities)
-        : AbstractCANProvider(canard_mtu, wire_mtu, 200, utilities){};
+    AbstractCANProvider(
+        size_t canard_mtu,
+        size_t wire_mtu,
+        const UtilityConfig& utilities
+    )
+        : AbstractCANProvider(canard_mtu, wire_mtu, DEFAULT_QUEUE_SIZE, utilities){};
     AbstractCANProvider(
         size_t canard_mtu,
         size_t wire_mtu,
         size_t queue_len,
-        UtilityConfig& utilities
+        const UtilityConfig& utilities
     )
         : CANARD_MTU(canard_mtu),
           WIRE_MTU(wire_mtu),
@@ -74,12 +84,18 @@ protected:
     }
 
 public:
-    typedef void Handler;
+    using Handler = void;
+
+    AbstractCANProvider() = delete;
+    AbstractCANProvider(const AbstractCANProvider&) = delete;
+    AbstractCANProvider& operator=(const AbstractCANProvider&) = delete;
+    AbstractCANProvider(AbstractCANProvider&&) = delete;
+    AbstractCANProvider& operator=(AbstractCANProvider&&) = delete;
 
     virtual uint32_t len_to_dlc(size_t len) = 0;
     virtual size_t dlc_to_len(uint32_t dlc) = 0;
     virtual void can_loop() = 0;
-    virtual bool read_frame(CanardFrame*) = 0;
+    virtual bool read_frame(CanardFrame*, void* data) = 0;
     virtual int write_frame(const CanardTxQueueItem* ti) = 0;
     void process_canard_rx(CanardFrame*);
     void process_canard_tx();
@@ -88,12 +104,13 @@ public:
 };
 
 // Time to transmit one frame + delay for 25ns bit time ~ (25*29 (ext id) + 25*64 (body)) * 1.5
-#define ONE_FULL_FRAME_T 2620
+constexpr int ONE_FULL_FRAME_T = 2620;
 // Cycles = ONE_FULL_FRAME_T / 200 * 32
-#define ONE_FULL_FRAME_CYCLES 420
-
+constexpr int ONE_FULL_FRAME_CYCLES = 420;
 // 32 cycles ~~ 200 ns delay for 160Mhz core clock
-__attribute__((optimize("O1"))) static inline void delay_cycles(uint16_t cycles = 32) {
+constexpr int CYCLES_200NS_DELAY_DEFAULT = 32;
+
+__attribute__((optimize("O1"))) static inline void delay_cycles(uint16_t cycles = CYCLES_200NS_DELAY_DEFAULT) {
     /* Reference:
      https://developer.arm.com/documentation/ddi0439/b/Programmers-Model/Instruction-set-summary/Cortex-M4-instructions?lang=en
      *
@@ -118,9 +135,13 @@ __attribute__((optimize("O1"))) static inline void delay_cycles(uint16_t cycles 
      *
      * Всего 5 тактов на цикл + 8 в начале.
      */
+    constexpr uint8_t SETUP_CYCLES = 8;
+    constexpr uint8_t LOOP_CYCLES = 5;
 
-    uint8_t real_cycles = (cycles - 8) / 5;
+    uint8_t real_cycles = (cycles - SETUP_CYCLES) / LOOP_CYCLES;
     while (real_cycles--) {
+        // NOLINTBEGIN(hicpp-no-assembler)
         __asm__("nop");
+        // NOLINTEND(hicpp-no-assembler)
     }
 }

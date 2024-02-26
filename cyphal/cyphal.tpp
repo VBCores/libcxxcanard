@@ -55,18 +55,16 @@ inline void CyphalInterface::send_response(
     typename TypeAlias::Type *obj,
     uint8_t buffer[],
     CanardRxTransfer *transfer,
-    CanardPortID port,
-    uint64_t timeout_delta,
-    CanardPriority priority
+    uint64_t timeout_delta
 ) const {
     size_t cyphal_buf_size = TypeAlias::buffer_size;
     if (TypeAlias::serializer(obj, buffer, &cyphal_buf_size) < 0) {
         utilities.error_handler();
     }
     const CanardTransferMetadata cyphal_transfer_metadata = {
-            .priority = priority,
+            .priority = transfer->metadata.priority,
             .transfer_kind = CanardTransferKindResponse,
-            .port_id = port,
+            .port_id = transfer->metadata.port_id,
             .remote_node_id = transfer->metadata.remote_node_id,
             .transfer_id = transfer->metadata.transfer_id,
     };

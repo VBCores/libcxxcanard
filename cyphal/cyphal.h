@@ -32,11 +32,11 @@ using cyphal_deserializer = int8_t (*)(ObjType* const, const uint8_t*, size_t* c
 class CyphalInterface {
 private:
     const CanardNodeID node_id;
-    UtilityConfig& utilities;
+    const UtilityConfig& utilities;
     std::unique_ptr<AbstractCANProvider> provider;
 
 public:
-    CyphalInterface(CanardNodeID node_id, UtilityConfig& config, AbstractCANProvider* provider)
+    CyphalInterface(CanardNodeID node_id, const UtilityConfig& config, AbstractCANProvider* provider)
         : node_id(node_id), utilities(config), provider(provider){};
 
     template <typename Provider, class Allocator, class... Args>
@@ -46,7 +46,7 @@ public:
         typename Provider::Handler handler,
         size_t queue_len,
         Args&&... args,
-        UtilityConfig& config
+        const UtilityConfig& config
     ) {
         std::byte** inout_buffer = &buffer;
         AbstractCANProvider* provider = Provider::template create_bss<Allocator>(
@@ -71,7 +71,7 @@ public:
         typename Provider::Handler handler,
         size_t queue_len,
         Args&&... args,
-        UtilityConfig& config
+        const UtilityConfig& config
     ) {
         AbstractCANProvider* provider = Provider::template create_heap<Allocator>(
             handler,
@@ -139,9 +139,7 @@ public:
         typename TypeAlias::Type* obj,
         uint8_t buffer[],
         CanardRxTransfer* transfer,
-        CanardPortID port,
-        uint64_t timeout_delta = DEFAULT_TIMEOUT_MICROS,
-        CanardPriority priority = CanardPriorityNominal
+        uint64_t timeout_delta = DEFAULT_TIMEOUT_MICROS
     ) const;
     template <typename TypeAlias>
     inline void send_request(
