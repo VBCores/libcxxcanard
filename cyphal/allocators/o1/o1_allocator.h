@@ -4,6 +4,10 @@
 
 #include "../allocator.h"
 
+/**
+ * Обертка вокруг O1Heap. Рекомендуемый аллокатор для cyphal. Можем аллоцировать память для себя сам при создании,
+ * может принять указатель на заранее выделенный участок.
+ */
 class O1Allocator : public AbstractAllocator {
 private:
     O1HeapInstance* o1heap = nullptr;
@@ -12,7 +16,18 @@ private:
     bool is_self_allocated = false;
 
 public:
+    /**
+     * Создать на основе заранее выделенной памяти.
+     *
+     * @param size Размер буффера
+     * @param memory Указатель на выделенный сегмент
+     */
     O1Allocator(size_t size, void* memory, const UtilityConfig& utilities);
+    /**
+     * Создать аллокатор, который выдеит себя память сам.
+     *
+     * @param size Размер буффера
+     */
     explicit O1Allocator(size_t size, const UtilityConfig& utilities);
     ~O1Allocator() override;
 

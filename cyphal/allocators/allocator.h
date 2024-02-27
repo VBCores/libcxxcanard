@@ -15,13 +15,6 @@ protected:
     const UtilityConfig& utilities;
 
 public:
-    /**
-     * Этим конструктором напрямую лучше не пользоваться, его должен вызвать фабричный метод из
-     * CyphalInterface.
-     *
-     * @param size Максимальное количество выделямой памяти в байтах.
-     * @param utilities Ссылка на UtilityConfig.
-     */
     AbstractAllocator(size_t size, const UtilityConfig& utilities) : utilities(utilities){};
 
     AbstractAllocator(const AbstractAllocator&) = delete;

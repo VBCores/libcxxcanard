@@ -142,7 +142,7 @@ public:
     /**
     * Обрабатывать входящие/исходящие сообщения. НЕ бесконечный цикл, характерное использование:
     * ```
-    * while (true) {
+    * while (...) {
     *   interface->loop();
     * }
     * ```
@@ -163,14 +163,9 @@ public:
     ) const;
 
     // TEMPLATES
-    /**
-    * Поставить одно сообщение в очередь на отправку. Требует передать все поля `CanardTransferMetadata` как аргументы,
-    * поэтому при возможности предпочитайте `send_msg`, `send_response`, `send_request`.
-    */
     template <typename TypeAlias>
     inline void send(
         typename TypeAlias::Type* obj,
-        uint8_t buffer[],
         CanardPortID port,
         CanardTransferID* transfer_id,
         CanardPriority priority,
@@ -178,26 +173,50 @@ public:
         CanardNodeID to_node_id,
         uint64_t timeout_delta
     ) const;
+
+    /**
+    * Поставить одно сообщение в очередь на отправку.
+    *
+    * @param obj Указатель на сообщение (cyphal-структура)
+    * @param port PortID назначения
+    * @param transfer_id TransferID - отдельные для каждого port и не забывайте инкрементировать!
+    * @param timeout_delta Таймаут отправки в нс - по умочанию 1с
+    * @param priority Приоритет сообщения
+    */
     template <typename TypeAlias>
     inline void send_msg(
         typename TypeAlias::Type* obj,
-        uint8_t buffer[],
         CanardPortID port,
         CanardTransferID* transfer_id,
         uint64_t timeout_delta = DEFAULT_TIMEOUT_MICROS,
         CanardPriority priority = CanardPriorityNominal
     ) const;
+    /**
+    * Отправить ответ на запрос.
+    *
+    * @param obj Указатель на сообщение (cyphal-структура)
+    * @param transfer Структура CanardRxTransfer **полученная вместе с запросом**
+    * @param timeout_delta Таймаут отправки в нс - по умочанию 1с
+    */
     template <typename TypeAlias>
     inline void send_response(
         typename TypeAlias::Type* obj,
-        uint8_t buffer[],
         CanardRxTransfer* transfer,
         uint64_t timeout_delta = DEFAULT_TIMEOUT_MICROS
     ) const;
+    /**
+    * Отправить запрос
+    *
+    * @param obj Указатель на сообщение (cyphal-структура)
+    * @param port PortID назначения
+    * @param transfer_id TransferID - отдельные для каждого port и не забывайте инкрементировать!
+    * @param to_node_id NodeID узла назначения
+    * @param timeout_delta Таймаут отправки в нс - по умочанию 1с
+    * @param priority Приоритет сообщения
+    */
     template <typename TypeAlias>
     inline void send_request(
         typename TypeAlias::Type* obj,
-        uint8_t buffer[],
         CanardPortID port,
         CanardTransferID* transfer_id,
         CanardNodeID to_node_id,

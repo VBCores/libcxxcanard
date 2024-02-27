@@ -6,6 +6,10 @@
 
 #include "provider.h"
 
+/**
+ * Реализация для linux, работает на основне SocketCAN.
+ * Аргументы для конструкторов смотри в `CyphalInterface::create_bss / CyphalInterface::create_heap` (фабричные методы).
+*/
 class LinuxCAN : public AbstractCANProvider {
 public:
     using Handler = const std::string&;

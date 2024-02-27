@@ -2,6 +2,9 @@
 
 #include "../allocator.h"
 
+/**
+ * Наивный менеджер памяти, просто обертка вокруг malloc и free.
+ */
 class SystemAllocator : public AbstractAllocator {
 public:
     // TODO: do something with size value?

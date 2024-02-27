@@ -4,6 +4,10 @@
 
 #include "provider.h"
 
+/**
+ * Реализация для stm32g4, работает на основне SocketCAN.
+ * Аргументы для конструкторов смотри в `CyphalInterface::create_bss / CyphalInterface::create_heap` (фабричные методы).
+*/
 class G4CAN : public AbstractCANProvider {
 public:
     using Handler = FDCAN_HandleTypeDef*;

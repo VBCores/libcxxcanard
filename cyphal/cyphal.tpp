@@ -1,7 +1,6 @@
 template <typename TypeAlias>
 inline void CyphalInterface::send(
     typename TypeAlias::Type* obj,
-    uint8_t buffer[],
     CanardPortID port,
     CanardTransferID *transfer_id,
     CanardPriority priority,
@@ -9,6 +8,7 @@ inline void CyphalInterface::send(
     CanardNodeID to_node_id,
     uint64_t timeout_delta
 ) const {
+    uint8_t buffer[TypeAlias::buffer_size];
     size_t cyphal_buf_size = TypeAlias::buffer_size;
     if (TypeAlias::serializer(obj, buffer, &cyphal_buf_size) < 0) {
         utilities.error_handler();
@@ -32,7 +32,6 @@ inline void CyphalInterface::send(
 template <typename TypeAlias>
 inline void CyphalInterface::send_msg(
     typename TypeAlias::Type *obj,
-    uint8_t buffer[],
     CanardPortID port,
     CanardTransferID *transfer_id,
     uint64_t timeout_delta,
@@ -40,7 +39,6 @@ inline void CyphalInterface::send_msg(
 ) const {
     send<TypeAlias>(
         obj,
-        buffer,
         port,
         transfer_id,
         priority,
@@ -53,10 +51,10 @@ inline void CyphalInterface::send_msg(
 template <typename TypeAlias>
 inline void CyphalInterface::send_response(
     typename TypeAlias::Type *obj,
-    uint8_t buffer[],
     CanardRxTransfer *transfer,
     uint64_t timeout_delta
 ) const {
+    uint8_t buffer[TypeAlias::buffer_size];
     size_t cyphal_buf_size = TypeAlias::buffer_size;
     if (TypeAlias::serializer(obj, buffer, &cyphal_buf_size) < 0) {
         utilities.error_handler();
@@ -79,7 +77,6 @@ inline void CyphalInterface::send_response(
 template <typename TypeAlias>
 inline void CyphalInterface::send_request(
     typename TypeAlias::Type* obj,
-    uint8_t buffer[],
     CanardPortID port,
     CanardTransferID* transfer_id,
     CanardNodeID to_node_id,
@@ -88,7 +85,6 @@ inline void CyphalInterface::send_request(
 ) const {
     send<TypeAlias>(
         obj,
-        buffer,
         port,
         transfer_id,
         priority,

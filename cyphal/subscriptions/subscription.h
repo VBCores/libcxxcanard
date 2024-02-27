@@ -21,6 +21,9 @@
 
 using InterfacePtr = const std::shared_ptr<CyphalInterface>;
 
+/**
+ * TODO
+*/
 template <typename T>
 class AbstractSubscription : public IListener<CanardRxTransfer*> {
     using Type = typename T::Type;
