@@ -4,6 +4,8 @@
 
 #include "provider.h"
 
+#include <utility>
+
 /**
  * Реализация для stm32g4, работает на основне SocketCAN.
  * Аргументы для конструкторов смотри в `CyphalInterface::create_bss / CyphalInterface::create_heap` (фабричные методы).
@@ -14,11 +16,11 @@ public:
 
 private:
     FDCAN_HandleTypeDef* handler;
-    G4CAN(Handler handler, size_t queue_len, UtilityConfig& utilities)
+    G4CAN(Handler handler, size_t queue_len, const UtilityConfig& utilities)
         : AbstractCANProvider(CANARD_MTU_CAN_FD, 72, queue_len, utilities), handler(handler){};
 
 public:
-    template <class T, class... Args>
+    template <class T, typename... Args>
     static G4CAN* create_bss(
         std::byte** inout_buffer,
         Handler handler,
@@ -29,9 +31,9 @@ public:
     ) {
         std::byte* allocator_loc = *inout_buffer;
         // NOLINTBEGIN(cppcoreguidelines-owning-memory,cppcoreguidelines-pro-bounds-pointer-arithmetic,bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
-        auto allocator_ptr =new (allocator_loc) T(
-            static_cast<size_t>(queue_len * sizeof(CanardTxQueueItem) * QUEUE_SIZE_MULT,
-            args...,
+        auto allocator_ptr = new (allocator_loc) T(
+            static_cast<size_t>(queue_len * sizeof(CanardTxQueueItem) * QUEUE_SIZE_MULT),
+            std::forward<Args>(args)...,
             utilities
         );
 
@@ -45,7 +47,7 @@ public:
         return ptr;
     }
 
-    template <class T, class... Args>
+    template <class T, typename... Args>
     static G4CAN* create_heap(
         Handler handler,
         CanardNodeID node_id,

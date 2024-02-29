@@ -14,7 +14,7 @@ using cyphal_deserializer = int8_t (*)(ObjType* const, const uint8_t*, size_t* c
 
 // NOLINTBEGIN(cppcoreguidelines-macro-usage)
 #define TYPE_ALIAS(ALIAS_NAME, T)                                                   \
-    class(ALIAS_NAME) {                                                             \
+    class ALIAS_NAME {                                                              \
     public:                                                                         \
         typedef T Type;                                                             \
         typedef cyphal_serializer<T> serializer_type;                               \

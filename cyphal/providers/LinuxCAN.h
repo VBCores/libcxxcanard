@@ -2,9 +2,10 @@
 #include "cyphal/definitions.h"
 #ifdef __linux__
 
-#include <string>
-
 #include "provider.h"
+
+#include <string>
+#include <utility>
 
 /**
  * Реализация для linux, работает на основне SocketCAN.
@@ -19,7 +20,7 @@ private:
     LinuxCAN(Handler can_interface, size_t queue_len, const UtilityConfig& utilities);
 
 public:
-    template <class T, class... Args>
+    template <class T, typename... Args>
     static LinuxCAN* create_bss(
         std::byte** inout_buffer,
         Handler handler,
@@ -44,7 +45,7 @@ public:
         return ptr;
     }
 
-    template <class T, class... Args>
+    template <class T, typename... Args>
     static LinuxCAN* create_heap(
         Handler handler,
         CanardNodeID node_id,
