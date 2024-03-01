@@ -50,7 +50,7 @@ public:
     };
     // NOLINTEND(modernize-pass-by-value)
 
-    CanardFilter make_filter(CanardNodeID node_id) {
+    virtual CanardFilter make_filter(CanardNodeID node_id) {
         CanardFilter out = {0};
 
         switch (kind) {

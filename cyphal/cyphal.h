@@ -13,6 +13,7 @@ template <typename ObjType>
 using cyphal_deserializer = int8_t (*)(ObjType* const, const uint8_t*, size_t* const);
 
 // NOLINTBEGIN(cppcoreguidelines-macro-usage)
+
 #define TYPE_ALIAS(ALIAS_NAME, T)                                                   \
     class ALIAS_NAME {                                                              \
     public:                                                                         \
@@ -24,6 +25,7 @@ using cyphal_deserializer = int8_t (*)(ObjType* const, const uint8_t*, size_t* c
         static constexpr size_t extent = T##_EXTENT_BYTES_;                         \
         static constexpr size_t buffer_size = T##_SERIALIZATION_BUFFER_SIZE_BYTES_; \
     };
+
 // NOLINTEND(cppcoreguidelines-macro-usage)
 
 /**
@@ -112,6 +114,9 @@ public:
         return std::make_shared<CyphalInterface>(node_id, config, provider);
     }
 
+    const UtilityConfig& get_utilities() const {
+        return utilities;
+    }
     /**
      * Проверка, инициализирован ли интерфейс (должна быть всегда `true`, если вы использовали `create_...`).
     */
