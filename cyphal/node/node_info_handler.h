@@ -6,7 +6,7 @@
 #include "cyphal/cyphal.h"
 #include "cyphal/subscriptions/subscription.h"
 
-#include <types/uavcan/node/GetInfo_1_0.h>
+#include <uavcan/node/GetInfo_1_0.h>
 
 TYPE_ALIAS(NodeInfoRequest, uavcan_node_GetInfo_Request_1_0)
 TYPE_ALIAS(NodeInfoResponse, uavcan_node_GetInfo_Response_1_0)

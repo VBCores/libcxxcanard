@@ -9,8 +9,8 @@
 #include "cyphal/subscriptions/subscription.h"
 #include "uavcan/_register/Name_1_0.h"
 
-#include <types/uavcan/_register/Access_1_0.h>
-#include <types/uavcan/_register/List_1_0.h>
+#include <uavcan/_register/Access_1_0.h>
+#include <uavcan/_register/List_1_0.h>
 
 TYPE_ALIAS(RegisterAccessRequest, uavcan_register_Access_Request_1_0)
 TYPE_ALIAS(RegisterAccessResponse, uavcan_register_Access_Response_1_0)
