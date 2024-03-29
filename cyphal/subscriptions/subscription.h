@@ -33,7 +33,7 @@ protected:
     CanardRxSubscription sub = {};
     InterfacePtr interface;
 
-    void subscribe(CanardPortID port_id, CanardTransferKind kind) {
+    void subscribe(CanardPortID port_id) {
         sub.user_reference = static_cast<void*>(this);
         interface->subscribe(port_id, T::extent, kind, &sub);
     }
@@ -45,13 +45,13 @@ public:
     AbstractSubscription(InterfacePtr& interface, CanardPortID port_id)
         : AbstractSubscription(interface, port_id, CanardTransferKindMessage){};
     AbstractSubscription(InterfacePtr& interface, CanardPortID port_id, CanardTransferKind kind)
-        : interface(interface), kind(kind) {
-        subscribe(port_id, kind);
+        : kind(kind), interface(interface) {
+        subscribe(port_id);
     };
     // NOLINTEND(modernize-pass-by-value)
 
     virtual CanardFilter make_filter(CanardNodeID node_id) {
-        CanardFilter out = {0};
+        CanardFilter out = {};
 
         switch (kind) {
             case CanardTransferKindMessage:
@@ -74,4 +74,6 @@ public:
         interface->deserialize_transfer<T>(&object, transfer);
         handler(object, transfer);
     }
+
+    virtual ~AbstractSubscription() {};
 };
