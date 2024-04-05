@@ -6,10 +6,10 @@
 #include "stm32g4xx_hal.h"
 #include "stm32g4xx_hal_fdcan.h"
 // TODO: rework this dependency
-#if __has_include("utils.h")
-#include "utils.h"
+#if __has_include("voltbro/utils.h")
+    #include "voltbro/utils.h"
 #else
-#define CRITICAL_SECTION(code) code
+    #define CRITICAL_SECTION(code) code
 #endif
 #else
 #define CRITICAL_SECTION(code) code
