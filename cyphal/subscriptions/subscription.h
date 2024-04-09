@@ -5,20 +5,6 @@
 #include "cyphal/interfaces.h"
 #include "libcanard/canard.h"
 
-// COPIED FROM LIBCANARD
-// NOLINTBEGIN(cppcoreguidelines-macro-to-enum,modernize-macro-to-enum)
-#define OFFSET_PRIORITY 26U
-#define OFFSET_SUBJECT_ID 8U
-#define OFFSET_SERVICE_ID 14U
-#define OFFSET_DST_NODE_ID 7U
-
-#define FLAG_SERVICE_NOT_MESSAGE (UINT32_C(1) << 25U)
-#define FLAG_ANONYMOUS_MESSAGE (UINT32_C(1) << 24U)
-#define FLAG_REQUEST_NOT_RESPONSE (UINT32_C(1) << 24U)
-#define FLAG_RESERVED_23 (UINT32_C(1) << 23U)
-#define FLAG_RESERVED_07 (UINT32_C(1) << 7U)
-// NOLINTEND(cppcoreguidelines-macro-to-enum,modernize-macro-to-enum)
-
 using InterfacePtr = const std::shared_ptr<CyphalInterface>;
 
 /**
@@ -55,11 +41,7 @@ public:
 
         switch (kind) {
             case CanardTransferKindMessage:
-                out.extended_can_id = (((uint32_t)sub.port_id) << OFFSET_SUBJECT_ID) |
-                                      (((uint32_t)node_id) << OFFSET_DST_NODE_ID);
-                out.extended_mask = FLAG_SERVICE_NOT_MESSAGE | FLAG_RESERVED_07 |
-                                    (CANARD_SUBJECT_ID_MAX << OFFSET_SUBJECT_ID) |
-                                    (CANARD_NODE_ID_MAX << OFFSET_DST_NODE_ID);
+                out = canardMakeFilterForSubject(sub.port_id);
                 break;
             case CanardTransferKindRequest:
             case CanardTransferKindResponse:
