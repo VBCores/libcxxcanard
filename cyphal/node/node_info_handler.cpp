@@ -1,3 +1,4 @@
+#if (defined(STM32G474xx) || defined(STM32_G)) && defined(HAL_FDCAN_MODULE_ENABLED)
 #include "node_info_handler.h"
 
 #include "stm32g4xx_ll_utils.h"
@@ -39,3 +40,4 @@ void NodeInfoReader::handler(
 ) {
     interface->send_response<NodeInfoResponse>(&node_info, transfer);
 }
+#endif
