@@ -1,26 +1,30 @@
 #include "cyphal.h"
 
+#include <chrono>
+
 #ifdef __linux__
 
 uint64_t _micros_64() {
-    struct timespec ts {};
-    timespec_get(&ts, TIME_UTC);
-    uint64_t us = SEC_TO_US((uint64_t)ts.tv_sec) + NS_TO_US((uint64_t)ts.tv_nsec);
-    return us;
+    using namespace std::chrono;
+    int64_t microseconds_since_epoch =
+        duration_cast<microseconds>(system_clock::now().time_since_epoch()).count();
+    return static_cast<uint64_t>(microseconds_since_epoch);
 }
 
-UtilityConfig DEFAULT_CONFIG (_micros_64, [](){ exit(1); });
+// NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
+const UtilityConfig DEFAULT_CONFIG(_micros_64, []() { exit(1); });
+// NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 
 #endif
 
 #ifdef __linux__
 #include <new>
 #endif
-#include <stdlib.h>
+#include <cstdlib>
 
 void* O1Allocator::allocate(CanardInstance* ins, size_t amount) {
     (void)ins;
-    void* mem;
+    void* mem = nullptr;
 
     CRITICAL_SECTION({ mem = o1heapAllocate(o1heap, amount); })
 
@@ -34,10 +38,12 @@ void O1Allocator::free(CanardInstance* ins, void* pointer) {
 
 void O1Allocator::align_self(size_t size) {
     if (!is_self_allocated) {
-        uintptr_t loc = (uintptr_t)memory_arena;
+        auto loc = reinterpret_cast<uintptr_t>(memory_arena);
         auto shift = loc % O1HEAP_ALIGNMENT;
         if (shift != 0) {
-            memory_arena = (void*)(loc + shift);
+            // NOLINTBEGIN(performance-no-int-to-ptr)
+            memory_arena = reinterpret_cast<void*>(loc + shift);
+            // NOLINTEND(performance-no-int-to-ptr)
             size -= shift;
         }
     }
@@ -49,16 +55,14 @@ void O1Allocator::align_self(size_t size) {
     o1heap = out;
 }
 
-O1Allocator::O1Allocator(size_t size, void* memory, UtilityConfig& utilities):
-    AbstractAllocator(size, utilities),
-    memory_arena(memory)
-    {
+O1Allocator::O1Allocator(size_t size, void* memory, const UtilityConfig& utilities)
+    : AbstractAllocator(size, utilities), memory_arena(memory) {
     align_self(size);
 }
 
-O1Allocator::O1Allocator(size_t size, UtilityConfig& utilities): AbstractAllocator(size, utilities) {
-    memory_arena = operator new (size, std::align_val_t{O1HEAP_ALIGNMENT});
-
+O1Allocator::O1Allocator(size_t size, const UtilityConfig& utilities)
+    : AbstractAllocator(size, utilities),
+      memory_arena(operator new(size, std::align_val_t{O1HEAP_ALIGNMENT})) {
     if (memory_arena == nullptr) {
         utilities.error_handler();
     }
@@ -72,15 +76,17 @@ O1Allocator::~O1Allocator() {
         return;
     }
     operator delete(memory_arena, std::align_val_t{O1HEAP_ALIGNMENT});
-
 }
 #include <cstdlib>
 
 void* SystemAllocator::allocate(CanardInstance* const ins, const size_t amount) {
     (void)ins;
-    void* mem;
+    void* mem = nullptr;
 
+    // NOLINTBEGIN(cppcoreguidelines-owning-memory,cppcoreguidelines-no-malloc,hicpp-no-malloc)
     CRITICAL_SECTION({ mem = std::malloc(amount); })
+    // NOLINTEND(cppcoreguidelines-owning-memory,cppcoreguidelines-no-malloc,hicpp-no-malloc)
+
     if (mem == nullptr) {
         utilities.error_handler();
     }
@@ -89,7 +95,10 @@ void* SystemAllocator::allocate(CanardInstance* const ins, const size_t amount) 
 
 void SystemAllocator::free(CanardInstance* const ins, void* const pointer) {
     (void)ins;
+
+    // NOLINTBEGIN(cppcoreguidelines-owning-memory,cppcoreguidelines-no-malloc,hicpp-no-malloc)
     CRITICAL_SECTION({ std::free(pointer); })
+    // NOLINTEND(cppcoreguidelines-owning-memory,cppcoreguidelines-no-malloc,hicpp-no-malloc)
 }
 
 #ifdef __linux__
@@ -111,7 +120,7 @@ void SystemAllocator::free(CanardInstance* const ins, void* const pointer) {
 #define FDCAN_DLC_BYTES_64 ((uint32_t)0x000F0000U) /*!< 64 bytes data field */
 #endif
 
-const uint32_t CanardFDCANLengthToDLC[65] = {
+const std::array<uint32_t, 65> CanardFDCANLengthToDLC = {
     // 0-8
     FDCAN_DLC_BYTES_0,
     FDCAN_DLC_BYTES_1,
@@ -187,28 +196,29 @@ const uint32_t CanardFDCANLengthToDLC[65] = {
     FDCAN_DLC_BYTES_64,
 };
 
+constexpr int MAX_16BIT = 65536;
+constexpr int GAP_1_INDICIES = 8;
+constexpr int GAP_4 = 4;
+constexpr int GAP_4_INDICIES = 12;
+constexpr int GAP_16 = 4;
+constexpr int GAP_16_INDICIES_OFFSET = 32;
+
 size_t fdcan_dlc_to_len(uint32_t dlc) {
-    auto dlc_index = (uint8_t)(dlc / 65536);
-    if (dlc_index <= 8) {
+    auto dlc_index = (uint8_t)(dlc / MAX_16BIT);
+    if (dlc_index <= GAP_1_INDICIES) {
         return dlc_index;
     }
-    if (dlc_index <= 12) {
-        return 8 + 4 * (dlc_index - 8);
+    if (dlc_index <= GAP_4_INDICIES) {
+        return GAP_1_INDICIES + GAP_4 * (dlc_index - GAP_1_INDICIES);
     }
-    return 32 + 16 * (dlc_index - 13);
+    return GAP_16_INDICIES_OFFSET + GAP_16 * (dlc_index - (GAP_4_INDICIES + 1));
 }
 
-CanardTxQueue queue{};
-CanardInstance canard{};
-
 std::unique_ptr<AbstractAllocator> _alloc_ptr;
-
 
 void AbstractCANProvider::process_canard_rx(CanardFrame* frame) {
     CanardRxTransfer transfer = {.payload = nullptr};
     CanardRxSubscription* subscription = nullptr;
-    void (*processor)(CanardRxTransfer*) = nullptr;
-    IListener<CanardRxTransfer*>* listener = nullptr;
 
     const int8_t accept_result = canardRxAccept(
         (CanardInstance* const)&canard,
@@ -218,20 +228,23 @@ void AbstractCANProvider::process_canard_rx(CanardFrame* frame) {
         &transfer,
         &subscription
     );
-    if (accept_result == 0 || accept_result > 1) {
-        // The received frame is either invalid or it's a non-last frame of a multi-frame transfer.
+
+    if (accept_result == -CANARD_ERROR_OUT_OF_MEMORY) {
+        utilities.error_handler();
+    } else if (accept_result < 0) {
+        // Invalid arguments
         return;
-    }
-    if (accept_result < 0) goto exit;
-    if (subscription == nullptr) goto exit;
-
-    listener = reinterpret_cast<IListener<CanardRxTransfer*>*>(subscription->user_reference);
-    if (listener == nullptr) goto exit;
-    listener->accept(&transfer);
-
-exit:
-    if (transfer.payload != nullptr) {
+    } else if (accept_result == 1) {
+        if (subscription != nullptr) {
+            auto listener =
+                static_cast<IListener<CanardRxTransfer*>*>(subscription->user_reference);
+            if (listener != nullptr) {
+                listener->accept(&transfer);
+            }
+        }
         canard.memory_free(&canard, transfer.payload);
+    } else {  // accept_result == 0 || accept_result > 1
+        // The received frame is either invalid or it's a non-last frame of a multi-frame transfer.
     }
 }
 
@@ -252,9 +265,7 @@ void AbstractCANProvider::process_canard_tx() {
     }
 }
 
-AbstractCANProvider::~AbstractCANProvider() {
-
-}
+AbstractCANProvider::~AbstractCANProvider() = default;
 #if (defined(STM32G474xx) || defined(STM32_G)) && defined(HAL_FDCAN_MODULE_ENABLED)
 #include <cstring>
 
@@ -270,17 +281,24 @@ size_t G4CAN::dlc_to_len(uint32_t dlc) {
 void G4CAN::can_loop() {
     while (HAL_FDCAN_GetRxFifoFillLevel(handler, FDCAN_RX_FIFO0) != 0) {
         CanardFrame frame;
-        bool has_read = read_frame(&frame);
+        uint8_t RxData[64] = {};
+        bool has_read = read_frame(&frame, static_cast<void*>(RxData));
         if (!has_read)
             break;
         process_canard_rx(&frame);
     }
 
     process_canard_tx();
+
+    static FDCAN_ProtocolStatusTypeDef fdcan_status;
+    HAL_FDCAN_GetProtocolStatus(handler, &fdcan_status);
+    if (fdcan_status.BusOff) {
+        CLEAR_BIT(handler->Instance->CCCR, FDCAN_CCCR_INIT);
+    }
 }
 
-static uint8_t RxData[64] = {};
-bool G4CAN::read_frame(CanardFrame* rxf) {
+bool G4CAN::read_frame(CanardFrame* rxf, void* data) {
+    uint8_t* RxData = static_cast<uint8_t*>(data);
     // may want to check 2 FIFOs in the future
     uint32_t rx_fifo = -1;
     if (HAL_FDCAN_GetRxFifoFillLevel(handler, FDCAN_RX_FIFO0)) {
@@ -300,7 +318,7 @@ bool G4CAN::read_frame(CanardFrame* rxf) {
 
     rxf->extended_can_id = RxHeader.Identifier;
     rxf->payload_size = dlc_to_len(RxHeader.DataLength);
-    rxf->payload = (void*)RxData;
+    rxf->payload = data;
     return true;
 }
 
@@ -322,15 +340,32 @@ int G4CAN::write_frame(const CanardTxQueueItem* ti) {
     // "Reduce the number of enqueued frames to 1" - fix to inner priority inversion
     for (int i = 0; HAL_FDCAN_GetTxFifoFreeLevel(handler) != 3 && i < 3; i++) {
         delay_cycles(ONE_FULL_FRAME_CYCLES);
-    } // wait for message to transmit
+    }  // wait for message to transmit
     if (HAL_FDCAN_GetTxFifoFreeLevel(handler) != 3) {
         return -1;
     }
 
-    if (HAL_FDCAN_AddMessageToTxFifoQ(handler, &TxHeader, (uint8_t *)ti->frame.payload) != HAL_OK) {
+    if (HAL_FDCAN_AddMessageToTxFifoQ(handler, &TxHeader, (uint8_t*)ti->frame.payload) != HAL_OK) {
         return -1;
     }
     return TxHeader.DataLength;
+}
+
+HAL_StatusTypeDef apply_filter(G4CAN::Handler hfdcan, FDCAN_FilterTypeDef* hw_filter, const CanardFilter& filter) {
+    static uint32_t filter_index = 0;
+
+    hw_filter->IdType = FDCAN_EXTENDED_ID;
+    hw_filter->FilterIndex = filter_index;
+    hw_filter->FilterType = FDCAN_FILTER_MASK;
+    hw_filter->FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
+    hw_filter->FilterID1 = filter.extended_can_id;
+    hw_filter->FilterID2 = filter.extended_mask;
+    HAL_StatusTypeDef result = HAL_FDCAN_ConfigFilter(hfdcan, hw_filter);
+
+    if (result == HAL_OK) {
+        filter_index += 1;
+    }
+    return result;
 }
 #endif
 
@@ -354,7 +389,8 @@ void CyphalInterface::push(
     );
     if (push_state == -CANARD_ERROR_OUT_OF_MEMORY) {
 #ifdef __linux__
-        std::cerr << "[Error: OOM] Tried to send to port: " << metadata->port_id << ", node: " << +metadata->remote_node_id << std::endl;
+        std::cerr << "[Error: OOM] Tried to send to port: " << metadata->port_id
+                  << ", node: " << +metadata->remote_node_id << std::endl;
 #else
         utilities.error_handler();
 #endif
@@ -386,3 +422,45 @@ void CyphalInterface::subscribe(
 void CyphalInterface::loop() {
     provider->can_loop();
 }
+#if (defined(STM32G474xx) || defined(STM32_G)) && defined(HAL_FDCAN_MODULE_ENABLED)
+
+#include "stm32g4xx_ll_utils.h"
+
+NodeInfoReader::NodeInfoReader(
+    InterfacePtr interface,
+    std::string&& name,
+    uavcan_node_Version_1_0&& protocol_version,
+    uavcan_node_Version_1_0&& hardware_version,
+    uavcan_node_Version_1_0&& software_version,
+    uint64_t software_vcs_revision_id
+): AbstractSubscription<NodeInfoRequest>(
+    interface,
+    uavcan_node_GetInfo_1_0_FIXED_PORT_ID_,
+    CanardTransferKindRequest
+) {
+    node_info.protocol_version = std::move(protocol_version);
+    node_info.hardware_version = std::move(hardware_version);
+    node_info.software_version = std::move(software_version);
+    node_info.software_vcs_revision_id = software_vcs_revision_id;
+
+    node_info.certificate_of_authenticity.count = 0;
+    node_info.software_image_crc.count = 0;
+
+    strcpy((char*)node_info.name.elements, name.c_str());
+    node_info.name.count = name.size();
+
+    uint32_t word0 = LL_GetUID_Word0();
+    uint32_t word1 = LL_GetUID_Word1();
+    uint32_t word2 = LL_GetUID_Word2();
+    memcpy(node_info.unique_id, &word0, 4);
+    memcpy(node_info.unique_id + 4, &word1, 4);
+    memcpy(node_info.unique_id + 8, &word2, 4);
+};
+
+void NodeInfoReader::handler(
+    const uavcan_node_GetInfo_Request_1_0& object,
+    CanardRxTransfer* transfer
+) {
+    interface->send_response<NodeInfoResponse>(&node_info, transfer);
+}
+#endif

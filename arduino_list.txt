@@ -9,3 +9,5 @@ providers/G4CAN.h
 cyphal.h
 cyphal.tpp
 subscriptions/subscription.h
+node/node_info_handler.h
+node/registers_handler.hpp
