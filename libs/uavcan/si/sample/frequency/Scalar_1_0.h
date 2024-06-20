@@ -8,8 +8,8 @@
 // are named with an underscore at the end, like foo_bar_().
 //
 // Generator:     nunavut-2.3.1 (serialization was enabled)
-// Source file:   /home/pi/ws/libs/types/public_regulated_data_types/uavcan/si/sample/frequency/Scalar.1.0.dsdl
-// Generated at:  2024-02-26 15:58:42.038070 UTC
+// Source file:   /home/pi/control/external/public_regulated_data_types/uavcan/si/sample/frequency/Scalar.1.0.dsdl
+// Generated at:  2024-06-20 11:16:21.375719 UTC
 // Is deprecated: no
 // Fixed port-ID: None
 // Full name:     uavcan.si.sample.frequency.Scalar
@@ -17,13 +17,13 @@
 //
 // Platform
 //     python_implementation:  CPython
-//     python_version:  3.10.12
+//     python_version:  3.12.3
 //     python_release_level:  final
-//     python_build:  ('main', 'Nov 20 2023 15:14:05')
-//     python_compiler:  GCC 11.4.0
+//     python_build:  ('main', 'Apr 10 2024 05:33:47')
+//     python_compiler:  GCC 13.2.0
 //     python_revision:
 //     python_xoptions:  {}
-//     runtime_platform:  Linux-5.15.0-1046-raspi-aarch64-with-glibc2.35
+//     runtime_platform:  Linux-6.8.0-1004-raspi-aarch64-with-glibc2.39
 //
 // Language Options
 //     target_endianness:  little
@@ -40,19 +40,19 @@
 #include <uavcan/time/SynchronizedTimestamp_1_0.h>
 
 static_assert( NUNAVUT_SUPPORT_LANGUAGE_OPTION_TARGET_ENDIANNESS == 434322821,
-              "/home/pi/ws/libs/types/public_regulated_data_types/uavcan/si/sample/frequency/Scalar.1.0.dsdl is trying to use a serialization library that was compiled with "
+              "/home/pi/control/external/public_regulated_data_types/uavcan/si/sample/frequency/Scalar.1.0.dsdl is trying to use a serialization library that was compiled with "
               "different language options. This is dangerous and therefore not allowed." );
 static_assert( NUNAVUT_SUPPORT_LANGUAGE_OPTION_OMIT_FLOAT_SERIALIZATION_SUPPORT == 0,
-              "/home/pi/ws/libs/types/public_regulated_data_types/uavcan/si/sample/frequency/Scalar.1.0.dsdl is trying to use a serialization library that was compiled with "
+              "/home/pi/control/external/public_regulated_data_types/uavcan/si/sample/frequency/Scalar.1.0.dsdl is trying to use a serialization library that was compiled with "
               "different language options. This is dangerous and therefore not allowed." );
 static_assert( NUNAVUT_SUPPORT_LANGUAGE_OPTION_ENABLE_SERIALIZATION_ASSERTS == 0,
-              "/home/pi/ws/libs/types/public_regulated_data_types/uavcan/si/sample/frequency/Scalar.1.0.dsdl is trying to use a serialization library that was compiled with "
+              "/home/pi/control/external/public_regulated_data_types/uavcan/si/sample/frequency/Scalar.1.0.dsdl is trying to use a serialization library that was compiled with "
               "different language options. This is dangerous and therefore not allowed." );
 static_assert( NUNAVUT_SUPPORT_LANGUAGE_OPTION_ENABLE_OVERRIDE_VARIABLE_ARRAY_CAPACITY == 0,
-              "/home/pi/ws/libs/types/public_regulated_data_types/uavcan/si/sample/frequency/Scalar.1.0.dsdl is trying to use a serialization library that was compiled with "
+              "/home/pi/control/external/public_regulated_data_types/uavcan/si/sample/frequency/Scalar.1.0.dsdl is trying to use a serialization library that was compiled with "
               "different language options. This is dangerous and therefore not allowed." );
 static_assert( NUNAVUT_SUPPORT_LANGUAGE_OPTION_CAST_FORMAT == 2368206204,
-              "/home/pi/ws/libs/types/public_regulated_data_types/uavcan/si/sample/frequency/Scalar.1.0.dsdl is trying to use a serialization library that was compiled with "
+              "/home/pi/control/external/public_regulated_data_types/uavcan/si/sample/frequency/Scalar.1.0.dsdl is trying to use a serialization library that was compiled with "
               "different language options. This is dangerous and therefore not allowed." );
 
 #ifdef __cplusplus
