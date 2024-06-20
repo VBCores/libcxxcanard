@@ -53,3 +53,37 @@ void CyphalInterface::subscribe(
 void CyphalInterface::loop() {
     provider->can_loop();
 }
+
+void CyphalInterface::start_threads(uint64_t tx_delay_micros) {
+    rx_terminate_flag.store(false);
+    tx_terminate_flag.store(false);
+
+    rx_thread = std::thread([=]() {
+        std::cout << "Started RX thread" << std::endl;
+        while(!rx_terminate_flag.load()) {
+            this->loop();
+        }
+        std::cout << "Finished RX thread" << std::endl;
+    });
+    tx_thread = std::thread([=]() {
+        std::cout << "Started TX thread" << std::endl;
+        while(!tx_terminate_flag.load()) {
+            this->provider->process_canard_tx();
+            usleep(tx_delay_micros);
+        }
+        std::cout << "Finished TX thread" << std::endl;
+    });
+
+    rx_thread.detach();
+    tx_thread.detach();
+}
+
+void CyphalInterface::stop_all_threads() {
+    rx_terminate_flag.store(true);
+    tx_terminate_flag.store(true);
+}
+
+
+CyphalInterface::~CyphalInterface() {
+    stop_all_threads();
+}

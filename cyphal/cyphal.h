@@ -1,6 +1,9 @@
 #pragma once
 
 #include <memory>
+#include <thread>
+#include <unistd.h>
+#include <atomic>
 
 #include "cyphal/definitions.h"
 #include "providers/provider.h"
@@ -36,6 +39,12 @@ private:
     const CanardNodeID node_id;
     const UtilityConfig& utilities;
     std::unique_ptr<AbstractCANProvider> provider;
+#ifdef __linux__
+    std::thread rx_thread;
+    std::atomic<bool> rx_terminate_flag;
+    std::thread tx_thread;
+    std::atomic<bool> tx_terminate_flag;
+#endif
 
 public:
     /**
@@ -48,6 +57,7 @@ public:
         AbstractCANProvider* provider
     )
         : node_id(node_id), utilities(config), provider(provider){};
+    ~CyphalInterface();
 
     /**
      * Инициализировать CyphalInterface в глобальной памяти (.bss), не использует кучу.
@@ -153,6 +163,10 @@ public:
     * ```
     */
     void loop();
+#ifdef __linux__
+    void start_threads(uint64_t tx_delay_micros = 50);
+    void stop_all_threads();
+#endif
 
     void push(
         CanardMicrosecond tx_deadline_usec,

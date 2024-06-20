@@ -3,9 +3,11 @@
 #ifdef __linux__
 
 #include "provider.h"
+#include "poll.h"
 
 #include <string>
 #include <utility>
+#include <mutex>
 
 /**
  * Реализация для linux, работает на основне SocketCAN.
@@ -16,9 +18,13 @@ public:
     using Handler = const std::string&;
 
 private:
+    std::mutex canard_mutex;
     int socketcan_handler;
+    pollfd can_pollfd;
     LinuxCAN(Handler can_interface, size_t queue_len, const UtilityConfig& utilities);
-
+protected:
+    void lock_canard() override;
+    void unlock_canard() override;
 public:
     template <class T, typename... Args>
     static LinuxCAN* create_bss(

@@ -51,6 +51,17 @@ LinuxCAN::LinuxCAN(
         perror("Bind");
         exit(1);
     }
+
+    can_pollfd.fd = socketcan_handler;
+    can_pollfd.events = POLLIN;
+}
+
+void LinuxCAN::lock_canard() {
+    canard_mutex.lock();
+}
+
+void LinuxCAN::unlock_canard() {
+    canard_mutex.unlock();
 }
 
 uint32_t LinuxCAN::len_to_dlc(size_t len) {
@@ -65,11 +76,16 @@ size_t LinuxCAN::dlc_to_len(uint32_t dlc) {
 void LinuxCAN::can_loop() {
     CanardFrame frame;
     struct canfd_frame raw_frame {};
-    // read frames, but no more then 10 in a row
-    constexpr size_t max_sequential_frames = 10;
-    for (int i = 0; i < max_sequential_frames && read_frame(&frame, static_cast<void*>(&raw_frame));
-         i++) {
-        process_canard_rx(&frame);
+
+    int status = poll(&can_pollfd, 1, -1);
+    if (status == -1) {
+        utilities.error_handler();
+    }
+
+    if (status && (can_pollfd.revents & POLLIN)) {
+        while(read_frame(&frame, static_cast<void*>(&raw_frame))) {
+            process_canard_rx(&frame);
+        }
     }
 
     process_canard_tx();

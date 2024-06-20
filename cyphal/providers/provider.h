@@ -79,6 +79,8 @@ protected:
         canard.node_id = node_id;
     }
 
+    virtual void lock_canard() {};
+    virtual void unlock_canard() {};
 public:
     using Handler = void;
 

@@ -4,6 +4,8 @@
 std::unique_ptr<AbstractAllocator> _alloc_ptr;
 
 void AbstractCANProvider::process_canard_rx(CanardFrame* frame) {
+    lock_canard();
+
     CanardRxTransfer transfer = {.payload = nullptr};
     CanardRxSubscription* subscription = nullptr;
 
@@ -33,9 +35,13 @@ void AbstractCANProvider::process_canard_rx(CanardFrame* frame) {
     } else {  // accept_result == 0 || accept_result > 1
         // The received frame is either invalid or it's a non-last frame of a multi-frame transfer.
     }
+
+    unlock_canard();
 }
 
 void AbstractCANProvider::process_canard_tx() {
+    lock_canard();
+
     // Look at top of the TX queue of individual CAN frames
     while (queue.size != 0) {
         const CanardTxQueueItem* ti = canardTxPeek(&queue);
@@ -50,6 +56,8 @@ void AbstractCANProvider::process_canard_tx() {
         // pop it from the queue and deallocate:
         canard.memory_free(&canard, canardTxPop(&queue, ti));
     }
+
+    unlock_canard();
 }
 
 AbstractCANProvider::~AbstractCANProvider() = default;
