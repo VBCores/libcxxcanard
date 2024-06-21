@@ -134,7 +134,12 @@ public:
     /**
     * Количество FDCAN-сообщений в очереди на отправку.
     */
-    size_t queue_size() { return provider->queue.size; }
+    size_t queue_size() {
+        provider->lock_canard();
+        size_t answer = provider->queue.size;
+        provider->unlock_canard();
+        return answer;
+    }
     /**
     * Есть ли еще не отправленные фреймы?
     */
@@ -142,7 +147,10 @@ public:
         if (!provider) {
             return false;
         }
-        return canardTxPeek(&provider->queue) != nullptr;
+        provider->lock_canard();
+        bool answer = canardTxPeek(&provider->queue) != nullptr;
+        provider->unlock_canard();
+        return answer;
     }
     /**
     * Прокрутить логику обработки исходящих сообщений *один раз*.

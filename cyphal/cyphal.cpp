@@ -10,6 +10,7 @@ void CyphalInterface::push(
     const size_t payload_size,
     const void* const payload
 ) const {
+    provider->lock_canard();
     int32_t push_state = canardTxPush(
         &provider->queue,
         &provider->canard,
@@ -30,6 +31,7 @@ void CyphalInterface::push(
     if (push_state < 0) {
         utilities.error_handler();
     }
+    provider->unlock_canard();
 }
 
 void CyphalInterface::subscribe(
