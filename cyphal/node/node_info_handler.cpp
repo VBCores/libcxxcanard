@@ -1,4 +1,4 @@
-#if (defined(STM32G474xx) || defined(STM32_G)) && defined(HAL_FDCAN_MODULE_ENABLED)
+#if (defined(STM32G474xx) || defined(STM32_G))
 #include "node_info_handler.h"
 
 #include "stm32g4xx_ll_utils.h"

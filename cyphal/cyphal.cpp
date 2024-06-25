@@ -56,6 +56,7 @@ void CyphalInterface::loop() {
     provider->can_loop();
 }
 
+#ifdef __linux__
 void CyphalInterface::start_threads(uint64_t tx_delay_micros) {
     rx_terminate_flag.store(false);
     tx_terminate_flag.store(false);
@@ -84,8 +85,10 @@ void CyphalInterface::stop_all_threads() {
     rx_terminate_flag.store(true);
     tx_terminate_flag.store(true);
 }
-
+#endif
 
 CyphalInterface::~CyphalInterface() {
+#ifdef __linux__
     stop_all_threads();
+#endif
 }
