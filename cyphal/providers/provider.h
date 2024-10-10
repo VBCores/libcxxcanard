@@ -97,6 +97,7 @@ public:
     virtual int write_frame(const CanardTxQueueItem* ti) = 0;
     void process_canard_rx(CanardFrame*);
     void process_canard_tx();
+    void clear_queue();
 
     virtual ~AbstractCANProvider();
 };
