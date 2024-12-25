@@ -101,7 +101,7 @@ void SystemAllocator::free(CanardInstance* const ins, void* const pointer) {
     // NOLINTEND(cppcoreguidelines-owning-memory,cppcoreguidelines-no-malloc,hicpp-no-malloc)
 }
 
-#ifdef __linux__
+#if defined(__linux__) || defined(ARDUINO)
 #define FDCAN_DLC_BYTES_0 ((uint32_t)0x00000000U)  /*!< 0 bytes data field  */
 #define FDCAN_DLC_BYTES_1 ((uint32_t)0x00010000U)  /*!< 1 bytes data field  */
 #define FDCAN_DLC_BYTES_2 ((uint32_t)0x00020000U)  /*!< 2 bytes data field  */
@@ -217,6 +217,8 @@ size_t fdcan_dlc_to_len(uint32_t dlc) {
 std::unique_ptr<AbstractAllocator> _alloc_ptr;
 
 void AbstractCANProvider::process_canard_rx(CanardFrame* frame) {
+    lock_canard();
+
     CanardRxTransfer transfer = {.payload = nullptr};
     CanardRxSubscription* subscription = nullptr;
 
@@ -246,9 +248,13 @@ void AbstractCANProvider::process_canard_rx(CanardFrame* frame) {
     } else {  // accept_result == 0 || accept_result > 1
         // The received frame is either invalid or it's a non-last frame of a multi-frame transfer.
     }
+
+    unlock_canard();
 }
 
 void AbstractCANProvider::process_canard_tx() {
+    lock_canard();
+
     // Look at top of the TX queue of individual CAN frames
     while (queue.size != 0) {
         const CanardTxQueueItem* ti = canardTxPeek(&queue);
@@ -263,7 +269,18 @@ void AbstractCANProvider::process_canard_tx() {
         // pop it from the queue and deallocate:
         canard.memory_free(&canard, canardTxPop(&queue, ti));
     }
+
+    unlock_canard();
 }
+
+void AbstractCANProvider::clear_queue() {
+    lock_canard();
+    while (queue.size != 0) {
+        const CanardTxQueueItem* ti = canardTxPeek(&queue);
+        canard.memory_free(&canard, canardTxPop(&queue, ti));
+    }
+    unlock_canard();
+};
 
 AbstractCANProvider::~AbstractCANProvider() = default;
 #if (defined(STM32G474xx) || defined(STM32_G)) && defined(HAL_FDCAN_MODULE_ENABLED)
@@ -379,6 +396,7 @@ void CyphalInterface::push(
     const size_t payload_size,
     const void* const payload
 ) const {
+    provider->lock_canard();
     int32_t push_state = canardTxPush(
         &provider->queue,
         &provider->canard,
@@ -399,6 +417,7 @@ void CyphalInterface::push(
     if (push_state < 0) {
         utilities.error_handler();
     }
+    provider->unlock_canard();
 }
 
 void CyphalInterface::subscribe(
@@ -422,7 +441,44 @@ void CyphalInterface::subscribe(
 void CyphalInterface::loop() {
     provider->can_loop();
 }
-#if (defined(STM32G474xx) || defined(STM32_G)) && defined(HAL_FDCAN_MODULE_ENABLED)
+
+#ifdef __linux__
+void CyphalInterface::start_threads(uint64_t tx_delay_micros) {
+    rx_terminate_flag.store(false);
+    tx_terminate_flag.store(false);
+
+    rx_thread = std::thread([=]() {
+        std::cout << "Started RX thread" << std::endl;
+        while(!rx_terminate_flag.load()) {
+            this->loop();
+        }
+        std::cout << "Finished RX thread" << std::endl;
+    });
+    tx_thread = std::thread([=]() {
+        std::cout << "Started TX thread" << std::endl;
+        while(!tx_terminate_flag.load()) {
+            this->provider->process_canard_tx();
+            usleep(tx_delay_micros);
+        }
+        std::cout << "Finished TX thread" << std::endl;
+    });
+
+    rx_thread.detach();
+    tx_thread.detach();
+}
+
+void CyphalInterface::stop_all_threads() {
+    rx_terminate_flag.store(true);
+    tx_terminate_flag.store(true);
+}
+#endif
+
+CyphalInterface::~CyphalInterface() {
+#ifdef __linux__
+    stop_all_threads();
+#endif
+}
+#if (defined(STM32G474xx) || defined(STM32_G))
 
 #include "stm32g4xx_ll_utils.h"
 
