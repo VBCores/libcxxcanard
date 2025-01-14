@@ -204,7 +204,7 @@ constexpr int GAP_16 = 4;
 constexpr int GAP_16_INDICIES_OFFSET = 32;
 
 size_t fdcan_dlc_to_len(uint32_t dlc) {
-    auto dlc_index = (uint8_t)(dlc / MAX_16BIT);
+    auto dlc_index = dlc;
     if (dlc_index <= GAP_1_INDICIES) {
         return dlc_index;
     }
@@ -295,7 +295,7 @@ size_t G4CAN::dlc_to_len(uint32_t dlc) {
     return fdcan_dlc_to_len(dlc);
 }
 
-void G4CAN::can_loop() {
+void G4CAN::can_loop(bool no_tx) {
     while (HAL_FDCAN_GetRxFifoFillLevel(handler, FDCAN_RX_FIFO0) != 0) {
         CanardFrame frame;
         uint8_t RxData[64] = {};
@@ -305,7 +305,9 @@ void G4CAN::can_loop() {
         process_canard_rx(&frame);
     }
 
-    process_canard_tx();
+    if (!no_tx) {
+        process_canard_tx();
+    }
 
     static FDCAN_ProtocolStatusTypeDef fdcan_status;
     HAL_FDCAN_GetProtocolStatus(handler, &fdcan_status);
@@ -444,23 +446,24 @@ void CyphalInterface::loop() {
 
 #ifdef __linux__
 void CyphalInterface::start_threads(uint64_t tx_delay_micros) {
-    rx_terminate_flag.store(false);
-    tx_terminate_flag.store(false);
+    threads_terminate_flag.store(false);
 
     rx_thread = std::thread([=]() {
         std::cout << "Started RX thread" << std::endl;
-        while(!rx_terminate_flag.load()) {
-            this->loop();
+        while(!threads_terminate_flag.load()) {
+            this->provider->can_loop(true);  // no_tx=true
         }
         std::cout << "Finished RX thread" << std::endl;
+        is_rx_terminated.store(true);
     });
     tx_thread = std::thread([=]() {
         std::cout << "Started TX thread" << std::endl;
-        while(!tx_terminate_flag.load()) {
+        while(!threads_terminate_flag.load()) {
             this->provider->process_canard_tx();
             usleep(tx_delay_micros);
         }
         std::cout << "Finished TX thread" << std::endl;
+        is_tx_terminated.store(true);
     });
 
     rx_thread.detach();
@@ -468,14 +471,17 @@ void CyphalInterface::start_threads(uint64_t tx_delay_micros) {
 }
 
 void CyphalInterface::stop_all_threads() {
-    rx_terminate_flag.store(true);
-    tx_terminate_flag.store(true);
+    threads_terminate_flag.store(true);
 }
 #endif
 
 CyphalInterface::~CyphalInterface() {
 #ifdef __linux__
     stop_all_threads();
+    while (!is_rx_terminated.load()) {}
+    std::cout << "Waited for RX thread" << std::endl;
+    while (!is_tx_terminated.load()) {}
+    std::cout << "Waited for TX thread" << std::endl;
 #endif
 }
 #if (defined(STM32G474xx) || defined(STM32_G))

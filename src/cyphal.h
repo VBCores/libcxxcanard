@@ -35,8 +35,8 @@ uint64_t _micros_64();
 
 // NOLINTBEGIN(cppcoreguidelines-avoid-const-or-ref-data-members)
 /**
- * Коллекция разных функций, требуемых для работы cyphal: микросекунды и обработчик ошибок.
- * Не очень типично для linux, но привычно на stm32 - поэтому используется везде ради кроссплатформенности.
+ * РљРѕР»Р»РµРєС†РёСЏ СЂР°Р·РЅС‹С… С„СѓРЅРєС†РёР№, С‚СЂРµР±СѓРµРјС‹С… РґР»СЏ СЂР°Р±РѕС‚С‹ cyphal: РјРёРєСЂРѕСЃРµРєСѓРЅРґС‹ Рё РѕР±СЂР°Р±РѕС‚С‡РёРє РѕС€РёР±РѕРє.
+ * РќРµ РѕС‡РµРЅСЊ С‚РёРїРёС‡РЅРѕ РґР»СЏ linux, РЅРѕ РїСЂРёРІС‹С‡РЅРѕ РЅР° stm32 - РїРѕСЌС‚РѕРјСѓ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РІРµР·РґРµ СЂР°РґРё РєСЂРѕСЃСЃРїР»Р°С‚С„РѕСЂРјРµРЅРЅРѕСЃС‚Рё.
 */
 struct UtilityConfig {
     using micros_64_type = std::function<uint64_t()>;
@@ -46,8 +46,8 @@ struct UtilityConfig {
     const error_handler_type error_handler;
 
     /**
-     * @param micros Функция (функтор), возвращающая `uint64_t` микросекунды
-     * @param handler Функция - "*что делать при ошибке*". На stm32 обычно просто `Error_Handler`, на linux - что угодно, можно просто `exit()`.
+     * @param micros Р¤СѓРЅРєС†РёСЏ (С„СѓРЅРєС‚РѕСЂ), РІРѕР·РІСЂР°С‰Р°СЋС‰Р°СЏ `uint64_t` РјРёРєСЂРѕСЃРµРєСѓРЅРґС‹
+     * @param handler Р¤СѓРЅРєС†РёСЏ - "*С‡С‚Рѕ РґРµР»Р°С‚СЊ РїСЂРё РѕС€РёР±РєРµ*". РќР° stm32 РѕР±С‹С‡РЅРѕ РїСЂРѕСЃС‚Рѕ `Error_Handler`, РЅР° linux - С‡С‚Рѕ СѓРіРѕРґРЅРѕ, РјРѕР¶РЅРѕ РїСЂРѕСЃС‚Рѕ `exit()`.
     */
     explicit UtilityConfig(micros_64_type&& micros, error_handler_type&& handler) noexcept
         : micros_64(std::forward<micros_64_type>(micros)),
@@ -70,8 +70,8 @@ public:
 #include "libcanard/canard.h"
 
 /**
- * Абстрактный менеджер памяти. Сам по себе ничего не делает, вместо него надо передавать экземпляр
- * наследника - `o1` или `sys`.
+ * РђР±СЃС‚СЂР°РєС‚РЅС‹Р№ РјРµРЅРµРґР¶РµСЂ РїР°РјСЏС‚Рё. РЎР°Рј РїРѕ СЃРµР±Рµ РЅРёС‡РµРіРѕ РЅРµ РґРµР»Р°РµС‚, РІРјРµСЃС‚Рѕ РЅРµРіРѕ РЅР°РґРѕ РїРµСЂРµРґР°РІР°С‚СЊ СЌРєР·РµРјРїР»СЏСЂ
+ * РЅР°СЃР»РµРґРЅРёРєР° - `o1` РёР»Рё `sys`.
  */
 class AbstractAllocator {
 protected:
@@ -94,8 +94,8 @@ public:
 
 
 /**
- * Обертка вокруг O1Heap. Рекомендуемый аллокатор для cyphal. Можем аллоцировать память для себя сам при создании,
- * может принять указатель на заранее выделенный участок.
+ * РћР±РµСЂС‚РєР° РІРѕРєСЂСѓРі O1Heap. Р РµРєРѕРјРµРЅРґСѓРµРјС‹Р№ Р°Р»Р»РѕРєР°С‚РѕСЂ РґР»СЏ cyphal. РњРѕР¶РµРј Р°Р»Р»РѕС†РёСЂРѕРІР°С‚СЊ РїР°РјСЏС‚СЊ РґР»СЏ СЃРµР±СЏ СЃР°Рј РїСЂРё СЃРѕР·РґР°РЅРёРё,
+ * РјРѕР¶РµС‚ РїСЂРёРЅСЏС‚СЊ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° Р·Р°СЂР°РЅРµРµ РІС‹РґРµР»РµРЅРЅС‹Р№ СѓС‡Р°СЃС‚РѕРє.
  */
 class O1Allocator : public AbstractAllocator {
 private:
@@ -106,16 +106,16 @@ private:
 
 public:
     /**
-     * Создать на основе заранее выделенной памяти.
+     * РЎРѕР·РґР°С‚СЊ РЅР° РѕСЃРЅРѕРІРµ Р·Р°СЂР°РЅРµРµ РІС‹РґРµР»РµРЅРЅРѕР№ РїР°РјСЏС‚Рё.
      *
-     * @param size Размер буффера
-     * @param memory Указатель на выделенный сегмент
+     * @param size Р Р°Р·РјРµСЂ Р±СѓС„С„РµСЂР°
+     * @param memory РЈРєР°Р·Р°С‚РµР»СЊ РЅР° РІС‹РґРµР»РµРЅРЅС‹Р№ СЃРµРіРјРµРЅС‚
      */
     O1Allocator(size_t size, void* memory, const UtilityConfig& utilities);
     /**
-     * Создать аллокатор, который выдеит себя память сам.
+     * РЎРѕР·РґР°С‚СЊ Р°Р»Р»РѕРєР°С‚РѕСЂ, РєРѕС‚РѕСЂС‹Р№ РІС‹РґРµРёС‚ СЃРµР±СЏ РїР°РјСЏС‚СЊ СЃР°Рј.
      *
-     * @param size Размер буффера
+     * @param size Р Р°Р·РјРµСЂ Р±СѓС„С„РµСЂР°
      */
     explicit O1Allocator(size_t size, const UtilityConfig& utilities);
     ~O1Allocator() override;
@@ -128,7 +128,7 @@ public:
 
 
 /**
- * Наивный менеджер памяти, просто обертка вокруг malloc и free.
+ * РќР°РёРІРЅС‹Р№ РјРµРЅРµРґР¶РµСЂ РїР°РјСЏС‚Рё, РїСЂРѕСЃС‚Рѕ РѕР±РµСЂС‚РєР° РІРѕРєСЂСѓРі malloc Рё free.
  */
 class SystemAllocator : public AbstractAllocator {
 public:
@@ -182,7 +182,7 @@ constexpr float QUEUE_SIZE_MULT = 2.5F;
 constexpr size_t DEFAULT_QUEUE_SIZE = 200;
 
 /**
- * Абстрактная обертка вокруг основного функционала CAN.
+ * РђР±СЃС‚СЂР°РєС‚РЅР°СЏ РѕР±РµСЂС‚РєР° РІРѕРєСЂСѓРі РѕСЃРЅРѕРІРЅРѕРіРѕ С„СѓРЅРєС†РёРѕРЅР°Р»Р° CAN.
  */
 class AbstractCANProvider {
     friend class CyphalInterface;
@@ -236,7 +236,7 @@ public:
 
     virtual uint32_t len_to_dlc(size_t len) = 0;
     virtual size_t dlc_to_len(uint32_t dlc) = 0;
-    virtual void can_loop() = 0;
+    virtual void can_loop(bool no_tx=false) = 0;
     virtual bool read_frame(CanardFrame*, void* data) = 0;
     virtual int write_frame(const CanardTxQueueItem* ti) = 0;
     void process_canard_rx(CanardFrame*);
@@ -259,26 +259,26 @@ __attribute__((optimize("O1"))) static inline void delay_cycles(
     /* Reference:
      https://developer.arm.com/documentation/ddi0439/b/Programmers-Model/Instruction-set-summary/Cortex-M4-instructions?lang=en
      *
-     * // 6 тактов на (cycles - 8) / 5
-       sub     r3, r0, #5         // 1 такт
-       ldr     r2, .L6            // 2 такта
-       smull   r1, r2, r3, r2     // 1 такт
-       asr     r3, r3, #31        // 1 такт
-       rsb     r3, r3, r2, asr #1 // 1 такт
+     * // 6 С‚Р°РєС‚РѕРІ РЅР° (cycles - 8) / 5
+       sub     r3, r0, #5         // 1 С‚Р°РєС‚
+       ldr     r2, .L6            // 2 С‚Р°РєС‚Р°
+       smull   r1, r2, r3, r2     // 1 С‚Р°РєС‚
+       asr     r3, r3, #31        // 1 С‚Р°РєС‚
+       rsb     r3, r3, r2, asr #1 // 1 С‚Р°РєС‚
      *
-     * // 2 такта на стартовую проверку
-       ands    r3, r3, #255       // 1 такт
-       bxeq    lr                 // 1 такт ("Conditional branch completes in a single cycle if the
+     * // 2 С‚Р°РєС‚Р° РЅР° СЃС‚Р°СЂС‚РѕРІСѓСЋ РїСЂРѕРІРµСЂРєСѓ
+       ands    r3, r3, #255       // 1 С‚Р°РєС‚
+       bxeq    lr                 // 1 С‚Р°РєС‚ ("Conditional branch completes in a single cycle if the
      branch is not taken.")
      *
-     * // ~5 тактов на цикл
+     * // ~5 С‚Р°РєС‚РѕРІ РЅР° С†РёРєР»
        .L3:
-       nop                       // 1 такт
-       sub     r3, r3, #1        // 1 такт
-       ands    r3, r3, #255      // 1 такт
-       bne     .L3               // 1 + 1-3 такта, в среднем 2(3?)
+       nop                       // 1 С‚Р°РєС‚
+       sub     r3, r3, #1        // 1 С‚Р°РєС‚
+       ands    r3, r3, #255      // 1 С‚Р°РєС‚
+       bne     .L3               // 1 + 1-3 С‚Р°РєС‚Р°, РІ СЃСЂРµРґРЅРµРј 2(3?)
      *
-     * Всего 5 тактов на цикл + 8 в начале.
+     * Р’СЃРµРіРѕ 5 С‚Р°РєС‚РѕРІ РЅР° С†РёРєР» + 8 РІ РЅР°С‡Р°Р»Рµ.
      */
     constexpr uint8_t SETUP_CYCLES = 8;
     constexpr uint8_t LOOP_CYCLES = 5;
@@ -296,8 +296,8 @@ __attribute__((optimize("O1"))) static inline void delay_cycles(
 #include <utility>
 
 /**
- * Реализация для stm32g4, работает на основне SocketCAN.
- * Аргументы для конструкторов смотри в `CyphalInterface::create_bss / CyphalInterface::create_heap` (фабричные методы).
+ * Р РµР°Р»РёР·Р°С†РёСЏ РґР»СЏ stm32g4, СЂР°Р±РѕС‚Р°РµС‚ РЅР° РѕСЃРЅРѕРІРЅРµ SocketCAN.
+ * РђСЂРіСѓРјРµРЅС‚С‹ РґР»СЏ РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂРѕРІ СЃРјРѕС‚СЂРё РІ `CyphalInterface::create_bss / CyphalInterface::create_heap` (С„Р°Р±СЂРёС‡РЅС‹Рµ РјРµС‚РѕРґС‹).
 */
 class G4CAN : public AbstractCANProvider {
 public:
@@ -359,7 +359,7 @@ public:
 
     uint32_t len_to_dlc(size_t len) override;
     size_t dlc_to_len(uint32_t dlc) override;
-    void can_loop() override;
+    void can_loop(bool no_tx=false) override;
     bool read_frame(CanardFrame* frame, void* data) override;
     int write_frame(const CanardTxQueueItem* ti) override;
 };
@@ -398,7 +398,7 @@ using cyphal_deserializer = int8_t (*)(ObjType* const, const uint8_t*, size_t* c
 // NOLINTEND(cppcoreguidelines-macro-usage)
 
 /**
- * Основной класс со всей функциональностью. Это единственный класс непостредственно из этой библиотеки, экземплляр которого надо создать.
+ * РћСЃРЅРѕРІРЅРѕР№ РєР»Р°СЃСЃ СЃРѕ РІСЃРµР№ С„СѓРЅРєС†РёРѕРЅР°Р»СЊРЅРѕСЃС‚СЊСЋ. Р­С‚Рѕ РµРґРёРЅСЃС‚РІРµРЅРЅС‹Р№ РєР»Р°СЃСЃ РЅРµРїРѕСЃС‚СЂРµРґСЃС‚РІРµРЅРЅРѕ РёР· СЌС‚РѕР№ Р±РёР±Р»РёРѕС‚РµРєРё, СЌРєР·РµРјРїР»Р»СЏСЂ РєРѕС‚РѕСЂРѕРіРѕ РЅР°РґРѕ СЃРѕР·РґР°С‚СЊ.
  */
 class CyphalInterface {
 private:
@@ -407,15 +407,16 @@ private:
     std::unique_ptr<AbstractCANProvider> provider;
 #ifdef __linux__
     std::thread rx_thread;
-    std::atomic<bool> rx_terminate_flag;
     std::thread tx_thread;
-    std::atomic<bool> tx_terminate_flag;
+    std::atomic<bool> threads_terminate_flag;
+    std::atomic<bool> is_rx_terminated;
+    std::atomic<bool> is_tx_terminated;
 #endif
 
 public:
     /**
-     * Конструктор, позволяющий самому инициализировать AbstractCANProvider.
-     * Не рекомендуется к использованию, **всегда** предпочитайте `create_bss` / `create_heap`.
+     * РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ, РїРѕР·РІРѕР»СЏСЋС‰РёР№ СЃР°РјРѕРјСѓ РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°С‚СЊ AbstractCANProvider.
+     * РќРµ СЂРµРєРѕРјРµРЅРґСѓРµС‚СЃСЏ Рє РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЋ, **РІСЃРµРіРґР°** РїСЂРµРґРїРѕС‡РёС‚Р°Р№С‚Рµ `create_bss` / `create_heap`.
     */
     CyphalInterface(
         CanardNodeID node_id,
@@ -426,14 +427,14 @@ public:
     ~CyphalInterface();
 
     /**
-     * Инициализировать CyphalInterface в глобальной памяти (.bss), не использует кучу.
+     * РРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°С‚СЊ CyphalInterface РІ РіР»РѕР±Р°Р»СЊРЅРѕР№ РїР°РјСЏС‚Рё (.bss), РЅРµ РёСЃРїРѕР»СЊР·СѓРµС‚ РєСѓС‡Сѓ.
      *
-     * @param buffer Буффер размера `sizeof(CyphalInterface) + sizeof(выбранный_провайдер) + sizeof(выбранный_аллокатор)`
-     * @param node_id ID текущей ноды
-     * @param handler Низкоуровневый интерфейс CAN. Для linux просто строка "can0"/"can1". Для stm32 - обычно `&hfdcan1`.
-     * @param queue_len Размер очереди сообщений
-     * @param args Variadic параметры, которые будут переданы в provider.
-     * @param config Ссылка на UtilityConfig.
+     * @param buffer Р‘СѓС„С„РµСЂ СЂР°Р·РјРµСЂР° `sizeof(CyphalInterface) + sizeof(РІС‹Р±СЂР°РЅРЅС‹Р№_РїСЂРѕРІР°Р№РґРµСЂ) + sizeof(РІС‹Р±СЂР°РЅРЅС‹Р№_Р°Р»Р»РѕРєР°С‚РѕСЂ)`
+     * @param node_id ID С‚РµРєСѓС‰РµР№ РЅРѕРґС‹
+     * @param handler РќРёР·РєРѕСѓСЂРѕРІРЅРµРІС‹Р№ РёРЅС‚РµСЂС„РµР№СЃ CAN. Р”Р»СЏ linux РїСЂРѕСЃС‚Рѕ СЃС‚СЂРѕРєР° "can0"/"can1". Р”Р»СЏ stm32 - РѕР±С‹С‡РЅРѕ `&hfdcan1`.
+     * @param queue_len Р Р°Р·РјРµСЂ РѕС‡РµСЂРµРґРё СЃРѕРѕР±С‰РµРЅРёР№
+     * @param args Variadic РїР°СЂР°РјРµС‚СЂС‹, РєРѕС‚РѕСЂС‹Рµ Р±СѓРґСѓС‚ РїРµСЂРµРґР°РЅС‹ РІ provider.
+     * @param config РЎСЃС‹Р»РєР° РЅР° UtilityConfig.
     */
     template <typename Provider, class Allocator, class... Args>
     static CyphalInterface* create_bss(
@@ -462,14 +463,14 @@ public:
         return interface;
     }
     /**
-     * Инициализировать CyphalInterface на куче. Гораздо удобнее чем .bss, выделяет память только на старте программы и столько же сколько и `create_bss`,
-     * поэтому если можете пользоваться кучей - пользуйтесь этим методом.
+     * РРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°С‚СЊ CyphalInterface РЅР° РєСѓС‡Рµ. Р“РѕСЂР°Р·РґРѕ СѓРґРѕР±РЅРµРµ С‡РµРј .bss, РІС‹РґРµР»СЏРµС‚ РїР°РјСЏС‚СЊ С‚РѕР»СЊРєРѕ РЅР° СЃС‚Р°СЂС‚Рµ РїСЂРѕРіСЂР°РјРјС‹ Рё СЃС‚РѕР»СЊРєРѕ Р¶Рµ СЃРєРѕР»СЊРєРѕ Рё `create_bss`,
+     * РїРѕСЌС‚РѕРјСѓ РµСЃР»Рё РјРѕР¶РµС‚Рµ РїРѕР»СЊР·РѕРІР°С‚СЊСЃСЏ РєСѓС‡РµР№ - РїРѕР»СЊР·СѓР№С‚РµСЃСЊ СЌС‚РёРј РјРµС‚РѕРґРѕРј.
      *
-     * @param node_id ID текущей ноды
-     * @param handler Низкоуровневый интерфейс CAN. Для linux просто строка "can0"/"can1". Для stm32 - обычно `&hfdcan1`.
-     * @param queue_len Размер очереди сообщений
-     * @param args Variadic параметры, которые будут переданы в provider.
-     * @param config Ссылка на UtilityConfig.
+     * @param node_id ID С‚РµРєСѓС‰РµР№ РЅРѕРґС‹
+     * @param handler РќРёР·РєРѕСѓСЂРѕРІРЅРµРІС‹Р№ РёРЅС‚РµСЂС„РµР№СЃ CAN. Р”Р»СЏ linux РїСЂРѕСЃС‚Рѕ СЃС‚СЂРѕРєР° "can0"/"can1". Р”Р»СЏ stm32 - РѕР±С‹С‡РЅРѕ `&hfdcan1`.
+     * @param queue_len Р Р°Р·РјРµСЂ РѕС‡РµСЂРµРґРё СЃРѕРѕР±С‰РµРЅРёР№
+     * @param args Variadic РїР°СЂР°РјРµС‚СЂС‹, РєРѕС‚РѕСЂС‹Рµ Р±СѓРґСѓС‚ РїРµСЂРµРґР°РЅС‹ РІ provider.
+     * @param config РЎСЃС‹Р»РєР° РЅР° UtilityConfig.
     */
     template <typename Provider, class Allocator, class... Args>
     static std::shared_ptr<CyphalInterface> create_heap(
@@ -494,11 +495,11 @@ public:
         return utilities;
     }
     /**
-     * Проверка, инициализирован ли интерфейс (должна быть всегда `true`, если вы использовали `create_...`).
+     * РџСЂРѕРІРµСЂРєР°, РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°РЅ Р»Рё РёРЅС‚РµСЂС„РµР№СЃ (РґРѕР»Р¶РЅР° Р±С‹С‚СЊ РІСЃРµРіРґР° `true`, РµСЃР»Рё РІС‹ РёСЃРїРѕР»СЊР·РѕРІР°Р»Рё `create_...`).
     */
     bool is_up() { return bool(provider); }
     /**
-    * Количество FDCAN-сообщений в очереди на отправку.
+    * РљРѕР»РёС‡РµСЃС‚РІРѕ FDCAN-СЃРѕРѕР±С‰РµРЅРёР№ РІ РѕС‡РµСЂРµРґРё РЅР° РѕС‚РїСЂР°РІРєСѓ.
     */
     size_t queue_size() {
         provider->lock_canard();
@@ -507,13 +508,13 @@ public:
         return answer;
     }
     /**
-    * Очистить очередь на отправку
+    * РћС‡РёСЃС‚РёС‚СЊ РѕС‡РµСЂРµРґСЊ РЅР° РѕС‚РїСЂР°РІРєСѓ
     */
     void clear_queue() {
         provider->clear_queue();
     }
     /**
-    * Есть ли еще не отправленные фреймы?
+    * Р•СЃС‚СЊ Р»Рё РµС‰Рµ РЅРµ РѕС‚РїСЂР°РІР»РµРЅРЅС‹Рµ С„СЂРµР№РјС‹?
     */
     bool has_unsent_frames() {
         if (!provider) {
@@ -525,7 +526,7 @@ public:
         return answer;
     }
     /**
-    * Прокрутить логику обработки исходящих сообщений *один раз*.
+    * РџСЂРѕРєСЂСѓС‚РёС‚СЊ Р»РѕРіРёРєСѓ РѕР±СЂР°Р±РѕС‚РєРё РёСЃС…РѕРґСЏС‰РёС… СЃРѕРѕР±С‰РµРЅРёР№ *РѕРґРёРЅ СЂР°Р·*.
     */
     void process_tx_once() {  // needed for finalization of the whole program
         if (!provider) {
@@ -535,7 +536,7 @@ public:
     }
 
     /**
-    * Обрабатывать входящие/исходящие сообщения. НЕ бесконечный цикл, характерное использование:
+    * РћР±СЂР°Р±Р°С‚С‹РІР°С‚СЊ РІС…РѕРґСЏС‰РёРµ/РёСЃС…РѕРґСЏС‰РёРµ СЃРѕРѕР±С‰РµРЅРёСЏ. РќР• Р±РµСЃРєРѕРЅРµС‡РЅС‹Р№ С†РёРєР», С…Р°СЂР°РєС‚РµСЂРЅРѕРµ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ:
     * ```
     * while (...) {
     *   interface->loop();
@@ -574,13 +575,13 @@ public:
     ) const;
 
     /**
-    * Поставить одно сообщение в очередь на отправку.
+    * РџРѕСЃС‚Р°РІРёС‚СЊ РѕРґРЅРѕ СЃРѕРѕР±С‰РµРЅРёРµ РІ РѕС‡РµСЂРµРґСЊ РЅР° РѕС‚РїСЂР°РІРєСѓ.
     *
-    * @param obj Указатель на сообщение (cyphal-структура)
-    * @param port PortID назначения
-    * @param transfer_id TransferID - отдельные для каждого port и не забывайте инкрементировать!
-    * @param timeout_delta Таймаут отправки в нс - по умочанию 1с
-    * @param priority Приоритет сообщения
+    * @param obj РЈРєР°Р·Р°С‚РµР»СЊ РЅР° СЃРѕРѕР±С‰РµРЅРёРµ (cyphal-СЃС‚СЂСѓРєС‚СѓСЂР°)
+    * @param port PortID РЅР°Р·РЅР°С‡РµРЅРёСЏ
+    * @param transfer_id TransferID - РѕС‚РґРµР»СЊРЅС‹Рµ РґР»СЏ РєР°Р¶РґРѕРіРѕ port Рё РЅРµ Р·Р°Р±С‹РІР°Р№С‚Рµ РёРЅРєСЂРµРјРµРЅС‚РёСЂРѕРІР°С‚СЊ!
+    * @param timeout_delta РўР°Р№РјР°СѓС‚ РѕС‚РїСЂР°РІРєРё РІ РЅСЃ - РїРѕ СѓРјРѕС‡Р°РЅРёСЋ 1СЃ
+    * @param priority РџСЂРёРѕСЂРёС‚РµС‚ СЃРѕРѕР±С‰РµРЅРёСЏ
     */
     template <typename TypeAlias>
     inline void send_msg(
@@ -591,11 +592,11 @@ public:
         CanardPriority priority = CanardPriorityNominal
     ) const;
     /**
-    * Отправить ответ на запрос.
+    * РћС‚РїСЂР°РІРёС‚СЊ РѕС‚РІРµС‚ РЅР° Р·Р°РїСЂРѕСЃ.
     *
-    * @param obj Указатель на сообщение (cyphal-структура)
-    * @param transfer Структура CanardRxTransfer **полученная вместе с запросом**
-    * @param timeout_delta Таймаут отправки в нс - по умочанию 1с
+    * @param obj РЈРєР°Р·Р°С‚РµР»СЊ РЅР° СЃРѕРѕР±С‰РµРЅРёРµ (cyphal-СЃС‚СЂСѓРєС‚СѓСЂР°)
+    * @param transfer РЎС‚СЂСѓРєС‚СѓСЂР° CanardRxTransfer **РїРѕР»СѓС‡РµРЅРЅР°СЏ РІРјРµСЃС‚Рµ СЃ Р·Р°РїСЂРѕСЃРѕРј**
+    * @param timeout_delta РўР°Р№РјР°СѓС‚ РѕС‚РїСЂР°РІРєРё РІ РЅСЃ - РїРѕ СѓРјРѕС‡Р°РЅРёСЋ 1СЃ
     */
     template <typename TypeAlias>
     inline void send_response(
@@ -604,14 +605,14 @@ public:
         uint64_t timeout_delta = DEFAULT_TIMEOUT_MICROS
     ) const;
     /**
-    * Отправить запрос
+    * РћС‚РїСЂР°РІРёС‚СЊ Р·Р°РїСЂРѕСЃ
     *
-    * @param obj Указатель на сообщение (cyphal-структура)
-    * @param port PortID назначения
-    * @param transfer_id TransferID - отдельные для каждого port и не забывайте инкрементировать!
-    * @param to_node_id NodeID узла назначения
-    * @param timeout_delta Таймаут отправки в нс - по умочанию 1с
-    * @param priority Приоритет сообщения
+    * @param obj РЈРєР°Р·Р°С‚РµР»СЊ РЅР° СЃРѕРѕР±С‰РµРЅРёРµ (cyphal-СЃС‚СЂСѓРєС‚СѓСЂР°)
+    * @param port PortID РЅР°Р·РЅР°С‡РµРЅРёСЏ
+    * @param transfer_id TransferID - РѕС‚РґРµР»СЊРЅС‹Рµ РґР»СЏ РєР°Р¶РґРѕРіРѕ port Рё РЅРµ Р·Р°Р±С‹РІР°Р№С‚Рµ РёРЅРєСЂРµРјРµРЅС‚РёСЂРѕРІР°С‚СЊ!
+    * @param to_node_id NodeID СѓР·Р»Р° РЅР°Р·РЅР°С‡РµРЅРёСЏ
+    * @param timeout_delta РўР°Р№РјР°СѓС‚ РѕС‚РїСЂР°РІРєРё РІ РЅСЃ - РїРѕ СѓРјРѕС‡Р°РЅРёСЋ 1СЃ
+    * @param priority РџСЂРёРѕСЂРёС‚РµС‚ СЃРѕРѕР±С‰РµРЅРёСЏ
     */
     template <typename TypeAlias>
     inline void send_request(
