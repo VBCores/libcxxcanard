@@ -70,7 +70,7 @@ public:
 
     uint32_t len_to_dlc(size_t len) override;
     size_t dlc_to_len(uint32_t dlc) override;
-    void can_loop() override;
+    void can_loop(bool no_tx=false) override;
     bool read_frame(CanardFrame* frame, void* data) override;
     int write_frame(const CanardTxQueueItem* ti) override;
 };

@@ -92,7 +92,7 @@ public:
 
     virtual uint32_t len_to_dlc(size_t len) = 0;
     virtual size_t dlc_to_len(uint32_t dlc) = 0;
-    virtual void can_loop() = 0;
+    virtual void can_loop(bool no_tx=false) = 0;
     virtual bool read_frame(CanardFrame*, void* data) = 0;
     virtual int write_frame(const CanardTxQueueItem* ti) = 0;
     void process_canard_rx(CanardFrame*);

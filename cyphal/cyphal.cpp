@@ -58,23 +58,24 @@ void CyphalInterface::loop() {
 
 #ifdef __linux__
 void CyphalInterface::start_threads(uint64_t tx_delay_micros) {
-    rx_terminate_flag.store(false);
-    tx_terminate_flag.store(false);
+    threads_terminate_flag.store(false);
 
     rx_thread = std::thread([=]() {
         std::cout << "Started RX thread" << std::endl;
-        while(!rx_terminate_flag.load()) {
-            this->loop();
+        while(!threads_terminate_flag.load()) {
+            this->provider->can_loop(true);  // no_tx=true
         }
         std::cout << "Finished RX thread" << std::endl;
+        is_rx_terminated.store(true);
     });
     tx_thread = std::thread([=]() {
         std::cout << "Started TX thread" << std::endl;
-        while(!tx_terminate_flag.load()) {
+        while(!threads_terminate_flag.load()) {
             this->provider->process_canard_tx();
             usleep(tx_delay_micros);
         }
         std::cout << "Finished TX thread" << std::endl;
+        is_tx_terminated.store(true);
     });
 
     rx_thread.detach();
@@ -82,13 +83,16 @@ void CyphalInterface::start_threads(uint64_t tx_delay_micros) {
 }
 
 void CyphalInterface::stop_all_threads() {
-    rx_terminate_flag.store(true);
-    tx_terminate_flag.store(true);
+    threads_terminate_flag.store(true);
 }
 #endif
 
 CyphalInterface::~CyphalInterface() {
 #ifdef __linux__
     stop_all_threads();
+    while (!is_rx_terminated.load()) {}
+    std::cout << "Waited for RX thread" << std::endl;
+    while (!is_tx_terminated.load()) {}
+    std::cout << "Waited for TX thread" << std::endl;
 #endif
 }

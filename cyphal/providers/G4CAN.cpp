@@ -12,7 +12,7 @@ size_t G4CAN::dlc_to_len(uint32_t dlc) {
     return fdcan_dlc_to_len(dlc);
 }
 
-void G4CAN::can_loop() {
+void G4CAN::can_loop(bool no_tx) {
     while (HAL_FDCAN_GetRxFifoFillLevel(handler, FDCAN_RX_FIFO0) != 0) {
         CanardFrame frame;
         uint8_t RxData[64] = {};
@@ -22,7 +22,9 @@ void G4CAN::can_loop() {
         process_canard_rx(&frame);
     }
 
-    process_canard_tx();
+    if (!no_tx) {
+        process_canard_tx();
+    }
 
     static FDCAN_ProtocolStatusTypeDef fdcan_status;
     HAL_FDCAN_GetProtocolStatus(handler, &fdcan_status);

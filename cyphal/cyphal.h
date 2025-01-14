@@ -41,9 +41,10 @@ private:
     std::unique_ptr<AbstractCANProvider> provider;
 #ifdef __linux__
     std::thread rx_thread;
-    std::atomic<bool> rx_terminate_flag;
     std::thread tx_thread;
-    std::atomic<bool> tx_terminate_flag;
+    std::atomic<bool> threads_terminate_flag;
+    std::atomic<bool> is_rx_terminated;
+    std::atomic<bool> is_tx_terminated;
 #endif
 
 public:
