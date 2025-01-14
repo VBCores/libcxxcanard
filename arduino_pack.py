@@ -49,7 +49,7 @@ def process_file(path):
     if path in processed:
         return
     processed.append(path)
-    with open(path, 'r') as file:
+    with open(path, 'r', encoding='utf8') as file:
         for line_ in file:
             if matches(line_):
                 continue

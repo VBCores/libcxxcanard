@@ -1,6 +1,6 @@
 #include "FDCAN_generic.h"
 
-#ifdef __linux__
+#if defined(__linux__) || defined(ARDUINO)
 #define FDCAN_DLC_BYTES_0 ((uint32_t)0x00000000U)  /*!< 0 bytes data field  */
 #define FDCAN_DLC_BYTES_1 ((uint32_t)0x00010000U)  /*!< 1 bytes data field  */
 #define FDCAN_DLC_BYTES_2 ((uint32_t)0x00020000U)  /*!< 2 bytes data field  */
@@ -103,7 +103,7 @@ constexpr int GAP_16 = 4;
 constexpr int GAP_16_INDICIES_OFFSET = 32;
 
 size_t fdcan_dlc_to_len(uint32_t dlc) {
-    auto dlc_index = (uint8_t)(dlc / MAX_16BIT);
+    auto dlc_index = dlc;
     if (dlc_index <= GAP_1_INDICIES) {
         return dlc_index;
     }

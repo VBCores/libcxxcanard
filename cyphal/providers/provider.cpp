@@ -60,4 +60,13 @@ void AbstractCANProvider::process_canard_tx() {
     unlock_canard();
 }
 
+void AbstractCANProvider::clear_queue() {
+    lock_canard();
+    while (queue.size != 0) {
+        const CanardTxQueueItem* ti = canardTxPeek(&queue);
+        canard.memory_free(&canard, canardTxPop(&queue, ti));
+    }
+    unlock_canard();
+};
+
 AbstractCANProvider::~AbstractCANProvider() = default;

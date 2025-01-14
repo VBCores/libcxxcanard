@@ -142,6 +142,12 @@ public:
         return answer;
     }
     /**
+    * Очистить очередь на отправку
+    */
+    void clear_queue() {
+        provider->clear_queue();
+    }
+    /**
     * Есть ли еще не отправленные фреймы?
     */
     bool has_unsent_frames() {
