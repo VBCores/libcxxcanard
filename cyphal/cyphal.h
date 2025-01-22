@@ -189,14 +189,14 @@ public:
         size_t payload_size,
         const void* payload
     ) const;
+    void unsubscribe(CanardPortID port_id, CanardTransferKind kind);
+    // TEMPLATES
+    template <typename TypeAlias>
     void subscribe(
         CanardPortID port_id,
-        size_t extent,
         CanardTransferKind kind,
         CanardRxSubscription* subscription
-    ) const;
-
-    // TEMPLATES
+    );
     template <typename TypeAlias>
     inline void send(
         typename TypeAlias::Type* obj,

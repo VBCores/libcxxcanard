@@ -104,3 +104,21 @@ inline void CyphalInterface::deserialize_transfer(
         utilities.error_handler();
     }
 }
+
+template <typename TypeAlias>
+inline void CyphalInterface::subscribe(
+    CanardPortID port_id,
+    CanardTransferKind kind,
+    CanardRxSubscription* subscription
+) {
+    if (canardRxSubscribe(
+            (CanardInstance* const)&provider->canard,
+            kind,
+            port_id,
+            TypeAlias::extent,
+            CANARD_DEFAULT_TRANSFER_ID_TIMEOUT_USEC,
+            subscription
+        ) != 1) {
+        utilities.error_handler();
+    }
+}

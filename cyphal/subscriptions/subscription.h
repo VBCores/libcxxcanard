@@ -1,28 +1,27 @@
 #pragma once
 
 #include <memory>
+#include <functional>
+
 #include "cyphal/cyphal.h"
 #include "cyphal/interfaces.h"
 #include "libcanard/canard.h"
 
 using InterfacePtr = const std::shared_ptr<CyphalInterface>;
+using TransferListener = IListener<CanardRxTransfer*>;
 
 /**
  * TODO
 */
 template <typename T>
-class AbstractSubscription : public IListener<CanardRxTransfer*> {
+class AbstractSubscription : public TransferListener {
     using Type = typename T::Type;
 
 protected:
     const CanardTransferKind kind;
+    const CanardPortID port_id;
     CanardRxSubscription sub = {};
     InterfacePtr interface;
-
-    void subscribe(CanardPortID port_id) {
-        sub.user_reference = static_cast<void*>(this);
-        interface->subscribe(port_id, T::extent, kind, &sub);
-    }
 
     virtual void handler(const Type&, CanardRxTransfer*) = 0;
 
@@ -31,8 +30,9 @@ public:
     AbstractSubscription(InterfacePtr& interface, CanardPortID port_id)
         : AbstractSubscription(interface, port_id, CanardTransferKindMessage){};
     AbstractSubscription(InterfacePtr& interface, CanardPortID port_id, CanardTransferKind kind)
-        : kind(kind), interface(interface) {
-        subscribe(port_id);
+        : port_id(port_id), kind(kind), interface(interface) {
+        sub.user_reference = static_cast<void*>(this);
+        interface->subscribe<T>(port_id, kind, &sub);
     };
     // NOLINTEND(modernize-pass-by-value)
 
@@ -57,5 +57,7 @@ public:
         handler(object, transfer);
     }
 
-    virtual ~AbstractSubscription() {};
+    virtual ~AbstractSubscription() {
+        interface->unsubscribe(port_id, kind);
+    };
 };

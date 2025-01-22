@@ -34,20 +34,8 @@ void CyphalInterface::push(
     provider->unlock_canard();
 }
 
-void CyphalInterface::subscribe(
-    CanardPortID port_id,
-    size_t extent,
-    CanardTransferKind kind,
-    CanardRxSubscription* subscription
-) const {
-    if (canardRxSubscribe(
-            (CanardInstance* const)&provider->canard,
-            kind,
-            port_id,
-            extent,
-            CANARD_DEFAULT_TRANSFER_ID_TIMEOUT_USEC,
-            subscription
-        ) != 1) {
+void CyphalInterface::unsubscribe(CanardPortID port_id, CanardTransferKind kind) {
+    if (canardRxUnsubscribe((CanardInstance* const)&provider->canard, kind, port_id) != 1) {
         utilities.error_handler();
     }
 }
