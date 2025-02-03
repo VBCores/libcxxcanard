@@ -23,7 +23,7 @@ protected:
     CanardRxSubscription sub = {};
     InterfacePtr interface;
 
-    virtual void handler(const Type&, CanardRxTransfer*) = 0;
+    virtual void handler(const std::shared_ptr<Type>&, CanardRxTransfer*) = 0;
 
 public:
     // NOLINTBEGIN(modernize-pass-by-value)
@@ -52,8 +52,8 @@ public:
         return out;
     }
     void accept(CanardRxTransfer* transfer) override {
-        Type object;
-        interface->deserialize_transfer<T>(&object, transfer);
+        auto object = std::make_shared<Type>();
+        interface->deserialize_transfer<T>(object.get(), transfer);
         handler(object, transfer);
     }
 
