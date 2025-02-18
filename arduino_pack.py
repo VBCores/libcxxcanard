@@ -1,8 +1,25 @@
+import json
 import re
 import pathlib
+import shutil
 
 DIR = pathlib.Path(__file__).parent.resolve()
 SRC_DIR = DIR / 'cyphal'
+OUT_DIR = DIR / 'src'
+LIBS_DIR = DIR / 'libs'
+
+PRESERVE_OVER_BUILDS = ("utils.h", "README.md")
+
+print(f"Clearing <{LIBS_DIR}>")
+for entry in OUT_DIR.glob("*"):
+    if entry.name in PRESERVE_OVER_BUILDS:
+        continue
+    print(f"Deleting <{entry}>")
+    if entry.is_dir():
+        shutil.rmtree(entry)
+    else:
+        entry.unlink()
+print()
 
 
 def subdir_names(dir_):
@@ -14,15 +31,14 @@ def subdir_names(dir_):
 SUBDIRS = tuple(subdir_names(SRC_DIR))
 print(f"Known first-party: {SUBDIRS}\n")
 
-OUT_H = DIR / 'src' / 'cyphal.h'
-OUT_CPP = DIR / 'src' / 'cyphal.cpp'
+OUT_H = OUT_DIR / 'cyphal.h'
+OUT_CPP = OUT_DIR / 'cyphal.cpp'
 
 TARGET_FILES = []
-with open(DIR / 'arduino_list.txt', 'r') as arduino_list:
-    for line in arduino_list:
-        if not line:
-            continue
-        TARGET_FILES.append(SRC_DIR / pathlib.Path(line.strip(' \n\r\t')))
+with open(DIR / 'arduino_build.json', 'r') as arduino_build:
+    arduino_build_data = json.load(arduino_build)
+for entry in arduino_build_data['sources']:
+    TARGET_FILES.append(SRC_DIR / pathlib.Path(entry.strip(' \n\r\t')))
 print(f"Processing files: {[f.name for f in TARGET_FILES]}\n")
 
 REMOVE_TEMPLATES = [re.compile(reg) for reg in (
@@ -79,3 +95,8 @@ with open(OUT_H, 'w+t') as out_h, open(OUT_CPP, 'w+t') as out_cpp:
         print(f"Processing {impl_file}")
         for line in process_file(impl_file):
             out_cpp.write(line)
+
+
+for lib_entry in arduino_build_data['libs']:
+    print(f"Processing {lib_entry}")
+    shutil.copytree(LIBS_DIR / lib_entry, OUT_DIR / lib_entry)

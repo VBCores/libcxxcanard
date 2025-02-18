@@ -555,14 +555,14 @@ public:
         size_t payload_size,
         const void* payload
     ) const;
+    void unsubscribe(CanardPortID port_id, CanardTransferKind kind);
+    // TEMPLATES
+    template <typename TypeAlias>
     void subscribe(
         CanardPortID port_id,
-        size_t extent,
         CanardTransferKind kind,
         CanardRxSubscription* subscription
-    ) const;
-
-    // TEMPLATES
+    );
     template <typename TypeAlias>
     inline void send(
         typename TypeAlias::Type* obj,
@@ -735,27 +735,44 @@ inline void CyphalInterface::deserialize_transfer(
     }
 }
 
+template <typename TypeAlias>
+inline void CyphalInterface::subscribe(
+    CanardPortID port_id,
+    CanardTransferKind kind,
+    CanardRxSubscription* subscription
+) {
+    if (canardRxSubscribe(
+            (CanardInstance* const)&provider->canard,
+            kind,
+            port_id,
+            TypeAlias::extent,
+            CANARD_DEFAULT_TRANSFER_ID_TIMEOUT_USEC,
+            subscription
+        ) != 1) {
+        utilities.error_handler();
+    }
+}
+
 #include <memory>
+#include <functional>
+
 #include "libcanard/canard.h"
 
 using InterfacePtr = const std::shared_ptr<CyphalInterface>;
+using TransferListener = IListener<CanardRxTransfer*>;
 
 /**
  * TODO
 */
 template <typename T>
-class AbstractSubscription : public IListener<CanardRxTransfer*> {
+class AbstractSubscription : public TransferListener {
     using Type = typename T::Type;
 
 protected:
     const CanardTransferKind kind;
+    const CanardPortID port_id;
     CanardRxSubscription sub = {};
     InterfacePtr interface;
-
-    void subscribe(CanardPortID port_id) {
-        sub.user_reference = static_cast<void*>(this);
-        interface->subscribe(port_id, T::extent, kind, &sub);
-    }
 
     virtual void handler(const Type&, CanardRxTransfer*) = 0;
 
@@ -764,8 +781,9 @@ public:
     AbstractSubscription(InterfacePtr& interface, CanardPortID port_id)
         : AbstractSubscription(interface, port_id, CanardTransferKindMessage){};
     AbstractSubscription(InterfacePtr& interface, CanardPortID port_id, CanardTransferKind kind)
-        : kind(kind), interface(interface) {
-        subscribe(port_id);
+        : port_id(port_id), kind(kind), interface(interface) {
+        sub.user_reference = static_cast<void*>(this);
+        interface->subscribe<T>(port_id, kind, &sub);
     };
     // NOLINTEND(modernize-pass-by-value)
 
@@ -790,7 +808,9 @@ public:
         handler(object, transfer);
     }
 
-    virtual ~AbstractSubscription() {};
+    virtual ~AbstractSubscription() {
+        interface->unsubscribe(port_id, kind);
+    };
 };
 
 #include <string>
