@@ -103,7 +103,11 @@ constexpr int GAP_16 = 4;
 constexpr int GAP_16_INDICIES_OFFSET = 32;
 
 size_t fdcan_dlc_to_len(uint32_t dlc) {
-    auto dlc_index = (uint8_t)(dlc / MAX_16BIT);;
+    #ifdef ARDUINO
+    auto dlc_index = (uint8_t)(dlc / MAX_16BIT);
+    #else
+    auto dlc_index = dlc;
+    #endif
     if (dlc_index <= GAP_1_INDICIES) {
         return dlc_index;
     }

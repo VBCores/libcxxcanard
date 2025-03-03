@@ -75,6 +75,6 @@ public:
     int write_frame(const CanardTxQueueItem* ti) override;
 };
 
-HAL_StatusTypeDef apply_filter(G4CAN::Handler hfdcan, FDCAN_FilterTypeDef* hw_filter, const CanardFilter& filter);
+HAL_StatusTypeDef apply_filter(uint32_t filter_index, G4CAN::Handler hfdcan, FDCAN_FilterTypeDef* hw_filter, const CanardFilter& filter);
 
 #endif
