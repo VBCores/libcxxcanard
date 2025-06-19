@@ -6,7 +6,7 @@
 
 #include <functional>
 
-#if defined(STM32G474xx) || defined(STM32_G)
+#if defined(STM32G4) || defined(STM32_G)
 #include "stm32g4xx_hal.h"
 #include "stm32g4xx_hal_fdcan.h"
 // TODO: rework this dependency

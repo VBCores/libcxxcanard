@@ -17,6 +17,10 @@
 #define FDCAN_DLC_BYTES_32 ((uint32_t)0x000D0000U) /*!< 32 bytes data field */
 #define FDCAN_DLC_BYTES_48 ((uint32_t)0x000E0000U) /*!< 48 bytes data field */
 #define FDCAN_DLC_BYTES_64 ((uint32_t)0x000F0000U) /*!< 64 bytes data field */
+#else
+#include "stm32g4xx.h"
+#include "stm32g4xx_hal.h"
+#include "stm32g4xx_hal_fdcan.h"
 #endif
 
 const std::array<uint32_t, 65> CanardFDCANLengthToDLC = {
