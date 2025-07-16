@@ -10,11 +10,17 @@
 using InterfacePtr = const std::shared_ptr<CyphalInterface>;
 using TransferListener = IListener<CanardRxTransfer*>;
 
+class IHasFilter {
+public:
+    virtual CanardFilter make_filter(CanardNodeID node_id) = 0;
+    virtual ~IHasFilter() = default;
+};
+
 /**
  * TODO
 */
 template <typename T>
-class AbstractSubscription : public TransferListener {
+class AbstractSubscription : public TransferListener, public IHasFilter {
     using Type = typename T::Type;
 
 protected:
@@ -36,7 +42,7 @@ public:
     };
     // NOLINTEND(modernize-pass-by-value)
 
-    virtual CanardFilter make_filter(CanardNodeID node_id) {
+    CanardFilter make_filter(CanardNodeID node_id) override{
         CanardFilter out = {};
 
         switch (kind) {
