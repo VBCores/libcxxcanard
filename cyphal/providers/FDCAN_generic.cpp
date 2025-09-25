@@ -112,11 +112,23 @@ size_t fdcan_dlc_to_len(uint32_t dlc) {
     #else
     auto dlc_index = dlc;
     #endif
-    if (dlc_index <= GAP_1_INDICIES) {
+    if (dlc_index <= 8) {
         return dlc_index;
     }
-    if (dlc_index <= GAP_4_INDICIES) {
-        return GAP_1_INDICIES + GAP_4 * (dlc_index - GAP_1_INDICIES);
+    switch (dlc_index) {
+        case 9:
+            return 12;
+        case 10:
+            return 16;
+        case 11:
+            return 20;
+        case 12:
+            return 24;
+        case 13:
+            return 32;
+        case 14:
+            return 48;
+        case 15:
+            return 64;
     }
-    return GAP_16_INDICIES_OFFSET + GAP_16 * (dlc_index - (GAP_4_INDICIES + 1));
 }
