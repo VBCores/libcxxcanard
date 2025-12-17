@@ -8,22 +8,22 @@
 // are named with an underscore at the end, like foo_bar_().
 //
 // Generator:     nunavut-2.3.1 (serialization was enabled)
-// Source file:   /home/pi/control/external/public_regulated_data_types/uavcan/node/435.ExecuteCommand.1.3.dsdl
-// Generated at:  2024-06-20 11:16:20.859669 UTC
+// Source file:   /Users/igor/Work/misc/cyphal_ws/types/voltbro/config/dc/set.1.0.dsdl
+// Generated at:  2025-12-16 13:34:01.671568 UTC
 // Is deprecated: no
-// Fixed port-ID: 435
-// Full name:     uavcan.node.ExecuteCommand
-// Version:       1.3
+// Fixed port-ID: None
+// Full name:     voltbro.config.dc.set
+// Version:       1.0
 //
 // Platform
 //     python_implementation:  CPython
-//     python_version:  3.12.3
+//     python_version:  3.13.7
 //     python_release_level:  final
-//     python_build:  ('main', 'Apr 10 2024 05:33:47')
-//     python_compiler:  GCC 13.2.0
+//     python_build:  ('main', 'Aug 14 2025 11:12:11')
+//     python_compiler:  Clang 17.0.0 (clang-1700.0.13.3)
 //     python_revision:
 //     python_xoptions:  {}
-//     runtime_platform:  Linux-6.8.0-1004-raspi-aarch64-with-glibc2.39
+//     runtime_platform:  macOS-15.5-arm64-arm-64bit-Mach-O
 //
 // Language Options
 //     target_endianness:  little
@@ -32,47 +32,48 @@
 //     enable_override_variable_array_capacity:  False
 //     cast_format:  (({type}) {value})
 
-#ifndef UAVCAN_NODE_EXECUTE_COMMAND_1_3_INCLUDED_
-#define UAVCAN_NODE_EXECUTE_COMMAND_1_3_INCLUDED_
+#ifndef VOLTBRO_CONFIG_DC_SET_1_0_INCLUDED_
+#define VOLTBRO_CONFIG_DC_SET_1_0_INCLUDED_
 
 #include <nunavut/support/serialization.h>
-#include <stdint.h>
 #include <stdlib.h>
+#include <uavcan/primitive/scalar/Bit_1_0.h>
+#include <voltbro/config/dc/pid_config_1_0.h>
 
 static_assert( NUNAVUT_SUPPORT_LANGUAGE_OPTION_TARGET_ENDIANNESS == 434322821,
-              "/home/pi/control/external/public_regulated_data_types/uavcan/node/435.ExecuteCommand.1.3.dsdl is trying to use a serialization library that was compiled with "
+              "/Users/igor/Work/misc/cyphal_ws/types/voltbro/config/dc/set.1.0.dsdl is trying to use a serialization library that was compiled with "
               "different language options. This is dangerous and therefore not allowed." );
 static_assert( NUNAVUT_SUPPORT_LANGUAGE_OPTION_OMIT_FLOAT_SERIALIZATION_SUPPORT == 0,
-              "/home/pi/control/external/public_regulated_data_types/uavcan/node/435.ExecuteCommand.1.3.dsdl is trying to use a serialization library that was compiled with "
+              "/Users/igor/Work/misc/cyphal_ws/types/voltbro/config/dc/set.1.0.dsdl is trying to use a serialization library that was compiled with "
               "different language options. This is dangerous and therefore not allowed." );
 static_assert( NUNAVUT_SUPPORT_LANGUAGE_OPTION_ENABLE_SERIALIZATION_ASSERTS == 0,
-              "/home/pi/control/external/public_regulated_data_types/uavcan/node/435.ExecuteCommand.1.3.dsdl is trying to use a serialization library that was compiled with "
+              "/Users/igor/Work/misc/cyphal_ws/types/voltbro/config/dc/set.1.0.dsdl is trying to use a serialization library that was compiled with "
               "different language options. This is dangerous and therefore not allowed." );
 static_assert( NUNAVUT_SUPPORT_LANGUAGE_OPTION_ENABLE_OVERRIDE_VARIABLE_ARRAY_CAPACITY == 0,
-              "/home/pi/control/external/public_regulated_data_types/uavcan/node/435.ExecuteCommand.1.3.dsdl is trying to use a serialization library that was compiled with "
+              "/Users/igor/Work/misc/cyphal_ws/types/voltbro/config/dc/set.1.0.dsdl is trying to use a serialization library that was compiled with "
               "different language options. This is dangerous and therefore not allowed." );
 static_assert( NUNAVUT_SUPPORT_LANGUAGE_OPTION_CAST_FORMAT == 2368206204,
-              "/home/pi/control/external/public_regulated_data_types/uavcan/node/435.ExecuteCommand.1.3.dsdl is trying to use a serialization library that was compiled with "
+              "/Users/igor/Work/misc/cyphal_ws/types/voltbro/config/dc/set.1.0.dsdl is trying to use a serialization library that was compiled with "
               "different language options. This is dangerous and therefore not allowed." );
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define uavcan_node_ExecuteCommand_1_3_HAS_FIXED_PORT_ID_ true
-#define uavcan_node_ExecuteCommand_1_3_FIXED_PORT_ID_     435U
+/// This type does not have a fixed port-ID. See https://forum.opencyphal.org/t/choosing-message-and-service-ids/889
+#define voltbro_config_dc_set_1_0_HAS_FIXED_PORT_ID_ false
 
 // +-------------------------------------------------------------------------------------------------------------------+
-// | uavcan.node.ExecuteCommand.1.3
+// | voltbro.config.dc.set.1.0
 // +-------------------------------------------------------------------------------------------------------------------+
-#define uavcan_node_ExecuteCommand_1_3_FULL_NAME_             "uavcan.node.ExecuteCommand"
-#define uavcan_node_ExecuteCommand_1_3_FULL_NAME_AND_VERSION_ "uavcan.node.ExecuteCommand.1.3"
+#define voltbro_config_dc_set_1_0_FULL_NAME_             "voltbro.config.dc.set"
+#define voltbro_config_dc_set_1_0_FULL_NAME_AND_VERSION_ "voltbro.config.dc.set.1.0"
 
 // +-------------------------------------------------------------------------------------------------------------------+
-// | uavcan.node.ExecuteCommand.Request.1.3
+// | voltbro.config.dc.set.Request.1.0
 // +-------------------------------------------------------------------------------------------------------------------+
-#define uavcan_node_ExecuteCommand_Request_1_3_FULL_NAME_             "uavcan.node.ExecuteCommand.Request"
-#define uavcan_node_ExecuteCommand_Request_1_3_FULL_NAME_AND_VERSION_ "uavcan.node.ExecuteCommand.Request.1.3"
+#define voltbro_config_dc_set_Request_1_0_FULL_NAME_             "voltbro.config.dc.set.Request"
+#define voltbro_config_dc_set_Request_1_0_FULL_NAME_AND_VERSION_ "voltbro.config.dc.set.Request.1.0"
 
 /// Extent is the minimum amount of memory required to hold any serialized representation of any compatible
 /// version of the data type; or, on other words, it is the the maximum possible size of received objects of this type.
@@ -81,48 +82,16 @@ extern "C" {
 /// When allocating a serialization (TX) buffer, it is safe to use the size of the largest serialized representation
 /// instead of the extent because it provides a tighter bound of the object size; it is safe because the concrete type
 /// is always known during serialization (unlike deserialization). If not sure, use extent everywhere.
-#define uavcan_node_ExecuteCommand_Request_1_3_EXTENT_BYTES_                    300UL
-#define uavcan_node_ExecuteCommand_Request_1_3_SERIALIZATION_BUFFER_SIZE_BYTES_ 258UL
-static_assert(uavcan_node_ExecuteCommand_Request_1_3_EXTENT_BYTES_ >= uavcan_node_ExecuteCommand_Request_1_3_SERIALIZATION_BUFFER_SIZE_BYTES_,
+#define voltbro_config_dc_set_Request_1_0_EXTENT_BYTES_                    28UL
+#define voltbro_config_dc_set_Request_1_0_SERIALIZATION_BUFFER_SIZE_BYTES_ 28UL
+static_assert(voltbro_config_dc_set_Request_1_0_EXTENT_BYTES_ >= voltbro_config_dc_set_Request_1_0_SERIALIZATION_BUFFER_SIZE_BYTES_,
               "Internal constraint violation");
-
-/// saturated uint16 COMMAND_RESTART = 65535
-#define uavcan_node_ExecuteCommand_Request_1_3_COMMAND_RESTART (65535U)
-
-/// saturated uint16 COMMAND_POWER_OFF = 65534
-#define uavcan_node_ExecuteCommand_Request_1_3_COMMAND_POWER_OFF (65534U)
-
-/// saturated uint16 COMMAND_BEGIN_SOFTWARE_UPDATE = 65533
-#define uavcan_node_ExecuteCommand_Request_1_3_COMMAND_BEGIN_SOFTWARE_UPDATE (65533U)
-
-/// saturated uint16 COMMAND_FACTORY_RESET = 65532
-#define uavcan_node_ExecuteCommand_Request_1_3_COMMAND_FACTORY_RESET (65532U)
-
-/// saturated uint16 COMMAND_EMERGENCY_STOP = 65531
-#define uavcan_node_ExecuteCommand_Request_1_3_COMMAND_EMERGENCY_STOP (65531U)
-
-/// saturated uint16 COMMAND_STORE_PERSISTENT_STATES = 65530
-#define uavcan_node_ExecuteCommand_Request_1_3_COMMAND_STORE_PERSISTENT_STATES (65530U)
-
-/// saturated uint16 COMMAND_IDENTIFY = 65529
-#define uavcan_node_ExecuteCommand_Request_1_3_COMMAND_IDENTIFY (65529U)
-
-/// Array metadata for: saturated uint8[<=255] parameter
-#define uavcan_node_ExecuteCommand_Request_1_3_parameter_ARRAY_CAPACITY_           255U
-#define uavcan_node_ExecuteCommand_Request_1_3_parameter_ARRAY_IS_VARIABLE_LENGTH_ true
 
 typedef struct
 {
-    /// saturated uint16 command
-    uint16_t command;
-
-    /// saturated uint8[<=255] parameter
-    struct  /// Array address equivalence guarantee: &elements[0] == &parameter
-    {
-        uint8_t elements[uavcan_node_ExecuteCommand_Request_1_3_parameter_ARRAY_CAPACITY_];
-        size_t count;
-    } parameter;
-} uavcan_node_ExecuteCommand_Request_1_3;
+    /// voltbro.config.dc.pid_config.1.0 new_config
+    voltbro_config_dc_pid_config_1_0 new_config;
+} voltbro_config_dc_set_Request_1_0;
 
 /// Serialize an instance into the provided buffer.
 /// The lifetime of the resulting serialized representation is independent of the original instance.
@@ -132,7 +101,7 @@ typedef struct
 /// @param obj      The object to serialize.
 ///
 /// @param buffer   The destination buffer. There are no alignment requirements.
-///                 @see uavcan_node_ExecuteCommand_Request_1_3_SERIALIZATION_BUFFER_SIZE_BYTES_
+///                 @see voltbro_config_dc_set_Request_1_0_SERIALIZATION_BUFFER_SIZE_BYTES_
 ///
 /// @param inout_buffer_size_bytes  When calling, this is a pointer to the size of the buffer in bytes.
 ///                                 Upon return this value will be updated with the size of the constructed serialized
@@ -140,45 +109,42 @@ typedef struct
 ///                                 layer. In case of error this value is undefined.
 ///
 /// @returns Negative on error, zero on success.
-static inline int8_t uavcan_node_ExecuteCommand_Request_1_3_serialize_(
-    const uavcan_node_ExecuteCommand_Request_1_3* const obj, uint8_t* const buffer,  size_t* const inout_buffer_size_bytes)
+static inline int8_t voltbro_config_dc_set_Request_1_0_serialize_(
+    const voltbro_config_dc_set_Request_1_0* const obj, uint8_t* const buffer,  size_t* const inout_buffer_size_bytes)
 {
     if ((obj == NULL) || (buffer == NULL) || (inout_buffer_size_bytes == NULL))
     {
         return -NUNAVUT_ERROR_INVALID_ARGUMENT;
     }
     const size_t capacity_bytes = *inout_buffer_size_bytes;
-    if ((8U * (size_t) capacity_bytes) < 2064UL)
+    if ((8U * (size_t) capacity_bytes) < 224UL)
     {
         return -NUNAVUT_ERROR_SERIALIZATION_BUFFER_TOO_SMALL;
     }
     // Notice that fields that are not an integer number of bytes long may overrun the space allocated for them
     // in the serialization buffer up to the next byte boundary. This is by design and is guaranteed to be safe.
     size_t offset_bits = 0U;
-    {   // saturated uint16 command
-        // Saturation code not emitted -- native representation matches the serialized representation.
-        (void) memmove(&buffer[offset_bits / 8U], &obj->command, 2U);
-        offset_bits += 16U;
-    }
-    {   // saturated uint8[<=255] parameter
-        if (obj->parameter.count > 255)
+    {   // voltbro.config.dc.pid_config.1.0 new_config
+        size_t _size_bytes0_ = 24UL;  // Nested object (max) size, in bytes.
+        // Constant delimiter header can be written ahead of the nested object.
+        (void) memmove(&buffer[offset_bits / 8U], &_size_bytes0_, 4U);
+        offset_bits += 32U;
+        int8_t _err0_ = voltbro_config_dc_pid_config_1_0_serialize_(
+            &obj->new_config, &buffer[offset_bits / 8U], &_size_bytes0_);
+        if (_err0_ < 0)
         {
-            return -NUNAVUT_ERROR_REPRESENTATION_BAD_ARRAY_LENGTH;
+            return _err0_;
         }
-        // Array length prefix: truncated uint8
-        buffer[offset_bits / 8U] = (uint8_t)(obj->parameter.count);  // C std, 6.3.1.3 Signed and unsigned integers
-        offset_bits += 8U;
-        // Optimization prospect: this item is aligned at the byte boundary, so it is possible to use memmove().
-        nunavutCopyBits(&buffer[0], offset_bits, obj->parameter.count * 8U, &obj->parameter.elements[0], 0U);
-        offset_bits += obj->parameter.count * 8U;
+        // It is assumed that we know the exact type of the serialized entity, hence we expect the size to match.
+        offset_bits += _size_bytes0_ * 8U;  // Advance by the size of the nested object.
     }
     if (offset_bits % 8U != 0U)  // Pad to 8 bits. TODO: Eliminate redundant padding checks.
     {
         const uint8_t _pad0_ = (uint8_t)(8U - offset_bits % 8U);
-        const int8_t _err0_ = nunavutSetUxx(&buffer[0], capacity_bytes, offset_bits, 0U, _pad0_);  // Optimize?
-        if (_err0_ < 0)
+        const int8_t _err1_ = nunavutSetUxx(&buffer[0], capacity_bytes, offset_bits, 0U, _pad0_);  // Optimize?
+        if (_err1_ < 0)
         {
-            return _err0_;
+            return _err1_;
         }
         offset_bits += _pad0_;
     }
@@ -206,8 +172,8 @@ static inline int8_t uavcan_node_ExecuteCommand_Request_1_3_serialize_(
 ///                                 was activated. In case of error this value is undefined.
 ///
 /// @returns Negative on error, zero on success.
-static inline int8_t uavcan_node_ExecuteCommand_Request_1_3_deserialize_(
-    uavcan_node_ExecuteCommand_Request_1_3* const out_obj, const uint8_t* buffer, size_t* const inout_buffer_size_bytes)
+static inline int8_t voltbro_config_dc_set_Request_1_0_deserialize_(
+    voltbro_config_dc_set_Request_1_0* const out_obj, const uint8_t* buffer, size_t* const inout_buffer_size_bytes)
 {
     if ((out_obj == NULL) || (inout_buffer_size_bytes == NULL) || ((buffer == NULL) && (0 != *inout_buffer_size_bytes)))
     {
@@ -220,26 +186,27 @@ static inline int8_t uavcan_node_ExecuteCommand_Request_1_3_deserialize_(
     const size_t capacity_bytes = *inout_buffer_size_bytes;
     const size_t capacity_bits = capacity_bytes * (size_t) 8U;
     size_t offset_bits = 0U;
-    // saturated uint16 command
-    out_obj->command = nunavutGetU16(&buffer[0], capacity_bytes, offset_bits, 16);
-    offset_bits += 16U;
-    // saturated uint8[<=255] parameter
-    // Array length prefix: truncated uint8
-    if ((offset_bits + 8U) <= capacity_bits)
+    // voltbro.config.dc.pid_config.1.0 new_config
     {
-        out_obj->parameter.count = buffer[offset_bits / 8U] & 255U;
+        // Delimiter header: truncated uint32
+        size_t _size_bytes1_ = 0U;
+        _size_bytes1_ = nunavutGetU32(&buffer[0], capacity_bytes, offset_bits, 32);
+        offset_bits += 32U;
+        if (_size_bytes1_ > (capacity_bytes - nunavutChooseMin((offset_bits / 8U), capacity_bytes)))
+        {
+            return -NUNAVUT_ERROR_REPRESENTATION_BAD_DELIMITER_HEADER;
+        }
+        const size_t _dh0_ = _size_bytes1_;  // Store the original delimiter header value.
+        const int8_t _err2_ = voltbro_config_dc_pid_config_1_0_deserialize_(
+            &out_obj->new_config, &buffer[offset_bits / 8U], &_size_bytes1_);
+        if (_err2_ < 0)
+        {
+            return _err2_;
+        }
+        // Advance the offset by the size of the delimiter header, even if the nested deserialization routine
+        // consumed fewer bytes of data. This behavior implements the implicit truncation rule for nested objects.
+        offset_bits += _dh0_ * 8U;
     }
-    else
-    {
-        out_obj->parameter.count = 0U;
-    }
-    offset_bits += 8U;
-    if (out_obj->parameter.count > 255U)
-    {
-        return -NUNAVUT_ERROR_REPRESENTATION_BAD_ARRAY_LENGTH;
-    }
-    nunavutGetBits(&out_obj->parameter.elements[0], &buffer[0], capacity_bytes, offset_bits, out_obj->parameter.count * 8U);
-    offset_bits += out_obj->parameter.count * 8U;
     offset_bits = (offset_bits + 7U) & ~(size_t) 7U;  // Align on 8 bits.
     *inout_buffer_size_bytes = (size_t) (nunavutChooseMin(offset_bits, capacity_bits) / 8U);
     return NUNAVUT_SUCCESS;
@@ -249,23 +216,23 @@ static inline int8_t uavcan_node_ExecuteCommand_Request_1_3_deserialize_(
 /// This function intentionally leaves inactive elements uninitialized; for example, members of a variable-length
 /// array beyond its length are left uninitialized; aliased union memory that is not used by the first union field
 /// is left uninitialized, etc. If full zero-initialization is desired, just use memset(&obj, 0, sizeof(obj)).
-static inline void uavcan_node_ExecuteCommand_Request_1_3_initialize_(uavcan_node_ExecuteCommand_Request_1_3* const out_obj)
+static inline void voltbro_config_dc_set_Request_1_0_initialize_(voltbro_config_dc_set_Request_1_0* const out_obj)
 {
     if (out_obj != NULL)
     {
         size_t size_bytes = 0;
         const uint8_t buf = 0;
-        const int8_t err = uavcan_node_ExecuteCommand_Request_1_3_deserialize_(out_obj, &buf, &size_bytes);
+        const int8_t err = voltbro_config_dc_set_Request_1_0_deserialize_(out_obj, &buf, &size_bytes);
 
         (void) err;
     }
 }
 
 // +-------------------------------------------------------------------------------------------------------------------+
-// | uavcan.node.ExecuteCommand.Response.1.3
+// | voltbro.config.dc.set.Response.1.0
 // +-------------------------------------------------------------------------------------------------------------------+
-#define uavcan_node_ExecuteCommand_Response_1_3_FULL_NAME_             "uavcan.node.ExecuteCommand.Response"
-#define uavcan_node_ExecuteCommand_Response_1_3_FULL_NAME_AND_VERSION_ "uavcan.node.ExecuteCommand.Response.1.3"
+#define voltbro_config_dc_set_Response_1_0_FULL_NAME_             "voltbro.config.dc.set.Response"
+#define voltbro_config_dc_set_Response_1_0_FULL_NAME_AND_VERSION_ "voltbro.config.dc.set.Response.1.0"
 
 /// Extent is the minimum amount of memory required to hold any serialized representation of any compatible
 /// version of the data type; or, on other words, it is the the maximum possible size of received objects of this type.
@@ -274,48 +241,16 @@ static inline void uavcan_node_ExecuteCommand_Request_1_3_initialize_(uavcan_nod
 /// When allocating a serialization (TX) buffer, it is safe to use the size of the largest serialized representation
 /// instead of the extent because it provides a tighter bound of the object size; it is safe because the concrete type
 /// is always known during serialization (unlike deserialization). If not sure, use extent everywhere.
-#define uavcan_node_ExecuteCommand_Response_1_3_EXTENT_BYTES_                    48UL
-#define uavcan_node_ExecuteCommand_Response_1_3_SERIALIZATION_BUFFER_SIZE_BYTES_ 48UL
-static_assert(uavcan_node_ExecuteCommand_Response_1_3_EXTENT_BYTES_ >= uavcan_node_ExecuteCommand_Response_1_3_SERIALIZATION_BUFFER_SIZE_BYTES_,
+#define voltbro_config_dc_set_Response_1_0_EXTENT_BYTES_                    1UL
+#define voltbro_config_dc_set_Response_1_0_SERIALIZATION_BUFFER_SIZE_BYTES_ 1UL
+static_assert(voltbro_config_dc_set_Response_1_0_EXTENT_BYTES_ >= voltbro_config_dc_set_Response_1_0_SERIALIZATION_BUFFER_SIZE_BYTES_,
               "Internal constraint violation");
-
-/// saturated uint8 STATUS_SUCCESS = 0
-#define uavcan_node_ExecuteCommand_Response_1_3_STATUS_SUCCESS (0U)
-
-/// saturated uint8 STATUS_FAILURE = 1
-#define uavcan_node_ExecuteCommand_Response_1_3_STATUS_FAILURE (1U)
-
-/// saturated uint8 STATUS_NOT_AUTHORIZED = 2
-#define uavcan_node_ExecuteCommand_Response_1_3_STATUS_NOT_AUTHORIZED (2U)
-
-/// saturated uint8 STATUS_BAD_COMMAND = 3
-#define uavcan_node_ExecuteCommand_Response_1_3_STATUS_BAD_COMMAND (3U)
-
-/// saturated uint8 STATUS_BAD_PARAMETER = 4
-#define uavcan_node_ExecuteCommand_Response_1_3_STATUS_BAD_PARAMETER (4U)
-
-/// saturated uint8 STATUS_BAD_STATE = 5
-#define uavcan_node_ExecuteCommand_Response_1_3_STATUS_BAD_STATE (5U)
-
-/// saturated uint8 STATUS_INTERNAL_ERROR = 6
-#define uavcan_node_ExecuteCommand_Response_1_3_STATUS_INTERNAL_ERROR (6U)
-
-/// Array metadata for: saturated uint8[<=46] output
-#define uavcan_node_ExecuteCommand_Response_1_3_output_ARRAY_CAPACITY_           46U
-#define uavcan_node_ExecuteCommand_Response_1_3_output_ARRAY_IS_VARIABLE_LENGTH_ true
 
 typedef struct
 {
-    /// saturated uint8 status
-    uint8_t status;
-
-    /// saturated uint8[<=46] output
-    struct  /// Array address equivalence guarantee: &elements[0] == &output
-    {
-        uint8_t elements[uavcan_node_ExecuteCommand_Response_1_3_output_ARRAY_CAPACITY_];
-        size_t count;
-    } output;
-} uavcan_node_ExecuteCommand_Response_1_3;
+    /// uavcan.primitive.scalar.Bit.1.0 ok
+    uavcan_primitive_scalar_Bit_1_0 ok;
+} voltbro_config_dc_set_Response_1_0;
 
 /// Serialize an instance into the provided buffer.
 /// The lifetime of the resulting serialized representation is independent of the original instance.
@@ -325,7 +260,7 @@ typedef struct
 /// @param obj      The object to serialize.
 ///
 /// @param buffer   The destination buffer. There are no alignment requirements.
-///                 @see uavcan_node_ExecuteCommand_Response_1_3_SERIALIZATION_BUFFER_SIZE_BYTES_
+///                 @see voltbro_config_dc_set_Response_1_0_SERIALIZATION_BUFFER_SIZE_BYTES_
 ///
 /// @param inout_buffer_size_bytes  When calling, this is a pointer to the size of the buffer in bytes.
 ///                                 Upon return this value will be updated with the size of the constructed serialized
@@ -333,45 +268,39 @@ typedef struct
 ///                                 layer. In case of error this value is undefined.
 ///
 /// @returns Negative on error, zero on success.
-static inline int8_t uavcan_node_ExecuteCommand_Response_1_3_serialize_(
-    const uavcan_node_ExecuteCommand_Response_1_3* const obj, uint8_t* const buffer,  size_t* const inout_buffer_size_bytes)
+static inline int8_t voltbro_config_dc_set_Response_1_0_serialize_(
+    const voltbro_config_dc_set_Response_1_0* const obj, uint8_t* const buffer,  size_t* const inout_buffer_size_bytes)
 {
     if ((obj == NULL) || (buffer == NULL) || (inout_buffer_size_bytes == NULL))
     {
         return -NUNAVUT_ERROR_INVALID_ARGUMENT;
     }
     const size_t capacity_bytes = *inout_buffer_size_bytes;
-    if ((8U * (size_t) capacity_bytes) < 384UL)
+    if ((8U * (size_t) capacity_bytes) < 8UL)
     {
         return -NUNAVUT_ERROR_SERIALIZATION_BUFFER_TOO_SMALL;
     }
     // Notice that fields that are not an integer number of bytes long may overrun the space allocated for them
     // in the serialization buffer up to the next byte boundary. This is by design and is guaranteed to be safe.
     size_t offset_bits = 0U;
-    {   // saturated uint8 status
-        // Saturation code not emitted -- native representation matches the serialized representation.
-        buffer[offset_bits / 8U] = (uint8_t)(obj->status);  // C std, 6.3.1.3 Signed and unsigned integers
-        offset_bits += 8U;
-    }
-    {   // saturated uint8[<=46] output
-        if (obj->output.count > 46)
+    {   // uavcan.primitive.scalar.Bit.1.0 ok
+        size_t _size_bytes2_ = 1UL;  // Nested object (max) size, in bytes.
+        int8_t _err3_ = uavcan_primitive_scalar_Bit_1_0_serialize_(
+            &obj->ok, &buffer[offset_bits / 8U], &_size_bytes2_);
+        if (_err3_ < 0)
         {
-            return -NUNAVUT_ERROR_REPRESENTATION_BAD_ARRAY_LENGTH;
+            return _err3_;
         }
-        // Array length prefix: truncated uint8
-        buffer[offset_bits / 8U] = (uint8_t)(obj->output.count);  // C std, 6.3.1.3 Signed and unsigned integers
-        offset_bits += 8U;
-        // Optimization prospect: this item is aligned at the byte boundary, so it is possible to use memmove().
-        nunavutCopyBits(&buffer[0], offset_bits, obj->output.count * 8U, &obj->output.elements[0], 0U);
-        offset_bits += obj->output.count * 8U;
+        // It is assumed that we know the exact type of the serialized entity, hence we expect the size to match.
+        offset_bits += _size_bytes2_ * 8U;  // Advance by the size of the nested object.
     }
     if (offset_bits % 8U != 0U)  // Pad to 8 bits. TODO: Eliminate redundant padding checks.
     {
         const uint8_t _pad1_ = (uint8_t)(8U - offset_bits % 8U);
-        const int8_t _err1_ = nunavutSetUxx(&buffer[0], capacity_bytes, offset_bits, 0U, _pad1_);  // Optimize?
-        if (_err1_ < 0)
+        const int8_t _err4_ = nunavutSetUxx(&buffer[0], capacity_bytes, offset_bits, 0U, _pad1_);  // Optimize?
+        if (_err4_ < 0)
         {
-            return _err1_;
+            return _err4_;
         }
         offset_bits += _pad1_;
     }
@@ -399,8 +328,8 @@ static inline int8_t uavcan_node_ExecuteCommand_Response_1_3_serialize_(
 ///                                 was activated. In case of error this value is undefined.
 ///
 /// @returns Negative on error, zero on success.
-static inline int8_t uavcan_node_ExecuteCommand_Response_1_3_deserialize_(
-    uavcan_node_ExecuteCommand_Response_1_3* const out_obj, const uint8_t* buffer, size_t* const inout_buffer_size_bytes)
+static inline int8_t voltbro_config_dc_set_Response_1_0_deserialize_(
+    voltbro_config_dc_set_Response_1_0* const out_obj, const uint8_t* buffer, size_t* const inout_buffer_size_bytes)
 {
     if ((out_obj == NULL) || (inout_buffer_size_bytes == NULL) || ((buffer == NULL) && (0 != *inout_buffer_size_bytes)))
     {
@@ -413,33 +342,17 @@ static inline int8_t uavcan_node_ExecuteCommand_Response_1_3_deserialize_(
     const size_t capacity_bytes = *inout_buffer_size_bytes;
     const size_t capacity_bits = capacity_bytes * (size_t) 8U;
     size_t offset_bits = 0U;
-    // saturated uint8 status
-    if ((offset_bits + 8U) <= capacity_bits)
+    // uavcan.primitive.scalar.Bit.1.0 ok
     {
-        out_obj->status = buffer[offset_bits / 8U] & 255U;
+        size_t _size_bytes3_ = (size_t)(capacity_bytes - nunavutChooseMin((offset_bits / 8U), capacity_bytes));
+        const int8_t _err5_ = uavcan_primitive_scalar_Bit_1_0_deserialize_(
+            &out_obj->ok, &buffer[offset_bits / 8U], &_size_bytes3_);
+        if (_err5_ < 0)
+        {
+            return _err5_;
+        }
+        offset_bits += _size_bytes3_ * 8U;  // Advance by the size of the nested serialized representation.
     }
-    else
-    {
-        out_obj->status = 0U;
-    }
-    offset_bits += 8U;
-    // saturated uint8[<=46] output
-    // Array length prefix: truncated uint8
-    if ((offset_bits + 8U) <= capacity_bits)
-    {
-        out_obj->output.count = buffer[offset_bits / 8U] & 255U;
-    }
-    else
-    {
-        out_obj->output.count = 0U;
-    }
-    offset_bits += 8U;
-    if (out_obj->output.count > 46U)
-    {
-        return -NUNAVUT_ERROR_REPRESENTATION_BAD_ARRAY_LENGTH;
-    }
-    nunavutGetBits(&out_obj->output.elements[0], &buffer[0], capacity_bytes, offset_bits, out_obj->output.count * 8U);
-    offset_bits += out_obj->output.count * 8U;
     offset_bits = (offset_bits + 7U) & ~(size_t) 7U;  // Align on 8 bits.
     *inout_buffer_size_bytes = (size_t) (nunavutChooseMin(offset_bits, capacity_bits) / 8U);
     return NUNAVUT_SUCCESS;
@@ -449,13 +362,13 @@ static inline int8_t uavcan_node_ExecuteCommand_Response_1_3_deserialize_(
 /// This function intentionally leaves inactive elements uninitialized; for example, members of a variable-length
 /// array beyond its length are left uninitialized; aliased union memory that is not used by the first union field
 /// is left uninitialized, etc. If full zero-initialization is desired, just use memset(&obj, 0, sizeof(obj)).
-static inline void uavcan_node_ExecuteCommand_Response_1_3_initialize_(uavcan_node_ExecuteCommand_Response_1_3* const out_obj)
+static inline void voltbro_config_dc_set_Response_1_0_initialize_(voltbro_config_dc_set_Response_1_0* const out_obj)
 {
     if (out_obj != NULL)
     {
         size_t size_bytes = 0;
         const uint8_t buf = 0;
-        const int8_t err = uavcan_node_ExecuteCommand_Response_1_3_deserialize_(out_obj, &buf, &size_bytes);
+        const int8_t err = voltbro_config_dc_set_Response_1_0_deserialize_(out_obj, &buf, &size_bytes);
 
         (void) err;
     }
@@ -464,4 +377,4 @@ static inline void uavcan_node_ExecuteCommand_Response_1_3_initialize_(uavcan_no
 #ifdef __cplusplus
 }
 #endif
-#endif // UAVCAN_NODE_EXECUTE_COMMAND_1_3_INCLUDED_
+#endif // VOLTBRO_CONFIG_DC_SET_1_0_INCLUDED_

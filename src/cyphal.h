@@ -250,7 +250,7 @@ public:
 constexpr int ONE_FULL_FRAME_T = 2620;
 // Cycles = ONE_FULL_FRAME_T / 200 * 32
 constexpr int ONE_FULL_FRAME_CYCLES = 420;
-// 32 cycles ~~ 200 ns delay for 160Mhz core clock
+// 32 cycles ~~ 200 ns delay for 160MHz core clock
 constexpr int CYCLES_200NS_DELAY_DEFAULT = 32;
 
 __attribute__((optimize("O1"))) static inline void delay_cycles(
@@ -364,7 +364,7 @@ public:
     int write_frame(const CanardTxQueueItem* ti) override;
 };
 
-HAL_StatusTypeDef apply_filter(G4CAN::Handler hfdcan, FDCAN_FilterTypeDef* hw_filter, const CanardFilter& filter);
+HAL_StatusTypeDef apply_filter(uint32_t filter_index, G4CAN::Handler hfdcan, FDCAN_FilterTypeDef* hw_filter, const CanardFilter& filter);
 
 #endif
 

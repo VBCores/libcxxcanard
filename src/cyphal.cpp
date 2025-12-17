@@ -204,7 +204,11 @@ constexpr int GAP_16 = 4;
 constexpr int GAP_16_INDICIES_OFFSET = 32;
 
 size_t fdcan_dlc_to_len(uint32_t dlc) {
-    auto dlc_index = (uint8_t)(dlc / MAX_16BIT);;
+    #ifdef ARDUINO
+    auto dlc_index = (uint8_t)(dlc / MAX_16BIT);
+    #else
+    auto dlc_index = dlc;
+    #endif
     if (dlc_index <= GAP_1_INDICIES) {
         return dlc_index;
     }
@@ -296,7 +300,8 @@ size_t G4CAN::dlc_to_len(uint32_t dlc) {
 }
 
 void G4CAN::can_loop(bool no_tx) {
-    while (HAL_FDCAN_GetRxFifoFillLevel(handler, FDCAN_RX_FIFO0) != 0) {
+    uint32_t fifo_fill_level = HAL_FDCAN_GetRxFifoFillLevel(handler, FDCAN_RX_FIFO0);
+    while (fifo_fill_level != 0) {
         CanardFrame frame;
         uint8_t RxData[64] = {};
         bool has_read = read_frame(&frame, static_cast<void*>(RxData));
@@ -370,9 +375,7 @@ int G4CAN::write_frame(const CanardTxQueueItem* ti) {
     return TxHeader.DataLength;
 }
 
-HAL_StatusTypeDef apply_filter(G4CAN::Handler hfdcan, FDCAN_FilterTypeDef* hw_filter, const CanardFilter& filter) {
-    static uint32_t filter_index = 0;
-
+HAL_StatusTypeDef apply_filter(uint32_t filter_index, G4CAN::Handler hfdcan, FDCAN_FilterTypeDef* hw_filter, const CanardFilter& filter) {
     hw_filter->IdType = FDCAN_EXTENDED_ID;
     hw_filter->FilterIndex = filter_index;
     hw_filter->FilterType = FDCAN_FILTER_MASK;
@@ -380,10 +383,6 @@ HAL_StatusTypeDef apply_filter(G4CAN::Handler hfdcan, FDCAN_FilterTypeDef* hw_fi
     hw_filter->FilterID1 = filter.extended_can_id;
     hw_filter->FilterID2 = filter.extended_mask;
     HAL_StatusTypeDef result = HAL_FDCAN_ConfigFilter(hfdcan, hw_filter);
-
-    if (result == HAL_OK) {
-        filter_index += 1;
-    }
     return result;
 }
 #endif

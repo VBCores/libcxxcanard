@@ -19,6 +19,7 @@
         "nunavut",
         "o1heap",
         "reg",
-        "uavcan"
+        "uavcan",
+        "voltbro"
     ]
 }
