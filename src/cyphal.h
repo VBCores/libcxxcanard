@@ -63,7 +63,9 @@ template <typename T>
 class IListener {
 public:
     virtual void accept(T) = 0;
+    virtual ~IListener() = default;
 };
+
 #include <tuple>
 #include <type_traits>
 
@@ -290,7 +292,7 @@ __attribute__((optimize("O1"))) static inline void delay_cycles(
         // NOLINTEND(hicpp-no-assembler)
     }
 }
-#if (defined(STM32G474xx) || defined(STM32_G)) && defined(HAL_FDCAN_MODULE_ENABLED)
+#if (defined(STM32_G) || defined(STM32G4)) && defined(HAL_FDCAN_MODULE_ENABLED)
 
 
 #include <utility>
@@ -364,7 +366,7 @@ public:
     int write_frame(const CanardTxQueueItem* ti) override;
 };
 
-HAL_StatusTypeDef apply_filter(uint32_t filter_index, G4CAN::Handler hfdcan, FDCAN_FilterTypeDef* hw_filter, const CanardFilter& filter);
+HAL_StatusTypeDef apply_filter(uint32_t filter_index, G4CAN::Handler hfdcan, const CanardFilter& filter);
 
 #endif
 
@@ -761,11 +763,17 @@ inline void CyphalInterface::subscribe(
 using InterfacePtr = const std::shared_ptr<CyphalInterface>;
 using TransferListener = IListener<CanardRxTransfer*>;
 
+class IHasFilter {
+public:
+    virtual CanardFilter make_filter(CanardNodeID node_id) = 0;
+    virtual ~IHasFilter() = default;
+};
+
 /**
  * TODO
 */
 template <typename T>
-class AbstractSubscription : public TransferListener {
+class AbstractSubscription : public TransferListener, public IHasFilter {
     using Type = typename T::Type;
 
 protected:
@@ -787,7 +795,7 @@ public:
     };
     // NOLINTEND(modernize-pass-by-value)
 
-    virtual CanardFilter make_filter(CanardNodeID node_id) {
+    CanardFilter make_filter(CanardNodeID node_id) override{
         CanardFilter out = {};
 
         switch (kind) {

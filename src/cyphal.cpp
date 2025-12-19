@@ -118,6 +118,10 @@ void SystemAllocator::free(CanardInstance* const ins, void* const pointer) {
 #define FDCAN_DLC_BYTES_32 ((uint32_t)0x000D0000U) /*!< 32 bytes data field */
 #define FDCAN_DLC_BYTES_48 ((uint32_t)0x000E0000U) /*!< 48 bytes data field */
 #define FDCAN_DLC_BYTES_64 ((uint32_t)0x000F0000U) /*!< 64 bytes data field */
+#else
+#include "stm32g4xx.h"
+#include "stm32g4xx_hal.h"
+#include "stm32g4xx_hal_fdcan.h"
 #endif
 
 const std::array<uint32_t, 65> CanardFDCANLengthToDLC = {
@@ -209,13 +213,25 @@ size_t fdcan_dlc_to_len(uint32_t dlc) {
     #else
     auto dlc_index = dlc;
     #endif
-    if (dlc_index <= GAP_1_INDICIES) {
+    if (dlc_index <= 8) {
         return dlc_index;
     }
-    if (dlc_index <= GAP_4_INDICIES) {
-        return GAP_1_INDICIES + GAP_4 * (dlc_index - GAP_1_INDICIES);
+    switch (dlc_index) {
+        case 9:
+            return 12;
+        case 10:
+            return 16;
+        case 11:
+            return 20;
+        case 12:
+            return 24;
+        case 13:
+            return 32;
+        case 14:
+            return 48;
+        case 15:
+            return 64;
     }
-    return GAP_16_INDICIES_OFFSET + GAP_16 * (dlc_index - (GAP_4_INDICIES + 1));
 }
 
 std::unique_ptr<AbstractAllocator> _alloc_ptr;
@@ -375,15 +391,15 @@ int G4CAN::write_frame(const CanardTxQueueItem* ti) {
     return TxHeader.DataLength;
 }
 
-HAL_StatusTypeDef apply_filter(uint32_t filter_index, G4CAN::Handler hfdcan, FDCAN_FilterTypeDef* hw_filter, const CanardFilter& filter) {
-    hw_filter->IdType = FDCAN_EXTENDED_ID;
-    hw_filter->FilterIndex = filter_index;
-    hw_filter->FilterType = FDCAN_FILTER_MASK;
-    hw_filter->FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
-    hw_filter->FilterID1 = filter.extended_can_id;
-    hw_filter->FilterID2 = filter.extended_mask;
-    HAL_StatusTypeDef result = HAL_FDCAN_ConfigFilter(hfdcan, hw_filter);
-    return result;
+HAL_StatusTypeDef apply_filter(uint32_t filter_index, G4CAN::Handler hfdcan, const CanardFilter& filter) {
+    FDCAN_FilterTypeDef hw_filter;
+    hw_filter.IdType = FDCAN_EXTENDED_ID;
+    hw_filter.FilterIndex = filter_index;
+    hw_filter.FilterType = FDCAN_FILTER_MASK;
+    hw_filter.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
+    hw_filter.FilterID1 = filter.extended_can_id;
+    hw_filter.FilterID2 = filter.extended_mask;
+    return HAL_FDCAN_ConfigFilter(hfdcan, &hw_filter);
 }
 #endif
 
