@@ -8,8 +8,8 @@
 // are named with an underscore at the end, like foo_bar_().
 //
 // Generator:     nunavut-2.3.1 (serialization was enabled)
-// Source file:   /Users/igor/Work/misc/cyphal_ws/types/public_regulated_data_types/uavcan/file/Error.1.0.dsdl
-// Generated at:  2025-12-16 13:34:00.782686 UTC
+// Source file:   /home/pi/ws/types/public_regulated_data_types/uavcan/file/Error.1.0.dsdl
+// Generated at:  2025-12-19 12:32:05.816460 UTC
 // Is deprecated: no
 // Fixed port-ID: None
 // Full name:     uavcan.file.Error
@@ -17,13 +17,13 @@
 //
 // Platform
 //     python_implementation:  CPython
-//     python_version:  3.13.7
+//     python_version:  3.12.3
 //     python_release_level:  final
-//     python_build:  ('main', 'Aug 14 2025 11:12:11')
-//     python_compiler:  Clang 17.0.0 (clang-1700.0.13.3)
+//     python_build:  ('main', 'Nov  6 2025 13:44:16')
+//     python_compiler:  GCC 13.3.0
 //     python_revision:
 //     python_xoptions:  {}
-//     runtime_platform:  macOS-15.5-arm64-arm-64bit-Mach-O
+//     runtime_platform:  Linux-6.8.0-1031-raspi-aarch64-with-glibc2.39
 //
 // Language Options
 //     target_endianness:  little
@@ -40,19 +40,19 @@
 #include <stdlib.h>
 
 static_assert( NUNAVUT_SUPPORT_LANGUAGE_OPTION_TARGET_ENDIANNESS == 434322821,
-              "/Users/igor/Work/misc/cyphal_ws/types/public_regulated_data_types/uavcan/file/Error.1.0.dsdl is trying to use a serialization library that was compiled with "
+              "/home/pi/ws/types/public_regulated_data_types/uavcan/file/Error.1.0.dsdl is trying to use a serialization library that was compiled with "
               "different language options. This is dangerous and therefore not allowed." );
 static_assert( NUNAVUT_SUPPORT_LANGUAGE_OPTION_OMIT_FLOAT_SERIALIZATION_SUPPORT == 0,
-              "/Users/igor/Work/misc/cyphal_ws/types/public_regulated_data_types/uavcan/file/Error.1.0.dsdl is trying to use a serialization library that was compiled with "
+              "/home/pi/ws/types/public_regulated_data_types/uavcan/file/Error.1.0.dsdl is trying to use a serialization library that was compiled with "
               "different language options. This is dangerous and therefore not allowed." );
 static_assert( NUNAVUT_SUPPORT_LANGUAGE_OPTION_ENABLE_SERIALIZATION_ASSERTS == 0,
-              "/Users/igor/Work/misc/cyphal_ws/types/public_regulated_data_types/uavcan/file/Error.1.0.dsdl is trying to use a serialization library that was compiled with "
+              "/home/pi/ws/types/public_regulated_data_types/uavcan/file/Error.1.0.dsdl is trying to use a serialization library that was compiled with "
               "different language options. This is dangerous and therefore not allowed." );
 static_assert( NUNAVUT_SUPPORT_LANGUAGE_OPTION_ENABLE_OVERRIDE_VARIABLE_ARRAY_CAPACITY == 0,
-              "/Users/igor/Work/misc/cyphal_ws/types/public_regulated_data_types/uavcan/file/Error.1.0.dsdl is trying to use a serialization library that was compiled with "
+              "/home/pi/ws/types/public_regulated_data_types/uavcan/file/Error.1.0.dsdl is trying to use a serialization library that was compiled with "
               "different language options. This is dangerous and therefore not allowed." );
 static_assert( NUNAVUT_SUPPORT_LANGUAGE_OPTION_CAST_FORMAT == 2368206204,
-              "/Users/igor/Work/misc/cyphal_ws/types/public_regulated_data_types/uavcan/file/Error.1.0.dsdl is trying to use a serialization library that was compiled with "
+              "/home/pi/ws/types/public_regulated_data_types/uavcan/file/Error.1.0.dsdl is trying to use a serialization library that was compiled with "
               "different language options. This is dangerous and therefore not allowed." );
 
 #ifdef __cplusplus
