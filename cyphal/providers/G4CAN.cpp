@@ -88,14 +88,14 @@ int G4CAN::write_frame(const CanardTxQueueItem* ti) {
     return TxHeader.DataLength;
 }
 
-HAL_StatusTypeDef apply_filter(uint32_t filter_index, G4CAN::Handler hfdcan, FDCAN_FilterTypeDef* hw_filter, const CanardFilter& filter) {
-    hw_filter->IdType = FDCAN_EXTENDED_ID;
-    hw_filter->FilterIndex = filter_index;
-    hw_filter->FilterType = FDCAN_FILTER_MASK;
-    hw_filter->FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
-    hw_filter->FilterID1 = filter.extended_can_id;
-    hw_filter->FilterID2 = filter.extended_mask;
-    HAL_StatusTypeDef result = HAL_FDCAN_ConfigFilter(hfdcan, hw_filter);
-    return result;
+HAL_StatusTypeDef apply_filter(uint32_t filter_index, G4CAN::Handler hfdcan, const CanardFilter& filter) {
+    FDCAN_FilterTypeDef hw_filter;
+    hw_filter.IdType = FDCAN_EXTENDED_ID;
+    hw_filter.FilterIndex = filter_index;
+    hw_filter.FilterType = FDCAN_FILTER_MASK;
+    hw_filter.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
+    hw_filter.FilterID1 = filter.extended_can_id;
+    hw_filter.FilterID2 = filter.extended_mask;
+    return HAL_FDCAN_ConfigFilter(hfdcan, &hw_filter);
 }
 #endif
