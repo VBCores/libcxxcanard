@@ -94,11 +94,11 @@ typedef struct
     /// uavcan.si.unit.angular_velocity.Scalar.1.0 velocity
     uavcan_si_unit_angular_velocity_Scalar_1_0 velocity;
 
-    /// uavcan.primitive.scalar.Real32.1.0 angle_kp
-    uavcan_primitive_scalar_Real32_1_0 angle_kp;
+    /// uavcan.primitive.scalar.Real32.1.0 position_feedback_gain
+    uavcan_primitive_scalar_Real32_1_0 position_feedback_gain;
 
-    /// uavcan.primitive.scalar.Real32.1.0 velocity_kp
-    uavcan_primitive_scalar_Real32_1_0 velocity_kp;
+    /// uavcan.primitive.scalar.Real32.1.0 velocity_feedback_gain
+    uavcan_primitive_scalar_Real32_1_0 velocity_feedback_gain;
 
     /// uavcan.primitive.scalar.Real32.1.0 I_kp
     uavcan_primitive_scalar_Real32_1_0 I_kp;
@@ -201,10 +201,10 @@ static inline int8_t voltbro_foc_command_1_0_serialize_(
         }
         offset_bits += _pad2_;
     }
-    {   // uavcan.primitive.scalar.Real32.1.0 angle_kp
+    {   // uavcan.primitive.scalar.Real32.1.0 position_feedback_gain
         size_t _size_bytes3_ = 4UL;  // Nested object (max) size, in bytes.
         int8_t _err6_ = uavcan_primitive_scalar_Real32_1_0_serialize_(
-            &obj->angle_kp, &buffer[offset_bits / 8U], &_size_bytes3_);
+            &obj->position_feedback_gain, &buffer[offset_bits / 8U], &_size_bytes3_);
         if (_err6_ < 0)
         {
             return _err6_;
@@ -222,10 +222,10 @@ static inline int8_t voltbro_foc_command_1_0_serialize_(
         }
         offset_bits += _pad3_;
     }
-    {   // uavcan.primitive.scalar.Real32.1.0 velocity_kp
+    {   // uavcan.primitive.scalar.Real32.1.0 velocity_feedback_gain
         size_t _size_bytes4_ = 4UL;  // Nested object (max) size, in bytes.
         int8_t _err8_ = uavcan_primitive_scalar_Real32_1_0_serialize_(
-            &obj->velocity_kp, &buffer[offset_bits / 8U], &_size_bytes4_);
+            &obj->velocity_feedback_gain, &buffer[offset_bits / 8U], &_size_bytes4_);
         if (_err8_ < 0)
         {
             return _err8_;
@@ -359,11 +359,11 @@ static inline int8_t voltbro_foc_command_1_0_deserialize_(
         offset_bits += _size_bytes9_ * 8U;  // Advance by the size of the nested serialized representation.
     }
     offset_bits = (offset_bits + 7U) & ~(size_t) 7U;  // Align on 8 bits.
-    // uavcan.primitive.scalar.Real32.1.0 angle_kp
+    // uavcan.primitive.scalar.Real32.1.0 position_feedback_gain
     {
         size_t _size_bytes10_ = (size_t)(capacity_bytes - nunavutChooseMin((offset_bits / 8U), capacity_bytes));
         const int8_t _err17_ = uavcan_primitive_scalar_Real32_1_0_deserialize_(
-            &out_obj->angle_kp, &buffer[offset_bits / 8U], &_size_bytes10_);
+            &out_obj->position_feedback_gain, &buffer[offset_bits / 8U], &_size_bytes10_);
         if (_err17_ < 0)
         {
             return _err17_;
@@ -371,11 +371,11 @@ static inline int8_t voltbro_foc_command_1_0_deserialize_(
         offset_bits += _size_bytes10_ * 8U;  // Advance by the size of the nested serialized representation.
     }
     offset_bits = (offset_bits + 7U) & ~(size_t) 7U;  // Align on 8 bits.
-    // uavcan.primitive.scalar.Real32.1.0 velocity_kp
+    // uavcan.primitive.scalar.Real32.1.0 velocity_feedback_gain
     {
         size_t _size_bytes11_ = (size_t)(capacity_bytes - nunavutChooseMin((offset_bits / 8U), capacity_bytes));
         const int8_t _err18_ = uavcan_primitive_scalar_Real32_1_0_deserialize_(
-            &out_obj->velocity_kp, &buffer[offset_bits / 8U], &_size_bytes11_);
+            &out_obj->velocity_feedback_gain, &buffer[offset_bits / 8U], &_size_bytes11_);
         if (_err18_ < 0)
         {
             return _err18_;

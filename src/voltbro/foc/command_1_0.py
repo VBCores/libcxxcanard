@@ -49,8 +49,8 @@ class command_1_0:
                  torque:      None | uavcan.si.unit.torque.Scalar_1_0 = None,
                  angle:       None | uavcan.si.unit.angle.Scalar_1_0 = None,
                  velocity:    None | uavcan.si.unit.angular_velocity.Scalar_1_0 = None,
-                 angle_kp:    None | uavcan.primitive.scalar.Real32_1_0 = None,
-                 velocity_kp: None | uavcan.primitive.scalar.Real32_1_0 = None,
+                 position_feedback_gain:    None | uavcan.primitive.scalar.Real32_1_0 = None,
+                 velocity_feedback_gain: None | uavcan.primitive.scalar.Real32_1_0 = None,
                  I_kp:        None | uavcan.primitive.scalar.Real32_1_0 = None,
                  I_ki:        None | uavcan.primitive.scalar.Real32_1_0 = None) -> None:
         """
@@ -59,16 +59,16 @@ class command_1_0:
         :param torque:      uavcan.si.unit.torque.Scalar.1.0 torque
         :param angle:       uavcan.si.unit.angle.Scalar.1.0 angle
         :param velocity:    uavcan.si.unit.angular_velocity.Scalar.1.0 velocity
-        :param angle_kp:    uavcan.primitive.scalar.Real32.1.0 angle_kp
-        :param velocity_kp: uavcan.primitive.scalar.Real32.1.0 velocity_kp
+        :param position_feedback_gain:    uavcan.primitive.scalar.Real32.1.0 position_feedback_gain
+        :param velocity_feedback_gain: uavcan.primitive.scalar.Real32.1.0 velocity_feedback_gain
         :param I_kp:        uavcan.primitive.scalar.Real32.1.0 I_kp
         :param I_ki:        uavcan.primitive.scalar.Real32.1.0 I_ki
         """
         self._torque:      uavcan.si.unit.torque.Scalar_1_0
         self._angle:       uavcan.si.unit.angle.Scalar_1_0
         self._velocity:    uavcan.si.unit.angular_velocity.Scalar_1_0
-        self._angle_kp:    uavcan.primitive.scalar.Real32_1_0
-        self._velocity_kp: uavcan.primitive.scalar.Real32_1_0
+        self._position_feedback_gain:    uavcan.primitive.scalar.Real32_1_0
+        self._velocity_feedback_gain: uavcan.primitive.scalar.Real32_1_0
         self._I_kp:        uavcan.primitive.scalar.Real32_1_0
         self._I_ki:        uavcan.primitive.scalar.Real32_1_0
 
@@ -96,21 +96,21 @@ class command_1_0:
             raise ValueError(f'velocity: expected uavcan.si.unit.angular_velocity.Scalar_1_0 '
                              f'got {type(velocity).__name__}')
 
-        if angle_kp is None:
-            self.angle_kp = uavcan.primitive.scalar.Real32_1_0()
-        elif isinstance(angle_kp, uavcan.primitive.scalar.Real32_1_0):
-            self.angle_kp = angle_kp
+        if position_feedback_gain is None:
+            self.position_feedback_gain = uavcan.primitive.scalar.Real32_1_0()
+        elif isinstance(position_feedback_gain, uavcan.primitive.scalar.Real32_1_0):
+            self.position_feedback_gain = position_feedback_gain
         else:
-            raise ValueError(f'angle_kp: expected uavcan.primitive.scalar.Real32_1_0 '
-                             f'got {type(angle_kp).__name__}')
+            raise ValueError(f'position_feedback_gain: expected uavcan.primitive.scalar.Real32_1_0 '
+                             f'got {type(position_feedback_gain).__name__}')
 
-        if velocity_kp is None:
-            self.velocity_kp = uavcan.primitive.scalar.Real32_1_0()
-        elif isinstance(velocity_kp, uavcan.primitive.scalar.Real32_1_0):
-            self.velocity_kp = velocity_kp
+        if velocity_feedback_gain is None:
+            self.velocity_feedback_gain = uavcan.primitive.scalar.Real32_1_0()
+        elif isinstance(velocity_feedback_gain, uavcan.primitive.scalar.Real32_1_0):
+            self.velocity_feedback_gain = velocity_feedback_gain
         else:
-            raise ValueError(f'velocity_kp: expected uavcan.primitive.scalar.Real32_1_0 '
-                             f'got {type(velocity_kp).__name__}')
+            raise ValueError(f'velocity_feedback_gain: expected uavcan.primitive.scalar.Real32_1_0 '
+                             f'got {type(velocity_feedback_gain).__name__}')
 
         if I_kp is None:
             self.I_kp = uavcan.primitive.scalar.Real32_1_0()
@@ -174,34 +174,34 @@ class command_1_0:
             raise ValueError(f'velocity: expected uavcan.si.unit.angular_velocity.Scalar_1_0 got {type(x).__name__}')
 
     @property
-    def angle_kp(self) -> uavcan.primitive.scalar.Real32_1_0:
+    def position_feedback_gain(self) -> uavcan.primitive.scalar.Real32_1_0:
         """
-        uavcan.primitive.scalar.Real32.1.0 angle_kp
+        uavcan.primitive.scalar.Real32.1.0 position_feedback_gain
         The setter raises ValueError if the supplied value exceeds the valid range or otherwise inapplicable.
         """
-        return self._angle_kp
+        return self._position_feedback_gain
 
-    @angle_kp.setter
-    def angle_kp(self, x: uavcan.primitive.scalar.Real32_1_0) -> None:
+    @position_feedback_gain.setter
+    def position_feedback_gain(self, x: uavcan.primitive.scalar.Real32_1_0) -> None:
         if isinstance(x, uavcan.primitive.scalar.Real32_1_0):
-            self._angle_kp = x
+            self._position_feedback_gain = x
         else:
-            raise ValueError(f'angle_kp: expected uavcan.primitive.scalar.Real32_1_0 got {type(x).__name__}')
+            raise ValueError(f'position_feedback_gain: expected uavcan.primitive.scalar.Real32_1_0 got {type(x).__name__}')
 
     @property
-    def velocity_kp(self) -> uavcan.primitive.scalar.Real32_1_0:
+    def velocity_feedback_gain(self) -> uavcan.primitive.scalar.Real32_1_0:
         """
-        uavcan.primitive.scalar.Real32.1.0 velocity_kp
+        uavcan.primitive.scalar.Real32.1.0 velocity_feedback_gain
         The setter raises ValueError if the supplied value exceeds the valid range or otherwise inapplicable.
         """
-        return self._velocity_kp
+        return self._velocity_feedback_gain
 
-    @velocity_kp.setter
-    def velocity_kp(self, x: uavcan.primitive.scalar.Real32_1_0) -> None:
+    @velocity_feedback_gain.setter
+    def velocity_feedback_gain(self, x: uavcan.primitive.scalar.Real32_1_0) -> None:
         if isinstance(x, uavcan.primitive.scalar.Real32_1_0):
-            self._velocity_kp = x
+            self._velocity_feedback_gain = x
         else:
-            raise ValueError(f'velocity_kp: expected uavcan.primitive.scalar.Real32_1_0 got {type(x).__name__}')
+            raise ValueError(f'velocity_feedback_gain: expected uavcan.primitive.scalar.Real32_1_0 got {type(x).__name__}')
 
     @property
     def I_kp(self) -> uavcan.primitive.scalar.Real32_1_0:
@@ -247,10 +247,10 @@ class command_1_0:
         self.velocity._serialize_(_ser_)
         assert _ser_.current_bit_length % 8 == 0, 'Nested object alignment error'
         _ser_.pad_to_alignment(8)
-        self.angle_kp._serialize_(_ser_)
+        self.position_feedback_gain._serialize_(_ser_)
         assert _ser_.current_bit_length % 8 == 0, 'Nested object alignment error'
         _ser_.pad_to_alignment(8)
-        self.velocity_kp._serialize_(_ser_)
+        self.velocity_feedback_gain._serialize_(_ser_)
         assert _ser_.current_bit_length % 8 == 0, 'Nested object alignment error'
         _ser_.pad_to_alignment(8)
         self.I_kp._serialize_(_ser_)
@@ -279,11 +279,11 @@ class command_1_0:
         _des_.pad_to_alignment(8)
         _f2_ = uavcan.si.unit.angular_velocity.Scalar_1_0._deserialize_(_des_)
         assert _des_.consumed_bit_length % 8 == 0, 'Nested object alignment error'
-        # Temporary _f3_ holds the value of "angle_kp"
+        # Temporary _f3_ holds the value of "position_feedback_gain"
         _des_.pad_to_alignment(8)
         _f3_ = uavcan.primitive.scalar.Real32_1_0._deserialize_(_des_)
         assert _des_.consumed_bit_length % 8 == 0, 'Nested object alignment error'
-        # Temporary _f4_ holds the value of "velocity_kp"
+        # Temporary _f4_ holds the value of "velocity_feedback_gain"
         _des_.pad_to_alignment(8)
         _f4_ = uavcan.primitive.scalar.Real32_1_0._deserialize_(_des_)
         assert _des_.consumed_bit_length % 8 == 0, 'Nested object alignment error'
@@ -299,8 +299,8 @@ class command_1_0:
             torque=_f0_,
             angle=_f1_,
             velocity=_f2_,
-            angle_kp=_f3_,
-            velocity_kp=_f4_,
+            position_feedback_gain=_f3_,
+            velocity_feedback_gain=_f4_,
             I_kp=_f5_,
             I_ki=_f6_)
         _des_.pad_to_alignment(8)
@@ -314,8 +314,8 @@ class command_1_0:
             'torque=%s' % self.torque,
             'angle=%s' % self.angle,
             'velocity=%s' % self.velocity,
-            'angle_kp=%s' % self.angle_kp,
-            'velocity_kp=%s' % self.velocity_kp,
+            'position_feedback_gain=%s' % self.position_feedback_gain,
+            'velocity_feedback_gain=%s' % self.velocity_feedback_gain,
             'I_kp=%s' % self.I_kp,
             'I_ki=%s' % self.I_ki,
         ])
