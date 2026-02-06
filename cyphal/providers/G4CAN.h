@@ -26,8 +26,8 @@ public:
         Handler handler,
         CanardNodeID node_id,
         size_t queue_len,
-        Args&&... args,
-        const UtilityConfig& utilities
+        const UtilityConfig& utilities,
+        Args&&... args
     ) {
         std::byte* allocator_loc = *inout_buffer;
         // NOLINTBEGIN(cppcoreguidelines-owning-memory,cppcoreguidelines-pro-bounds-pointer-arithmetic,bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)

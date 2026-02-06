@@ -76,8 +76,8 @@ public:
         CanardNodeID node_id,
         typename Provider::Handler handler,
         size_t queue_len,
-        Args&&... args,
-        const UtilityConfig& config
+        const UtilityConfig& config,
+        Args&&... args
     ) {
         std::byte** inout_buffer = &buffer;
         AbstractCANProvider* provider = Provider::template create_bss<Allocator>(
@@ -85,8 +85,8 @@ public:
             handler,
             node_id,
             queue_len,
-            std::forward<Args>(args)...,
-            config
+            config,
+            std::forward<Args>(args)...
         );
 
         std::byte* interface_ptr = *inout_buffer;
