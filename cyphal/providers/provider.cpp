@@ -4,13 +4,12 @@
 std::unique_ptr<AbstractAllocator> _alloc_ptr;
 
 void AbstractCANProvider::process_canard_rx(CanardFrame* frame) {
-    lock_canard();
-
     CanardRxTransfer transfer = {};
     transfer.payload = nullptr;
 
     CanardRxSubscription* subscription = nullptr;
 
+    lock_canard();
     const int8_t accept_result = canardRxAccept(
         &canard,
         utilities.micros_64(),
@@ -19,6 +18,7 @@ void AbstractCANProvider::process_canard_rx(CanardFrame* frame) {
         &transfer,
         &subscription
     );
+    unlock_canard();
 
     if (accept_result == -CANARD_ERROR_OUT_OF_MEMORY) {
         utilities.error_handler();
@@ -33,12 +33,12 @@ void AbstractCANProvider::process_canard_rx(CanardFrame* frame) {
                 listener->accept(&transfer);
             }
         }
+        lock_canard();
         canard.memory_free(&canard, transfer.payload);
+        unlock_canard();
     } else {  // accept_result == 0 || accept_result > 1
         // The received frame is either invalid or it's a non-last frame of a multi-frame transfer.
     }
-
-    unlock_canard();
 }
 
 void AbstractCANProvider::process_canard_tx() {
