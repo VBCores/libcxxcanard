@@ -35,7 +35,7 @@ void CyphalInterface::push(
 }
 
 void CyphalInterface::unsubscribe(CanardPortID port_id, CanardTransferKind kind) {
-    if (canardRxUnsubscribe((CanardInstance* const)&provider->canard, kind, port_id) != 1) {
+    if (canardRxUnsubscribe(&provider->canard, kind, port_id) != 1) {
         utilities.error_handler();
     }
 }

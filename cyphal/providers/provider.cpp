@@ -6,11 +6,13 @@ std::unique_ptr<AbstractAllocator> _alloc_ptr;
 void AbstractCANProvider::process_canard_rx(CanardFrame* frame) {
     lock_canard();
 
-    CanardRxTransfer transfer = {.payload = nullptr};
+    CanardRxTransfer transfer = {};
+    transfer.payload = nullptr;
+
     CanardRxSubscription* subscription = nullptr;
 
     const int8_t accept_result = canardRxAccept(
-        (CanardInstance* const)&canard,
+        &canard,
         utilities.micros_64(),
         frame,
         0,

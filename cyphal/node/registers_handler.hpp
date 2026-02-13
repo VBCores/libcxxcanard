@@ -93,7 +93,7 @@ public:
         }
         if (!is_found) {
             value._tag_ = 0;
-            value.empty = (uavcan_primitive_Empty_1_0){};
+            value.empty = {};
         }
 
         register_access_response.value = value;

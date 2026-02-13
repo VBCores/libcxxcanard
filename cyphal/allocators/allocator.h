@@ -15,7 +15,7 @@ protected:
     const UtilityConfig& utilities;
 
 public:
-    AbstractAllocator(size_t size, const UtilityConfig& utilities) : utilities(utilities){};
+    AbstractAllocator(const UtilityConfig& utilities) : utilities(utilities){};
 
     AbstractAllocator(const AbstractAllocator&) = delete;
     AbstractAllocator& operator=(const AbstractAllocator&) = delete;
