@@ -17,17 +17,17 @@ public:
 };
 
 /**
- * TODO
+ * TODO docs
 */
 template <typename T>
 class AbstractSubscription : public TransferListener, public IHasFilter {
     using Type = typename T::Type;
 
 protected:
-    const CanardTransferKind kind;
     const CanardPortID port_id;
-    CanardRxSubscription sub = {};
+    const CanardTransferKind kind;
     InterfacePtr interface;
+    CanardRxSubscription sub = {};
 
     virtual void handler(const Type&, CanardRxTransfer*) = 0;
 
@@ -57,8 +57,13 @@ public:
 
         return out;
     }
+
     void accept(CanardRxTransfer* transfer) override {
-        Type object;
+        // NOTE: I would like to NOT initialize this object to save cpu cycles
+        //       but whatever else I do triggers a compiler warning -Wmaybe-uninitialized.
+        //       Its somehow related to flto step? Since it appears at linking step after flto logs,
+        //       even with "GNU push ignore warning" pragmas. Weird stuff.
+        Type object{};
         interface->deserialize_transfer<T>(&object, transfer);
         handler(object, transfer);
     }
