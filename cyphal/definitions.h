@@ -6,8 +6,8 @@
 #include "stm32g4xx_hal.h"
 #include "stm32g4xx_hal_fdcan.h"
 // TODO: rework this dependency
-#if __has_include("voltbro/utils.h")
-    #include "voltbro/utils.h"
+#if __has_include("voltbro/utils.hpp")
+    #include "voltbro/utils.hpp"
 #else
     #define CRITICAL_SECTION(code) code
 #endif

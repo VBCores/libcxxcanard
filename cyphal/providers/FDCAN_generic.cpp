@@ -131,4 +131,8 @@ size_t fdcan_dlc_to_len(uint32_t dlc) {
         case 15:
             return 64;
     }
+
+    // NOTE: Calling this function with dlc > 15 is invalid, but to avoid undefined behavior
+    //       we return max length for incorrect dlc values
+    return 64;
 }

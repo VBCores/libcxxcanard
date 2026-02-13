@@ -34,5 +34,5 @@ public:
     void* allocate(CanardInstance* ins, size_t amount) override;
     void free(CanardInstance* ins, void* pointer) override;
 
-    [[nodiscard]] const O1HeapInstance* const get_heap() const { return o1heap; }
+    [[nodiscard]] const O1HeapInstance* get_heap() const { return o1heap; }
 };

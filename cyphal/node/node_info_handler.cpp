@@ -34,10 +34,14 @@ NodeInfoReader::NodeInfoReader(
     memcpy(node_info.unique_id + 8, &word2, 4);
 };
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+// NOTE: <object> parameter required by the interface, but not used in this implementation
 void NodeInfoReader::handler(
     const uavcan_node_GetInfo_Request_1_0& object,
     CanardRxTransfer* transfer
 ) {
+#pragma GCC diagnostic pop
     interface->send_response<NodeInfoResponse>(&node_info, transfer);
 }
 #endif

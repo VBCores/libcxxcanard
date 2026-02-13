@@ -39,12 +39,12 @@ void O1Allocator::align_self(size_t size) {
 }
 
 O1Allocator::O1Allocator(size_t size, void* memory, const UtilityConfig& utilities)
-    : AbstractAllocator(size, utilities), memory_arena(memory) {
+    : AbstractAllocator(utilities), memory_arena(memory) {
     align_self(size);
 }
 
 O1Allocator::O1Allocator(size_t size, const UtilityConfig& utilities)
-    : AbstractAllocator(size, utilities),
+    : AbstractAllocator(utilities),
       memory_arena(operator new(size, std::align_val_t{O1HEAP_ALIGNMENT})) {
     if (memory_arena == nullptr) {
         utilities.error_handler();
