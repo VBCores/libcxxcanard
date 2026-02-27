@@ -1,7 +1,9 @@
 #pragma once
 
-#if (defined(STM32G) || defined(STM32G4))
-#include "stm32g0xx_hal_fdcan.h"
+#if defined(STM32G0)
+#include "stm32g0xx_hal.h"
+#elif defined(STM32G4)
+#include "stm32g4xx_hal.h"
 #endif
 #if defined(HAL_FDCAN_MODULE_ENABLED)
 
