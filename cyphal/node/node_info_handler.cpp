@@ -1,7 +1,11 @@
-#if (defined(STM32G474xx) || defined(STM32_G))
+#if defined(STM32G)
 #include "node_info_handler.h"
 
+#ifdef STM32G4
 #include "stm32g4xx_ll_utils.h"
+#else
+#include "stm32g0xx_ll_utils.h"
+#endif
 
 NodeInfoReader::NodeInfoReader(
     InterfacePtr interface,

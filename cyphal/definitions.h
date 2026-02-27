@@ -2,9 +2,15 @@
 
 #include <functional>
 
-#if defined(STM32G4) || defined(STM32_G)
+#if defined(STM32G4)
 #include "stm32g4xx_hal.h"
 #include "stm32g4xx_hal_fdcan.h"
+#elif defined(STM32G0)
+#include "stm32g0xx.h"
+#include "stm32g0xx_hal.h"
+#include "stm32g0xx_hal_fdcan.h"
+#endif
+#if defined(STM32G4) || defined(STM32G0)
 // TODO: rework this dependency
 #if __has_include("voltbro/utils.hpp")
     #include "voltbro/utils.hpp"

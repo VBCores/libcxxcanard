@@ -1,5 +1,5 @@
 #include "G4CAN.h"
-#if (defined(STM32G474xx) || defined(STM32_G)) && defined(HAL_FDCAN_MODULE_ENABLED)
+#if defined(STM32G) && defined(HAL_FDCAN_MODULE_ENABLED)
 #include <cstring>
 
 #include "FDCAN_generic.h"
