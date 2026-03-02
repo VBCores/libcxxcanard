@@ -1,6 +1,6 @@
 #pragma once
 #include "cyphal/definitions.h"
-#if defined(STM32G) && defined(HAL_FDCAN_MODULE_ENABLED)
+#if (defined(STM32G) || defined(STM32G4) || defined(STM32G0)) && defined(HAL_FDCAN_MODULE_ENABLED)
 
 #include "provider.h"
 

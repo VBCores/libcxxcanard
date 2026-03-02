@@ -1,4 +1,4 @@
-#if defined(STM32G)
+#if (defined(STM32G) || defined(STM32G4) || defined(STM32G0))
 #include "node_info_handler.h"
 
 #ifdef STM32G4
