@@ -114,7 +114,7 @@ size_t fdcan_dlc_to_len(uint32_t dlc) {
     #ifdef ARDUINO
     auto dlc_index = (uint8_t)(dlc / MAX_16BIT);
     #else
-    auto dlc_index = dlc;
+    auto dlc_index = static_cast<uint8_t>(dlc >> 16U);
     #endif
     if (dlc_index <= 8) {
         return dlc_index;
