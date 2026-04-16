@@ -91,7 +91,42 @@ protected:
         _is_cyphal_on = true;
     }
 
+    void start_cyphal() {
+        HAL_IMPORTANT(HAL_FDCAN_ConfigTxDelayCompensation(
+            hfdcan,
+            hfdcan->Init.DataTimeSeg1 * hfdcan->Init.DataPrescaler,
+            0
+        ))
+        HAL_IMPORTANT(HAL_FDCAN_EnableTxDelayCompensation(hfdcan))
+        HAL_IMPORTANT(HAL_FDCAN_Start(hfdcan))
+
+        _is_cyphal_on = true;
+    }
+
+    void finish_cyphal_setup() {
+        setup_subscriptions();
+        start_cyphal();
+    }
+
 public:
+    explicit EmbeddedCyphal(
+        FDCAN_HandleTypeDef* hfdcan,
+        CanardNodeID node_id,
+        std::string&& name,
+        std::array<RegisterDefinition, REGISTERS_COUNT>&& registers_list
+    ):
+        EmbeddedCyphal(
+            hfdcan,
+            node_id,
+            std::move(name),
+            uavcan_node_Version_1_0{1, 0},
+            uavcan_node_Version_1_0{1, 0},
+            uavcan_node_Version_1_0{1, 0},
+            0,
+            std::move(registers_list)
+        )
+    {}
+
     explicit EmbeddedCyphal(
         FDCAN_HandleTypeDef* hfdcan,
         CanardNodeID node_id,
@@ -124,19 +159,7 @@ public:
             std::forward<std::array<RegisterDefinition, REGISTERS_COUNT>>(registers_list),
             cyphal_interface
         )
-        {
-        setup_subscriptions();
-
-        HAL_IMPORTANT(HAL_FDCAN_ConfigTxDelayCompensation(
-            hfdcan,
-            hfdcan->Init.DataTimeSeg1 * hfdcan->Init.DataPrescaler,
-            0
-        ))
-        HAL_IMPORTANT(HAL_FDCAN_EnableTxDelayCompensation(hfdcan))
-        HAL_IMPORTANT(HAL_FDCAN_Start(hfdcan))
-
-        _is_cyphal_on = true;
-    }
+        {}
 
     void set_mode(uint8_t mode) {
         _mode = mode;
