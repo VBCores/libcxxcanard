@@ -4,6 +4,14 @@
 #define STM32_G
 #define HAL_FDCAN_MODULE_ENABLED
 
+#ifdef ARDUINO
+extern "C" {
+void __attribute__((weak, noreturn)) exit(int _) {
+    while(true){};
+}
+}
+#endif
+
 #include <functional>
 
 #if defined(STM32G4) || defined(STM32_G)
