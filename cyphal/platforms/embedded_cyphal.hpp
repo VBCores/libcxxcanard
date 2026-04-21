@@ -40,7 +40,10 @@ protected:
     std::byte cyphal_bss_buffer[
         sizeof(CyphalInterface) + sizeof(G4CAN) + sizeof(O1Allocator)
     ] __attribute__((aligned(4)));
-    static const size_t CYPHAL_BUFFER_SIZE = QUEUE_SIZE * sizeof(CanardTxQueueItem);
+    // Must match the arena size requested by G4CAN::create_bss().
+    static const size_t CYPHAL_BUFFER_SIZE = static_cast<size_t>(
+        QUEUE_SIZE * sizeof(CanardTxQueueItem) * QUEUE_SIZE_MULT
+    );
     static inline std::byte cyphal_queue_buffer[CYPHAL_BUFFER_SIZE] __attribute__((aligned(O1HEAP_ALIGNMENT)));
 
     NodeInfoReader node_info_reader;
