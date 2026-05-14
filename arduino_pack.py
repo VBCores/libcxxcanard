@@ -8,7 +8,7 @@ SRC_DIR = DIR / 'cyphal'
 OUT_DIR = DIR / 'src'
 LIBS_DIR = DIR / 'libs'
 
-PRESERVE_OVER_BUILDS = ("utils.h", "README.md")
+PRESERVE_OVER_BUILDS = ("nunavut", "reg", "uavcan", "voltbro", "utils.h", "README.md")
 
 print(f"Clearing <{LIBS_DIR}>")
 for entry in OUT_DIR.glob("*"):
@@ -77,9 +77,17 @@ with open(OUT_H, 'w+t') as out_h, open(OUT_CPP, 'w+t') as out_cpp:
     out_h.write("""
 #undef Error_Handler
 #undef Error_Handler()
+                
+#ifdef ARDUINO
+extern "C" {
+void __attribute__((weak, noreturn)) exit(int _) {
+    while(true){};
+}
+}
+#endif
 """)
 
-    out_h.write('#define STM32_G\n')
+    out_h.write('#define STM32G4\n')
     out_h.write('#define HAL_FDCAN_MODULE_ENABLED\n')
 
     for target_file in TARGET_FILES:

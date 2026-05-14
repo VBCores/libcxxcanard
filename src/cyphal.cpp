@@ -56,12 +56,12 @@ void O1Allocator::align_self(size_t size) {
 }
 
 O1Allocator::O1Allocator(size_t size, void* memory, const UtilityConfig& utilities)
-    : AbstractAllocator(size, utilities), memory_arena(memory) {
+    : AbstractAllocator(utilities), memory_arena(memory) {
     align_self(size);
 }
 
 O1Allocator::O1Allocator(size_t size, const UtilityConfig& utilities)
-    : AbstractAllocator(size, utilities),
+    : AbstractAllocator(utilities),
       memory_arena(operator new(size, std::align_val_t{O1HEAP_ALIGNMENT})) {
     if (memory_arena == nullptr) {
         utilities.error_handler();
@@ -118,10 +118,14 @@ void SystemAllocator::free(CanardInstance* const ins, void* const pointer) {
 #define FDCAN_DLC_BYTES_32 ((uint32_t)0x000D0000U) /*!< 32 bytes data field */
 #define FDCAN_DLC_BYTES_48 ((uint32_t)0x000E0000U) /*!< 48 bytes data field */
 #define FDCAN_DLC_BYTES_64 ((uint32_t)0x000F0000U) /*!< 64 bytes data field */
-#else
+#elif defined(STM32G4)
 #include "stm32g4xx.h"
 #include "stm32g4xx_hal.h"
 #include "stm32g4xx_hal_fdcan.h"
+#else
+#include "stm32g0xx.h"
+#include "stm32g0xx_hal.h"
+#include "stm32g0xx_hal_fdcan.h"
 #endif
 
 const std::array<uint32_t, 65> CanardFDCANLengthToDLC = {
@@ -232,24 +236,30 @@ size_t fdcan_dlc_to_len(uint32_t dlc) {
         case 15:
             return 64;
     }
+
+    // NOTE: Calling this function with dlc > 15 is invalid, but to avoid undefined behavior
+    //       we return max length for incorrect dlc values
+    return 64;
 }
 
 std::unique_ptr<AbstractAllocator> _alloc_ptr;
 
 void AbstractCANProvider::process_canard_rx(CanardFrame* frame) {
-    lock_canard();
+    CanardRxTransfer transfer = {};
+    transfer.payload = nullptr;
 
-    CanardRxTransfer transfer = {.payload = nullptr};
     CanardRxSubscription* subscription = nullptr;
 
+    lock_canard();
     const int8_t accept_result = canardRxAccept(
-        (CanardInstance* const)&canard,
+        &canard,
         utilities.micros_64(),
         frame,
         0,
         &transfer,
         &subscription
     );
+    unlock_canard();
 
     if (accept_result == -CANARD_ERROR_OUT_OF_MEMORY) {
         utilities.error_handler();
@@ -264,12 +274,12 @@ void AbstractCANProvider::process_canard_rx(CanardFrame* frame) {
                 listener->accept(&transfer);
             }
         }
+        lock_canard();
         canard.memory_free(&canard, transfer.payload);
+        unlock_canard();
     } else {  // accept_result == 0 || accept_result > 1
         // The received frame is either invalid or it's a non-last frame of a multi-frame transfer.
     }
-
-    unlock_canard();
 }
 
 void AbstractCANProvider::process_canard_tx() {
@@ -303,7 +313,7 @@ void AbstractCANProvider::clear_queue() {
 };
 
 AbstractCANProvider::~AbstractCANProvider() = default;
-#if (defined(STM32G474xx) || defined(STM32_G)) && defined(HAL_FDCAN_MODULE_ENABLED)
+#if (defined(STM32G) || defined(STM32G4) || defined(STM32G0)) && defined(HAL_FDCAN_MODULE_ENABLED)
 #include <cstring>
 
 
@@ -438,7 +448,7 @@ void CyphalInterface::push(
 }
 
 void CyphalInterface::unsubscribe(CanardPortID port_id, CanardTransferKind kind) {
-    if (canardRxUnsubscribe((CanardInstance* const)&provider->canard, kind, port_id) != 1) {
+    if (canardRxUnsubscribe(&provider->canard, kind, port_id) != 1) {
         utilities.error_handler();
     }
 }
@@ -487,9 +497,13 @@ CyphalInterface::~CyphalInterface() {
     std::cout << "Waited for TX thread" << std::endl;
 #endif
 }
-#if (defined(STM32G474xx) || defined(STM32_G))
+#if (defined(STM32G) || defined(STM32G4) || defined(STM32G0))
 
+#ifdef STM32G4
 #include "stm32g4xx_ll_utils.h"
+#else
+#include "stm32g0xx_ll_utils.h"
+#endif
 
 NodeInfoReader::NodeInfoReader(
     InterfacePtr interface,
@@ -522,6 +536,7 @@ NodeInfoReader::NodeInfoReader(
     memcpy(node_info.unique_id + 8, &word2, 4);
 };
 
+// NOTE: <object> parameter required by the interface, but not used in this implementation
 void NodeInfoReader::handler(
     const uavcan_node_GetInfo_Request_1_0& object,
     CanardRxTransfer* transfer

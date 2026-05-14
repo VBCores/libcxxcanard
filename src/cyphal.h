@@ -1,9 +1,7 @@
 
 #undef Error_Handler
 #undef Error_Handler()
-#define STM32_G
-#define HAL_FDCAN_MODULE_ENABLED
-
+                
 #ifdef ARDUINO
 extern "C" {
 void __attribute__((weak, noreturn)) exit(int _) {
@@ -11,15 +9,23 @@ void __attribute__((weak, noreturn)) exit(int _) {
 }
 }
 #endif
+#define STM32G4
+#define HAL_FDCAN_MODULE_ENABLED
 
 #include <functional>
 
-#if defined(STM32G4) || defined(STM32_G)
+#if defined(STM32G4)
 #include "stm32g4xx_hal.h"
 #include "stm32g4xx_hal_fdcan.h"
+#elif defined(STM32G0)
+#include "stm32g0xx.h"
+#include "stm32g0xx_hal.h"
+#include "stm32g0xx_hal_fdcan.h"
+#endif
+#if defined(STM32G4) || defined(STM32G0)
 // TODO: rework this dependency
-#if __has_include("voltbro/utils.h")
-    #include "voltbro/utils.h"
+#if __has_include("voltbro/utils.hpp")
+    #include "voltbro/utils.hpp"
 #else
     #define CRITICAL_SECTION(code) code
 #endif
@@ -88,7 +94,7 @@ protected:
     const UtilityConfig& utilities;
 
 public:
-    AbstractAllocator(size_t size, const UtilityConfig& utilities) : utilities(utilities){};
+    AbstractAllocator(const UtilityConfig& utilities) : utilities(utilities){};
 
     AbstractAllocator(const AbstractAllocator&) = delete;
     AbstractAllocator& operator=(const AbstractAllocator&) = delete;
@@ -133,7 +139,7 @@ public:
     void* allocate(CanardInstance* ins, size_t amount) override;
     void free(CanardInstance* ins, void* pointer) override;
 
-    [[nodiscard]] const O1HeapInstance* const get_heap() const { return o1heap; }
+    [[nodiscard]] const O1HeapInstance* get_heap() const { return o1heap; }
 };
 
 
@@ -142,9 +148,14 @@ public:
  */
 class SystemAllocator : public AbstractAllocator {
 public:
+
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wunused-parameter"
+    // NOTE: <size> parameter required by the interface, but not used in this implementation
     // TODO: do something with size value?
     explicit SystemAllocator(size_t size, const UtilityConfig& utilities)
-        : AbstractAllocator(size, utilities){};
+        : AbstractAllocator(utilities){};
+    #pragma GCC diagnostic pop
     void* allocate(CanardInstance* ins, size_t amount) override;
     void free(CanardInstance* ins, void* pointer) override;
 };
@@ -300,7 +311,7 @@ __attribute__((optimize("O1"))) static inline void delay_cycles(
         // NOLINTEND(hicpp-no-assembler)
     }
 }
-#if (defined(STM32_G) || defined(STM32G4)) && defined(HAL_FDCAN_MODULE_ENABLED)
+#if (defined(STM32G) || defined(STM32G4) || defined(STM32G0)) && defined(HAL_FDCAN_MODULE_ENABLED)
 
 
 #include <utility>
@@ -325,8 +336,8 @@ public:
         Handler handler,
         CanardNodeID node_id,
         size_t queue_len,
-        Args&&... args,
-        const UtilityConfig& utilities
+        const UtilityConfig& utilities,
+        Args&&... args
     ) {
         std::byte* allocator_loc = *inout_buffer;
         // NOLINTBEGIN(cppcoreguidelines-owning-memory,cppcoreguidelines-pro-bounds-pointer-arithmetic,bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
@@ -452,8 +463,8 @@ public:
         CanardNodeID node_id,
         typename Provider::Handler handler,
         size_t queue_len,
-        Args&&... args,
-        const UtilityConfig& config
+        const UtilityConfig& config,
+        Args&&... args
     ) {
         std::byte** inout_buffer = &buffer;
         AbstractCANProvider* provider = Provider::template create_bss<Allocator>(
@@ -461,8 +472,8 @@ public:
             handler,
             node_id,
             queue_len,
-            std::forward<Args>(args)...,
-            config
+            config,
+            std::forward<Args>(args)...
         );
 
         std::byte* interface_ptr = *inout_buffer;
@@ -778,17 +789,17 @@ public:
 };
 
 /**
- * TODO
+ * TODO docs
 */
 template <typename T>
 class AbstractSubscription : public TransferListener, public IHasFilter {
     using Type = typename T::Type;
 
 protected:
-    const CanardTransferKind kind;
     const CanardPortID port_id;
-    CanardRxSubscription sub = {};
+    const CanardTransferKind kind;
     InterfacePtr interface;
+    CanardRxSubscription sub = {};
 
     virtual void handler(const Type&, CanardRxTransfer*) = 0;
 
@@ -818,8 +829,13 @@ public:
 
         return out;
     }
+
     void accept(CanardRxTransfer* transfer) override {
-        Type object;
+        // NOTE: I would like to NOT initialize this object to save cpu cycles
+        //       but whatever else I do triggers a compiler warning -Wmaybe-uninitialized.
+        //       Its somehow related to flto step? Since it appears at linking step after flto logs,
+        //       even with "GNU push ignore warning" pragmas. Weird stuff.
+        Type object{};
         interface->deserialize_transfer<T>(&object, transfer);
         handler(object, transfer);
     }
@@ -944,7 +960,7 @@ public:
         }
         if (!is_found) {
             value._tag_ = 0;
-            value.empty = (uavcan_primitive_Empty_1_0){};
+            value.empty = {};
         }
 
         register_access_response.value = value;

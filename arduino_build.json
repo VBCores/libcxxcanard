@@ -16,10 +16,6 @@
     ],
     "libs": [
         "libcanard",
-        "nunavut",
-        "o1heap",
-        "reg",
-        "uavcan",
-        "voltbro"
+        "o1heap"
     ]
 }
