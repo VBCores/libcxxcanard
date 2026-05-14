@@ -12,7 +12,10 @@
         "cyphal.tpp",
         "subscriptions/subscription.h",
         "node/node_info_handler.h",
-        "node/registers_handler.hpp"
+        "node/registers_handler.hpp",
+        "node/registers_utils.hpp",
+        "node/registers_access.hpp",
+        "platforms/embedded_cyphal.hpp"
     ],
     "libs": [
         "libcanard",

@@ -23,16 +23,27 @@ TYPE_ALIAS(DiagnosticRecord, uavcan_diagnostic_Record_1_1)
 TYPE_ALIAS(HBeat, uavcan_node_Heartbeat_1_0)
 
 // NOTE: MUST be implemented by user
-millis millis_32();
-micros micros_64();
+#ifndef ARDUINO
+#define millis_t millis
+#define micros_t micros
+millis_t millis_32();
+micros_t micros_64();
+#else
+#include <Arduino.h>
+#include "utils.h"
+#define millis_t uint32_t
+#define micros_t uint64_t
+#define millis_32 millis
+#define micros_64 micros
+#endif
 
-template<size_t QUEUE_SIZE, millis DELAY_ON_ERROR, size_t REGISTERS_COUNT>
+template<size_t QUEUE_SIZE, millis_t DELAY_ON_ERROR, size_t REGISTERS_COUNT>
 class EmbeddedCyphal {
 protected:
     bool _is_cyphal_on = false;
     uint8_t _health_status = uavcan_node_Health_1_0_NOMINAL;
     uint8_t _mode = uavcan_node_Mode_1_0_INITIALIZATION;
-    millis _delay_cyphal_until_millis = 0;
+    millis_t _delay_cyphal_until_millis = 0;
 
     FDCAN_HandleTypeDef* hfdcan;
     UtilityConfig utilities;
@@ -177,10 +188,10 @@ public:
             cyphal_interface->loop();
         }
         if (_is_cyphal_on) {
-            millis current_t = millis_32();
+            millis_t current_t = millis_32();
             in_loop_reporting(current_t);
 
-            static millis heartbeat_time = 0;
+            static millis_t heartbeat_time = 0;
             EACH_N(current_t, heartbeat_time, 1000, {
                 heartbeat();
             })
@@ -205,9 +216,16 @@ public:
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wunused-parameter"
     // NOTE: <current_t> parameter required by the interface, but not used in this implementation
-    virtual void in_loop_reporting(millis current_t) {
+    virtual void in_loop_reporting(millis_t current_t) {
     #pragma GCC diagnostic pop
     }
 };
+
+#ifdef ARDUINO
+#undef millis_t
+#undef micros_t
+#undef millis_32
+#undef micros_64
+#endif
 
 #endif

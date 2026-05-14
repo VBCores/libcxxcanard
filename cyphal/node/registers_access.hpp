@@ -40,6 +40,8 @@ private:
         );
     }
 
+#if __cplusplus >= 202002L
+    // C++20: std::erase_if available natively
     void clean_transfer_map() {
         std::erase_if(
             transfer_map,
@@ -49,6 +51,19 @@ private:
             }
         );
     }
+#else
+    // C++17 fallback: manual iterator-based erase
+    void clean_transfer_map() {
+        const uint64_t now = interface->get_utilities().micros_64();
+        for (auto it = transfer_map.begin(); it != transfer_map.end(); /* no increment */) {
+            if (now > std::get<uint64_t>(it->second)) {
+                it = transfer_map.erase(it); // erase returns the next valid iterator
+            } else {
+                ++it;
+            }
+        }
+    }
+#endif
 
 public:
     RegistersProxy(

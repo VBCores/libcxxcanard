@@ -969,3 +969,383 @@ public:
         );
     };
 };
+
+
+static constexpr uint8_t REGISTER_EMPTY_TAG = 0U;
+static constexpr uint8_t REGISTER_BIT_TAG = 3U;
+static constexpr uint8_t REGISTER_REAL32_TAG = 13U;
+static constexpr uint8_t REGISTER_NATURAL32_TAG = 9U;
+
+inline bool parse_register_bit(const uavcan_register_Value_1_0& value, bool& parsed) {
+    if (value._tag_ != REGISTER_BIT_TAG || value.bit.value.count == 0) {
+        return false;
+    }
+    parsed = value.bit.value.bitpacked[0] == 1;
+    return true;
+}
+
+inline bool parse_register_real32(const uavcan_register_Value_1_0& value, float& parsed) {
+    if (value._tag_ != REGISTER_REAL32_TAG || value.real32.value.count == 0) {
+        return false;
+    }
+    parsed = value.real32.value.elements[0];
+    return true;
+}
+
+inline void fill_register_bit(uavcan_register_Value_1_0& out, bool value) {
+    out._tag_ = REGISTER_BIT_TAG;
+    out.bit.value.bitpacked[0] = value;
+    out.bit.value.count = 1;
+}
+
+inline void fill_register_real32(uavcan_register_Value_1_0& out, float value) {
+    out._tag_ = REGISTER_REAL32_TAG;
+    out.real32.value.elements[0] = value;
+    out.real32.value.count = 1;
+}
+
+inline void fill_register_natural32(uavcan_register_Value_1_0& out, uint32_t value) {
+    out._tag_ = REGISTER_NATURAL32_TAG;
+    out.natural32.value.elements[0] = value;
+    out.natural32.value.count = 1;
+}
+
+#include <optional>
+#include <functional>
+#include <tuple>
+#include <map>
+
+
+class RegistersProxy: public AbstractSubscription<RegisterAccessResponse> {
+private:
+    std::map<CanardTransferID, std::tuple<std::string, uint64_t>> transfer_map;
+    const CanardNodeID target_node_id;
+    CanardTransferID register_access_transfer_id = 0;
+
+    template <typename T>
+    void request_generic(const std::string& name, std::optional<T> value, void(*filler)(uavcan_register_Value_1_0&, T)) {
+        RegisterAccessRequest::Type request {0};
+        size_t name_size = std::min(name.size(), size_t{255});
+        memcpy(request.name.name.elements, name.c_str(), name_size);
+        request.name.name.count = name_size;
+        if (value) {
+            filler(request.value, *value);
+        }
+        else {
+            request.value._tag_ = REGISTER_EMPTY_TAG;
+        }
+
+        clean_transfer_map();
+        transfer_map[register_access_transfer_id] = std::make_tuple(
+            name,
+            interface->get_utilities().micros_64() + DEFAULT_TIMEOUT_MICROS
+        );
+        interface->send_request<RegisterAccessRequest>(
+            &request,
+            uavcan_register_Access_1_0_FIXED_PORT_ID_,
+            &register_access_transfer_id,
+            target_node_id
+        );
+    }
+
+#if __cplusplus >= 202002L
+    // C++20: std::erase_if available natively
+    void clean_transfer_map() {
+        std::erase_if(
+            transfer_map,
+            [this](const auto& item) {
+                const auto& [key, val] = item;
+                return interface->get_utilities().micros_64() > std::get<uint64_t>(val);
+            }
+        );
+    }
+#else
+    // C++17 fallback: manual iterator-based erase
+    void clean_transfer_map() {
+        const uint64_t now = interface->get_utilities().micros_64();
+        for (auto it = transfer_map.begin(); it != transfer_map.end(); /* no increment */) {
+            if (now > std::get<uint64_t>(it->second)) {
+                it = transfer_map.erase(it); // erase returns the next valid iterator
+            } else {
+                ++it;
+            }
+        }
+    }
+#endif
+
+public:
+    RegistersProxy(
+        InterfacePtr interface,
+        CanardNodeID target_node_id
+    ) :
+        AbstractSubscription<RegisterAccessResponse>(
+            interface,
+            uavcan_register_Access_1_0_FIXED_PORT_ID_,
+            CanardTransferKindResponse
+        ),
+        target_node_id(target_node_id)
+    {}
+
+    size_t pending_requests() {
+        return transfer_map.size();
+    }
+
+    void request_real32_value(const std::string& name, std::optional<float> value = std::nullopt) {
+        request_generic<float>(name, value, &fill_register_real32);
+    }
+
+    void request_natural32_value(const std::string& name, std::optional<uint32_t> value = std::nullopt) {
+        request_generic<uint32_t>(name, value, &fill_register_natural32);
+    }
+
+    void handler(const RegisterAccessResponse::Type& register_response, CanardRxTransfer* transfer) override {
+        if (transfer->metadata.remote_node_id != target_node_id) {
+            return;
+        }
+        CanardTransferID key = transfer->metadata.transfer_id;
+        if (transfer_map.count(key) == 0) {
+            return;
+        }
+        const std::string& reg_name = std::get<std::string>(transfer_map[key]);
+        switch (register_response.value._tag_) {
+            case REGISTER_REAL32_TAG:
+                handle_float32(reg_name, register_response.value.real32.value.elements[0], transfer);
+                break;
+            case REGISTER_NATURAL32_TAG:
+                handle_natural32(reg_name, register_response.value.natural32.value.elements[0], transfer);
+                break;
+            default:
+                break;
+        }
+        transfer_map.erase(key);
+    };
+
+    virtual void handle_float32(const std::string& name, float value, CanardRxTransfer* transfer) = 0;
+    virtual void handle_natural32(const std::string& name, uint32_t value, CanardRxTransfer* transfer) = 0;
+};
+
+#if defined(STM32G0)
+#include "stm32g0xx_hal.h"
+#elif defined(STM32G4)
+#include "stm32g4xx_hal.h"
+#endif
+#if defined(HAL_FDCAN_MODULE_ENABLED)
+
+#include <functional>
+
+
+#include <uavcan/diagnostic/Record_1_1.h>
+#include <uavcan/node/Heartbeat_1_0.h>
+#include <uavcan/node/Health_1_0.h>
+#include <uavcan/node/Mode_1_0.h>
+
+TYPE_ALIAS(DiagnosticRecord, uavcan_diagnostic_Record_1_1)
+TYPE_ALIAS(HBeat, uavcan_node_Heartbeat_1_0)
+
+// NOTE: MUST be implemented by user
+#ifndef ARDUINO
+#define millis_t millis
+#define micros_t micros
+millis_t millis_32();
+micros_t micros_64();
+#else
+#include <Arduino.h>
+#include "utils.h"
+#define millis_t uint32_t
+#define micros_t uint64_t
+#define millis_32 millis
+#define micros_64 micros
+#endif
+
+template<size_t QUEUE_SIZE, millis_t DELAY_ON_ERROR, size_t REGISTERS_COUNT>
+class EmbeddedCyphal {
+protected:
+    bool _is_cyphal_on = false;
+    uint8_t _health_status = uavcan_node_Health_1_0_NOMINAL;
+    uint8_t _mode = uavcan_node_Mode_1_0_INITIALIZATION;
+    millis_t _delay_cyphal_until_millis = 0;
+
+    FDCAN_HandleTypeDef* hfdcan;
+    UtilityConfig utilities;
+    std::shared_ptr<CyphalInterface> cyphal_interface;
+    std::byte cyphal_bss_buffer[
+        sizeof(CyphalInterface) + sizeof(G4CAN) + sizeof(O1Allocator)
+    ] __attribute__((aligned(4)));
+    // Must match the arena size requested by G4CAN::create_bss().
+    static const size_t CYPHAL_BUFFER_SIZE = static_cast<size_t>(
+        QUEUE_SIZE * sizeof(CanardTxQueueItem) * QUEUE_SIZE_MULT
+    );
+    static inline std::byte cyphal_queue_buffer[CYPHAL_BUFFER_SIZE] __attribute__((aligned(O1HEAP_ALIGNMENT)));
+
+    NodeInfoReader node_info_reader;
+    RegistersHandler<REGISTERS_COUNT> registers_handler;
+
+    void heartbeat() {
+        static CanardTransferID hbeat_transfer_id = 0;
+        HBeat::Type heartbeat_msg = {
+            .uptime = (uint32_t)std::floor(millis_32() / 1000.0f),
+            .health = {_health_status},
+            .mode = {_mode},
+            .vendor_specific_status_code = static_cast<uint8_t>(cyphal_interface->queue_size())
+        };
+
+        if (_is_cyphal_on) {
+            cyphal_interface->send_msg<HBeat>(
+                &heartbeat_msg,
+                uavcan_node_Heartbeat_1_0_FIXED_PORT_ID_,
+                &hbeat_transfer_id,
+                MICROS_S * 2
+            );
+        }
+    }
+
+    void cyphal_error_handler() {
+        _is_cyphal_on = false;
+        cyphal_interface->clear_queue();
+        // delay for half a second
+        _delay_cyphal_until_millis = millis_32() + DELAY_ON_ERROR;
+    }
+
+    void restart_cyphal() {
+        cyphal_interface->clear_queue();
+
+        static CanardTransferID record_transfer_id = 0;
+        DiagnosticRecord::Type record;
+        record.severity.value = uavcan_diagnostic_Severity_1_0_ERROR;
+        sprintf(reinterpret_cast<char*>(record.text.elements), "cyphal_error_handler was called internally");
+        record.text.count = strlen((char*)record.text.elements);
+
+        cyphal_interface->send_msg<DiagnosticRecord>(
+                &record,
+                uavcan_diagnostic_Record_1_1_FIXED_PORT_ID_,
+                &record_transfer_id
+        );
+
+        _delay_cyphal_until_millis = 0;
+        _is_cyphal_on = true;
+    }
+
+    void start_cyphal() {
+        HAL_IMPORTANT(HAL_FDCAN_ConfigTxDelayCompensation(
+            hfdcan,
+            hfdcan->Init.DataTimeSeg1 * hfdcan->Init.DataPrescaler,
+            0
+        ))
+        HAL_IMPORTANT(HAL_FDCAN_EnableTxDelayCompensation(hfdcan))
+        HAL_IMPORTANT(HAL_FDCAN_Start(hfdcan))
+
+        _is_cyphal_on = true;
+    }
+
+    void finish_cyphal_setup() {
+        setup_subscriptions();
+        start_cyphal();
+    }
+
+public:
+    explicit EmbeddedCyphal(
+        FDCAN_HandleTypeDef* hfdcan,
+        CanardNodeID node_id,
+        std::string&& name,
+        std::array<RegisterDefinition, REGISTERS_COUNT>&& registers_list
+    ):
+        EmbeddedCyphal(
+            hfdcan,
+            node_id,
+            std::move(name),
+            uavcan_node_Version_1_0{1, 0},
+            uavcan_node_Version_1_0{1, 0},
+            uavcan_node_Version_1_0{1, 0},
+            0,
+            std::move(registers_list)
+        )
+    {}
+
+    explicit EmbeddedCyphal(
+        FDCAN_HandleTypeDef* hfdcan,
+        CanardNodeID node_id,
+        std::string&& name,
+        uavcan_node_Version_1_0&& protocol_version,
+        uavcan_node_Version_1_0&& hardware_version,
+        uavcan_node_Version_1_0&& software_version,
+        uint64_t software_vcs_revision_id,
+        std::array<RegisterDefinition, REGISTERS_COUNT>&& registers_list
+    ):
+        hfdcan(hfdcan),
+        utilities(micros_64, std::bind(&EmbeddedCyphal::cyphal_error_handler, this)),
+        cyphal_interface(CyphalInterface::create_bss<G4CAN, O1Allocator>(
+            cyphal_bss_buffer,
+            node_id,
+            hfdcan,
+            QUEUE_SIZE,
+            utilities,
+            cyphal_queue_buffer
+        )),
+        node_info_reader(
+            cyphal_interface,
+            std::forward<std::string>(name),
+            std::forward<uavcan_node_Version_1_0>(protocol_version),
+            std::forward<uavcan_node_Version_1_0>(hardware_version),
+            std::forward<uavcan_node_Version_1_0>(software_version),
+            std::forward<uint64_t>(software_vcs_revision_id)
+        ),
+        registers_handler(
+            std::forward<std::array<RegisterDefinition, REGISTERS_COUNT>>(registers_list),
+            cyphal_interface
+        )
+        {}
+
+    void set_mode(uint8_t mode) {
+        _mode = mode;
+    }
+
+    void set_status(uint8_t status) {
+        _health_status = status;
+    }
+
+    __attribute__((hot, flatten)) void cyphal_loop() {
+        if (_is_cyphal_on) {
+            cyphal_interface->loop();
+        }
+        if (_is_cyphal_on) {
+            millis_t current_t = millis_32();
+            in_loop_reporting(current_t);
+
+            static millis_t heartbeat_time = 0;
+            EACH_N(current_t, heartbeat_time, 1000, {
+                heartbeat();
+            })
+        }
+
+        if (_delay_cyphal_until_millis != 0 &&
+            _delay_cyphal_until_millis <= millis_32()) {
+            restart_cyphal();
+        }
+    }
+
+    virtual void setup_subscriptions() {
+        HAL_FDCAN_ConfigGlobalFilter(
+            hfdcan,
+            FDCAN_REJECT,
+            FDCAN_REJECT,
+            FDCAN_REJECT_REMOTE,
+            FDCAN_REJECT_REMOTE
+        );
+    }
+
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wunused-parameter"
+    // NOTE: <current_t> parameter required by the interface, but not used in this implementation
+    virtual void in_loop_reporting(millis_t current_t) {
+    #pragma GCC diagnostic pop
+    }
+};
+
+#ifdef ARDUINO
+#undef millis_t
+#undef micros_t
+#undef millis_32
+#undef micros_64
+#endif
+
+#endif
