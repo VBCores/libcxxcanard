@@ -219,9 +219,45 @@ public:
     virtual void in_loop_reporting(millis_t current_t) {
     #pragma GCC diagnostic pop
     }
+
+    void begin() {
+        finish_cyphal_setup();
+        set_mode(uavcan_node_Mode_1_0_OPERATIONAL);
+    }
 };
 
+
 #ifdef ARDUINO
+template<size_t REGISTERS_COUNT = 0>
+class ArduinoCyphal : public EmbeddedCyphal<128, 500, REGISTERS_COUNT> {
+private:
+    using Base = EmbeddedCyphal<128, 500, REGISTERS_COUNT>;
+
+public:
+    explicit ArduinoCyphal(
+        FDCAN_HandleTypeDef* hfdcan,
+        CanardNodeID node_id,
+        std::string name = "org.voltbro.arduino.node",
+        std::array<RegisterDefinition, REGISTERS_COUNT> registers_list = {}
+    ):
+        Base(
+            hfdcan,
+            node_id,
+            std::move(name),
+            std::move(registers_list)
+        )
+    {}
+
+    void setup_subscriptions() override {
+        HAL_IMPORTANT(HAL_FDCAN_ConfigGlobalFilter(
+            this->hfdcan,
+            FDCAN_ACCEPT_IN_RX_FIFO0,
+            FDCAN_ACCEPT_IN_RX_FIFO0,
+            FDCAN_REJECT_REMOTE,
+            FDCAN_REJECT_REMOTE
+        ));
+    }
+};
 #undef millis_t
 #undef micros_t
 #undef millis_32
