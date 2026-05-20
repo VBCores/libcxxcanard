@@ -32,6 +32,14 @@ inline bool parse_register_integer32(const uavcan_register_Value_1_0& value, int
     return true;
 }
 
+inline bool parse_register_natural32(const uavcan_register_Value_1_0& value, uint32_t& parsed) {
+    if (value._tag_ != REGISTER_NATURAL32_TAG || value.natural32.value.count == 0) {
+        return false;
+    }
+    parsed = value.natural32.value.elements[0];
+    return true;
+}
+
 inline void fill_register_bit(uavcan_register_Value_1_0& out, bool value) {
     out._tag_ = REGISTER_BIT_TAG;
     out.bit.value.bitpacked[0] = value;
