@@ -1,0 +1,11 @@
+{% from 'definitions.j2' import include_path, generate_traits -%}
+// This is an AUTO-GENERATED C++ traits header for libcxxcanard.
+// Source file: {{ T.source_file_path.as_posix() }}
+#pragma once
+
+#include <cyphal/types.hpp>
+#include <{{ include_path(T) }}>
+
+{{ generate_traits(T.request_type) }}
+
+{{ generate_traits(T.response_type) }}

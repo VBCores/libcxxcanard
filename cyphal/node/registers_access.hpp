@@ -16,7 +16,7 @@ private:
 
     template <typename T>
     void request_generic(const std::string& name, std::optional<T> value, void(*filler)(uavcan_register_Value_1_0&, T)) {
-        RegisterAccessRequest::Type request {0};
+        RegisterAccessRequest request {0};
         size_t name_size = std::min(name.size(), size_t{255});
         memcpy(request.name.name.elements, name.c_str(), name_size);
         request.name.name.count = name_size;
@@ -32,7 +32,7 @@ private:
             name,
             interface->get_utilities().micros_64() + DEFAULT_TIMEOUT_MICROS
         );
-        interface->send_request<RegisterAccessRequest>(
+        interface->send_request(
             &request,
             uavcan_register_Access_1_0_FIXED_PORT_ID_,
             &register_access_transfer_id,
@@ -90,7 +90,7 @@ public:
         request_generic<uint32_t>(name, value, &fill_register_natural32);
     }
 
-    void handler(const RegisterAccessResponse::Type& register_response, CanardRxTransfer* transfer) override {
+    void handler(const RegisterAccessResponse& register_response, CanardRxTransfer* transfer) override {
         if (transfer->metadata.remote_node_id != target_node_id) {
             return;
         }

@@ -46,6 +46,6 @@ void NodeInfoReader::handler(
     CanardRxTransfer* transfer
 ) {
 #pragma GCC diagnostic pop
-    interface->send_response<NodeInfoResponse>(&node_info, transfer);
+    interface->send_response(&node_info, transfer);
 }
 #endif

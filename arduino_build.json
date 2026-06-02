@@ -8,6 +8,7 @@
         "providers/FDCAN_generic.h",
         "providers/provider.h",
         "providers/G4CAN.h",
+        "types.hpp",
         "cyphal.h",
         "cyphal.tpp",
         "subscriptions/subscription.h",

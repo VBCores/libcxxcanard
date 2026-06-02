@@ -7,20 +7,20 @@
 
 #include "cyphal/cyphal.h"
 #include "cyphal/subscriptions/subscription.h"
-#include "uavcan/_register/Name_1_0.h"
 
-#include <uavcan/_register/Access_1_0.h>
-#include <uavcan/_register/List_1_0.h>
+#include <uavcan/_register/Access_1_0.hpp>
+#include <uavcan/_register/List_1_0.hpp>
+#include <uavcan/_register/Name_1_0.h>
 
-TYPE_ALIAS(RegisterAccessRequest, uavcan_register_Access_Request_1_0)
-TYPE_ALIAS(RegisterAccessResponse, uavcan_register_Access_Response_1_0)
-TYPE_ALIAS(RegisterListRequest, uavcan_register_List_Request_1_0)
-TYPE_ALIAS(RegisterListResponse, uavcan_register_List_Response_1_0)
+using RegisterAccessRequest = uavcan_register_Access_Request_1_0;
+using RegisterAccessResponse = uavcan_register_Access_Response_1_0;
+using RegisterListRequest = uavcan_register_List_Request_1_0;
+using RegisterListResponse = uavcan_register_List_Response_1_0;
 
 using RegisterCallback = std::function<void(
     const uavcan_register_Value_1_0&,
     uavcan_register_Value_1_0&,
-    RegisterAccessResponse::Type&
+    RegisterAccessResponse&
 )>;
 using RegisterDefinition = std::pair<std::string, RegisterCallback>;
 
@@ -51,8 +51,8 @@ public:
         return canardConsolidateFilters(&access_filter, &list_filter);
     }
 
-    void handler(const RegisterListRequest::Type& register_list_request, CanardRxTransfer* transfer) override {
-        RegisterListResponse::Type register_list_response = {};
+    void handler(const RegisterListRequest& register_list_request, CanardRxTransfer* transfer) override {
+        RegisterListResponse register_list_response = {};
 
         uavcan_register_Name_1_0 name = {};
 
@@ -63,13 +63,13 @@ public:
         }
         register_list_response.name = name;
 
-        AbstractSubscription<RegisterListRequest>::interface->send_response<RegisterListResponse>(
+        AbstractSubscription<RegisterListRequest>::interface->send_response(
             &register_list_response, transfer
         );
     };
 
-    void handler(const RegisterAccessRequest::Type& register_access_request, CanardRxTransfer* transfer) override {
-        RegisterAccessResponse::Type register_access_response = {};
+    void handler(const RegisterAccessRequest& register_access_request, CanardRxTransfer* transfer) override {
+        RegisterAccessResponse register_access_response = {};
 
         InterfacePtr interface = AbstractSubscription<RegisterAccessRequest>::interface;
 
@@ -97,7 +97,7 @@ public:
         }
 
         register_access_response.value = value;
-        AbstractSubscription<RegisterAccessRequest>::interface->send_response<RegisterAccessResponse>(
+        AbstractSubscription<RegisterAccessRequest>::interface->send_response(
             &register_access_response, transfer
         );
     };

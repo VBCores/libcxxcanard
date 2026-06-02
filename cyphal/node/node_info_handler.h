@@ -6,14 +6,14 @@
 #include "cyphal/cyphal.h"
 #include "cyphal/subscriptions/subscription.h"
 
-#include <uavcan/node/GetInfo_1_0.h>
+#include <uavcan/node/GetInfo_1_0.hpp>
 
-TYPE_ALIAS(NodeInfoRequest, uavcan_node_GetInfo_Request_1_0)
-TYPE_ALIAS(NodeInfoResponse, uavcan_node_GetInfo_Response_1_0)
+using NodeInfoRequest = uavcan_node_GetInfo_Request_1_0;
+using NodeInfoResponse = uavcan_node_GetInfo_Response_1_0;
 
 class NodeInfoReader : public AbstractSubscription<NodeInfoRequest> {
 private:
-    NodeInfoResponse::Type node_info;
+    NodeInfoResponse node_info;
 public:
     NodeInfoReader(
         InterfacePtr interface,
@@ -23,5 +23,5 @@ public:
         uavcan_node_Version_1_0&& software_version,
         uint64_t software_vcs_revision_id
     );
-    void handler(const NodeInfoRequest::Type&, CanardRxTransfer*) override;
+    void handler(const NodeInfoRequest&, CanardRxTransfer*) override;
 };

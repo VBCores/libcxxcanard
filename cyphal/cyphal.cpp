@@ -47,6 +47,8 @@ void CyphalInterface::loop() {
 #ifdef __linux__
 void CyphalInterface::start_threads(uint64_t tx_delay_micros) {
     threads_terminate_flag.store(false);
+    is_rx_terminated.store(false);
+    is_tx_terminated.store(false);
 
     rx_thread = std::thread([=]() {
         std::cout << "Started RX thread" << std::endl;

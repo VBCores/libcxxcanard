@@ -1,18 +1,20 @@
-template <typename TypeAlias>
+template <typename CyphalPayload>
 inline void CyphalInterface::send(
-    typename TypeAlias::Type* obj,
+    CyphalPayload* obj,
     CanardPortID port,
-    CanardTransferID *transfer_id,
+    CanardTransferID* transfer_id,
     CanardPriority priority,
     CanardTransferKind transfer_kind,
     CanardNodeID to_node_id,
     uint64_t timeout_delta
 ) const {
-    uint8_t buffer[TypeAlias::buffer_size];
-    size_t cyphal_buf_size = TypeAlias::buffer_size;
-    if (TypeAlias::serializer(obj, buffer, &cyphal_buf_size) < 0) {
+    using TypeInfo = CyphalTypeTraits<CyphalPayload>;
+    uint8_t buffer[TypeInfo::buffer_size];
+    size_t cyphal_buf_size = TypeInfo::buffer_size;
+    if (TypeInfo::serializer(obj, buffer, &cyphal_buf_size) < 0) {
         utilities.error_handler();
     }
+
     const CanardTransferMetadata cyphal_transfer_metadata = {
         .priority = priority,
         .transfer_kind = transfer_kind,
@@ -29,15 +31,15 @@ inline void CyphalInterface::send(
     (*transfer_id)++;
 }
 
-template <typename TypeAlias>
+template <typename ObjType>
 inline void CyphalInterface::send_msg(
-    typename TypeAlias::Type *obj,
+    ObjType* obj,
     CanardPortID port,
-    CanardTransferID *transfer_id,
+    CanardTransferID* transfer_id,
     uint64_t timeout_delta,
     CanardPriority priority
 ) const {
-    send<TypeAlias>(
+    send<ObjType>(
         obj,
         port,
         transfer_id,
@@ -48,23 +50,25 @@ inline void CyphalInterface::send_msg(
     );
 }
 
-template <typename TypeAlias>
+template <typename ObjType>
 inline void CyphalInterface::send_response(
-    typename TypeAlias::Type *obj,
-    CanardRxTransfer *transfer,
+    ObjType* obj,
+    CanardRxTransfer* transfer,
     uint64_t timeout_delta
 ) const {
-    uint8_t buffer[TypeAlias::buffer_size];
-    size_t cyphal_buf_size = TypeAlias::buffer_size;
-    if (TypeAlias::serializer(obj, buffer, &cyphal_buf_size) < 0) {
+    using TypeInfo = CyphalTypeTraits<ObjType>;
+    uint8_t buffer[TypeInfo::buffer_size];
+    size_t cyphal_buf_size = TypeInfo::buffer_size;
+    if (TypeInfo::serializer(obj, buffer, &cyphal_buf_size) < 0) {
         utilities.error_handler();
     }
+
     const CanardTransferMetadata cyphal_transfer_metadata = {
-            .priority = transfer->metadata.priority,
-            .transfer_kind = CanardTransferKindResponse,
-            .port_id = transfer->metadata.port_id,
-            .remote_node_id = transfer->metadata.remote_node_id,
-            .transfer_id = transfer->metadata.transfer_id,
+        .priority = transfer->metadata.priority,
+        .transfer_kind = CanardTransferKindResponse,
+        .port_id = transfer->metadata.port_id,
+        .remote_node_id = transfer->metadata.remote_node_id,
+        .transfer_id = transfer->metadata.transfer_id,
     };
     push(
         utilities.micros_64() + timeout_delta,
@@ -74,16 +78,16 @@ inline void CyphalInterface::send_response(
     );
 }
 
-template <typename TypeAlias>
+template <typename ObjType>
 inline void CyphalInterface::send_request(
-    typename TypeAlias::Type* obj,
+    ObjType* obj,
     CanardPortID port,
     CanardTransferID* transfer_id,
     CanardNodeID to_node_id,
     uint64_t timeout_delta,
     CanardPriority priority
 ) const {
-    send<TypeAlias>(
+    send<ObjType>(
         obj,
         port,
         transfer_id,
@@ -94,28 +98,30 @@ inline void CyphalInterface::send_request(
     );
 }
 
-template <typename TypeAlias>
+template <typename CyphalPayload>
 inline void CyphalInterface::deserialize_transfer(
-    typename TypeAlias::Type *obj,
+    CyphalPayload* obj,
     CanardRxTransfer* transfer
 ) const {
-    size_t inout_buf_size = TypeAlias::extent;
-    if(TypeAlias::deserializer(obj, (uint8_t *) transfer->payload, &inout_buf_size) < 0 ) {
+    using TypeInfo = CyphalTypeTraits<CyphalPayload>;
+    size_t inout_buf_size = TypeInfo::extent;
+    if (TypeInfo::deserializer(obj, static_cast<uint8_t*>(transfer->payload), &inout_buf_size) < 0) {
         utilities.error_handler();
     }
 }
 
-template <typename TypeAlias>
+template <typename CyphalPayload>
 inline void CyphalInterface::subscribe(
     CanardPortID port_id,
     CanardTransferKind kind,
     CanardRxSubscription* subscription
 ) {
+    using TypeInfo = CyphalTypeTraits<CyphalPayload>;
     if (canardRxSubscribe(
             (CanardInstance* const)&provider->canard,
             kind,
             port_id,
-            TypeAlias::extent,
+            TypeInfo::extent,
             CANARD_DEFAULT_TRANSFER_ID_TIMEOUT_USEC,
             subscription
         ) != 1) {

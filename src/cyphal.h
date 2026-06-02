@@ -1,4 +1,6 @@
 
+#pragma once
+
 #undef Error_Handler
 #undef Error_Handler()
                 
@@ -389,6 +391,29 @@ HAL_StatusTypeDef apply_filter(uint32_t filter_index, G4CAN::Handler hfdcan, con
 
 #endif
 
+#include <cstddef>
+#include <cstdint>
+#include <type_traits>
+
+template <typename ObjType>
+using cyphal_serializer = int8_t (*)(const ObjType* const, uint8_t* const, size_t* const);
+
+template <typename ObjType>
+using cyphal_deserializer = int8_t (*)(ObjType* const, const uint8_t*, size_t* const);
+
+template <typename ObjType>
+struct CyphalTypeTraits;
+
+template <typename>
+struct CyphalAlwaysFalse : std::false_type {};
+
+template <typename T>
+struct CyphalTypeTraits {
+    static_assert(
+        CyphalAlwaysFalse<T>::value,
+        "Missing CyphalTypeTraits<T>. Include the generated C++ traits header for this DSDL type.");
+};
+
 #include <memory>
 #include <thread>
 #include <unistd.h>
@@ -396,27 +421,6 @@ HAL_StatusTypeDef apply_filter(uint32_t filter_index, G4CAN::Handler hfdcan, con
 
 
 constexpr uint64_t DEFAULT_TIMEOUT_MICROS = 1000000;  // 1 sec
-
-template <typename ObjType>
-using cyphal_serializer = int8_t (*)(const ObjType* const, uint8_t* const, size_t* const);
-template <typename ObjType>
-using cyphal_deserializer = int8_t (*)(ObjType* const, const uint8_t*, size_t* const);
-
-// NOLINTBEGIN(cppcoreguidelines-macro-usage)
-
-#define TYPE_ALIAS(ALIAS_NAME, T)                                                   \
-    class ALIAS_NAME {                                                              \
-    public:                                                                         \
-        typedef T Type;                                                             \
-        typedef cyphal_serializer<T> serializer_type;                               \
-        typedef cyphal_deserializer<T> deserializer_type;                           \
-        static constexpr serializer_type serializer = T##_serialize_;               \
-        static constexpr deserializer_type deserializer = T##_deserialize_;         \
-        static constexpr size_t extent = T##_EXTENT_BYTES_;                         \
-        static constexpr size_t buffer_size = T##_SERIALIZATION_BUFFER_SIZE_BYTES_; \
-    };
-
-// NOLINTEND(cppcoreguidelines-macro-usage)
 
 /**
  * Основной класс со всей функциональностью. Это единственный класс непостредственно из этой библиотеки, экземплляр которого надо создать.
@@ -444,7 +448,11 @@ public:
         const UtilityConfig& config,
         AbstractCANProvider* provider
     )
-        : node_id(node_id), utilities(config), provider(provider){};
+        : node_id(node_id), utilities(config), provider(provider)
+#ifdef __linux__
+        , threads_terminate_flag(false), is_rx_terminated(true), is_tx_terminated(true)
+#endif
+        {};
     ~CyphalInterface();
 
     /**
@@ -578,15 +586,15 @@ public:
     ) const;
     void unsubscribe(CanardPortID port_id, CanardTransferKind kind);
     // TEMPLATES
-    template <typename TypeAlias>
+    template <typename CyphalPayload>
     void subscribe(
         CanardPortID port_id,
         CanardTransferKind kind,
         CanardRxSubscription* subscription
     );
-    template <typename TypeAlias>
+    template <typename CyphalPayload>
     inline void send(
-        typename TypeAlias::Type* obj,
+        CyphalPayload* obj,
         CanardPortID port,
         CanardTransferID* transfer_id,
         CanardPriority priority,
@@ -604,9 +612,9 @@ public:
     * @param timeout_delta Таймаут отправки в нс - по умочанию 1с
     * @param priority Приоритет сообщения
     */
-    template <typename TypeAlias>
+    template <typename ObjType>
     inline void send_msg(
-        typename TypeAlias::Type* obj,
+        ObjType* obj,
         CanardPortID port,
         CanardTransferID* transfer_id,
         uint64_t timeout_delta = DEFAULT_TIMEOUT_MICROS,
@@ -619,9 +627,9 @@ public:
     * @param transfer Структура CanardRxTransfer **полученная вместе с запросом**
     * @param timeout_delta Таймаут отправки в нс - по умочанию 1с
     */
-    template <typename TypeAlias>
+    template <typename ObjType>
     inline void send_response(
-        typename TypeAlias::Type* obj,
+        ObjType* obj,
         CanardRxTransfer* transfer,
         uint64_t timeout_delta = DEFAULT_TIMEOUT_MICROS
     ) const;
@@ -635,35 +643,37 @@ public:
     * @param timeout_delta Таймаут отправки в нс - по умочанию 1с
     * @param priority Приоритет сообщения
     */
-    template <typename TypeAlias>
+    template <typename ObjType>
     inline void send_request(
-        typename TypeAlias::Type* obj,
+        ObjType* obj,
         CanardPortID port,
         CanardTransferID* transfer_id,
         CanardNodeID to_node_id,
         uint64_t timeout_delta = DEFAULT_TIMEOUT_MICROS,
         CanardPriority priority = CanardPriorityNominal
     ) const;
-    template <typename TypeAlias>
-    inline void deserialize_transfer(typename TypeAlias::Type* obj, CanardRxTransfer* transfer)
+    template <typename CyphalPayload>
+    inline void deserialize_transfer(CyphalPayload* obj, CanardRxTransfer* transfer)
         const;
 };
 
-template <typename TypeAlias>
+template <typename CyphalPayload>
 inline void CyphalInterface::send(
-    typename TypeAlias::Type* obj,
+    CyphalPayload* obj,
     CanardPortID port,
-    CanardTransferID *transfer_id,
+    CanardTransferID* transfer_id,
     CanardPriority priority,
     CanardTransferKind transfer_kind,
     CanardNodeID to_node_id,
     uint64_t timeout_delta
 ) const {
-    uint8_t buffer[TypeAlias::buffer_size];
-    size_t cyphal_buf_size = TypeAlias::buffer_size;
-    if (TypeAlias::serializer(obj, buffer, &cyphal_buf_size) < 0) {
+    using TypeInfo = CyphalTypeTraits<CyphalPayload>;
+    uint8_t buffer[TypeInfo::buffer_size];
+    size_t cyphal_buf_size = TypeInfo::buffer_size;
+    if (TypeInfo::serializer(obj, buffer, &cyphal_buf_size) < 0) {
         utilities.error_handler();
     }
+
     const CanardTransferMetadata cyphal_transfer_metadata = {
         .priority = priority,
         .transfer_kind = transfer_kind,
@@ -680,15 +690,15 @@ inline void CyphalInterface::send(
     (*transfer_id)++;
 }
 
-template <typename TypeAlias>
+template <typename ObjType>
 inline void CyphalInterface::send_msg(
-    typename TypeAlias::Type *obj,
+    ObjType* obj,
     CanardPortID port,
-    CanardTransferID *transfer_id,
+    CanardTransferID* transfer_id,
     uint64_t timeout_delta,
     CanardPriority priority
 ) const {
-    send<TypeAlias>(
+    send<ObjType>(
         obj,
         port,
         transfer_id,
@@ -699,23 +709,25 @@ inline void CyphalInterface::send_msg(
     );
 }
 
-template <typename TypeAlias>
+template <typename ObjType>
 inline void CyphalInterface::send_response(
-    typename TypeAlias::Type *obj,
-    CanardRxTransfer *transfer,
+    ObjType* obj,
+    CanardRxTransfer* transfer,
     uint64_t timeout_delta
 ) const {
-    uint8_t buffer[TypeAlias::buffer_size];
-    size_t cyphal_buf_size = TypeAlias::buffer_size;
-    if (TypeAlias::serializer(obj, buffer, &cyphal_buf_size) < 0) {
+    using TypeInfo = CyphalTypeTraits<ObjType>;
+    uint8_t buffer[TypeInfo::buffer_size];
+    size_t cyphal_buf_size = TypeInfo::buffer_size;
+    if (TypeInfo::serializer(obj, buffer, &cyphal_buf_size) < 0) {
         utilities.error_handler();
     }
+
     const CanardTransferMetadata cyphal_transfer_metadata = {
-            .priority = transfer->metadata.priority,
-            .transfer_kind = CanardTransferKindResponse,
-            .port_id = transfer->metadata.port_id,
-            .remote_node_id = transfer->metadata.remote_node_id,
-            .transfer_id = transfer->metadata.transfer_id,
+        .priority = transfer->metadata.priority,
+        .transfer_kind = CanardTransferKindResponse,
+        .port_id = transfer->metadata.port_id,
+        .remote_node_id = transfer->metadata.remote_node_id,
+        .transfer_id = transfer->metadata.transfer_id,
     };
     push(
         utilities.micros_64() + timeout_delta,
@@ -725,16 +737,16 @@ inline void CyphalInterface::send_response(
     );
 }
 
-template <typename TypeAlias>
+template <typename ObjType>
 inline void CyphalInterface::send_request(
-    typename TypeAlias::Type* obj,
+    ObjType* obj,
     CanardPortID port,
     CanardTransferID* transfer_id,
     CanardNodeID to_node_id,
     uint64_t timeout_delta,
     CanardPriority priority
 ) const {
-    send<TypeAlias>(
+    send<ObjType>(
         obj,
         port,
         transfer_id,
@@ -745,28 +757,30 @@ inline void CyphalInterface::send_request(
     );
 }
 
-template <typename TypeAlias>
+template <typename CyphalPayload>
 inline void CyphalInterface::deserialize_transfer(
-    typename TypeAlias::Type *obj,
+    CyphalPayload* obj,
     CanardRxTransfer* transfer
 ) const {
-    size_t inout_buf_size = TypeAlias::extent;
-    if(TypeAlias::deserializer(obj, (uint8_t *) transfer->payload, &inout_buf_size) < 0 ) {
+    using TypeInfo = CyphalTypeTraits<CyphalPayload>;
+    size_t inout_buf_size = TypeInfo::extent;
+    if (TypeInfo::deserializer(obj, static_cast<uint8_t*>(transfer->payload), &inout_buf_size) < 0) {
         utilities.error_handler();
     }
 }
 
-template <typename TypeAlias>
+template <typename CyphalPayload>
 inline void CyphalInterface::subscribe(
     CanardPortID port_id,
     CanardTransferKind kind,
     CanardRxSubscription* subscription
 ) {
+    using TypeInfo = CyphalTypeTraits<CyphalPayload>;
     if (canardRxSubscribe(
             (CanardInstance* const)&provider->canard,
             kind,
             port_id,
-            TypeAlias::extent,
+            TypeInfo::extent,
             CANARD_DEFAULT_TRANSFER_ID_TIMEOUT_USEC,
             subscription
         ) != 1) {
@@ -793,7 +807,7 @@ public:
 */
 template <typename T>
 class AbstractSubscription : public TransferListener, public IHasFilter {
-    using Type = typename T::Type;
+    using Type = T;
 
 protected:
     const CanardPortID port_id;
@@ -849,14 +863,14 @@ public:
 #include <utility>
 
 
-#include <uavcan/node/GetInfo_1_0.h>
+#include <uavcan/node/GetInfo_1_0.hpp>
 
-TYPE_ALIAS(NodeInfoRequest, uavcan_node_GetInfo_Request_1_0)
-TYPE_ALIAS(NodeInfoResponse, uavcan_node_GetInfo_Response_1_0)
+using NodeInfoRequest = uavcan_node_GetInfo_Request_1_0;
+using NodeInfoResponse = uavcan_node_GetInfo_Response_1_0;
 
 class NodeInfoReader : public AbstractSubscription<NodeInfoRequest> {
 private:
-    NodeInfoResponse::Type node_info;
+    NodeInfoResponse node_info;
 public:
     NodeInfoReader(
         InterfacePtr interface,
@@ -866,7 +880,7 @@ public:
         uavcan_node_Version_1_0&& software_version,
         uint64_t software_vcs_revision_id
     );
-    void handler(const NodeInfoRequest::Type&, CanardRxTransfer*) override;
+    void handler(const NodeInfoRequest&, CanardRxTransfer*) override;
 };
 
 #include <tuple>
@@ -874,20 +888,20 @@ public:
 #include <utility>
 #include <array>
 
-#include "uavcan/_register/Name_1_0.h"
 
-#include <uavcan/_register/Access_1_0.h>
-#include <uavcan/_register/List_1_0.h>
+#include <uavcan/_register/Access_1_0.hpp>
+#include <uavcan/_register/List_1_0.hpp>
+#include <uavcan/_register/Name_1_0.h>
 
-TYPE_ALIAS(RegisterAccessRequest, uavcan_register_Access_Request_1_0)
-TYPE_ALIAS(RegisterAccessResponse, uavcan_register_Access_Response_1_0)
-TYPE_ALIAS(RegisterListRequest, uavcan_register_List_Request_1_0)
-TYPE_ALIAS(RegisterListResponse, uavcan_register_List_Response_1_0)
+using RegisterAccessRequest = uavcan_register_Access_Request_1_0;
+using RegisterAccessResponse = uavcan_register_Access_Response_1_0;
+using RegisterListRequest = uavcan_register_List_Request_1_0;
+using RegisterListResponse = uavcan_register_List_Response_1_0;
 
 using RegisterCallback = std::function<void(
     const uavcan_register_Value_1_0&,
     uavcan_register_Value_1_0&,
-    RegisterAccessResponse::Type&
+    RegisterAccessResponse&
 )>;
 using RegisterDefinition = std::pair<std::string, RegisterCallback>;
 
@@ -918,8 +932,8 @@ public:
         return canardConsolidateFilters(&access_filter, &list_filter);
     }
 
-    void handler(const RegisterListRequest::Type& register_list_request, CanardRxTransfer* transfer) override {
-        RegisterListResponse::Type register_list_response = {};
+    void handler(const RegisterListRequest& register_list_request, CanardRxTransfer* transfer) override {
+        RegisterListResponse register_list_response = {};
 
         uavcan_register_Name_1_0 name = {};
 
@@ -930,13 +944,13 @@ public:
         }
         register_list_response.name = name;
 
-        AbstractSubscription<RegisterListRequest>::interface->send_response<RegisterListResponse>(
+        AbstractSubscription<RegisterListRequest>::interface->send_response(
             &register_list_response, transfer
         );
     };
 
-    void handler(const RegisterAccessRequest::Type& register_access_request, CanardRxTransfer* transfer) override {
-        RegisterAccessResponse::Type register_access_response = {};
+    void handler(const RegisterAccessRequest& register_access_request, CanardRxTransfer* transfer) override {
+        RegisterAccessResponse register_access_response = {};
 
         InterfacePtr interface = AbstractSubscription<RegisterAccessRequest>::interface;
 
@@ -964,7 +978,7 @@ public:
         }
 
         register_access_response.value = value;
-        AbstractSubscription<RegisterAccessRequest>::interface->send_response<RegisterAccessResponse>(
+        AbstractSubscription<RegisterAccessRequest>::interface->send_response(
             &register_access_response, transfer
         );
     };
@@ -1024,7 +1038,7 @@ private:
 
     template <typename T>
     void request_generic(const std::string& name, std::optional<T> value, void(*filler)(uavcan_register_Value_1_0&, T)) {
-        RegisterAccessRequest::Type request {0};
+        RegisterAccessRequest request {0};
         size_t name_size = std::min(name.size(), size_t{255});
         memcpy(request.name.name.elements, name.c_str(), name_size);
         request.name.name.count = name_size;
@@ -1040,7 +1054,7 @@ private:
             name,
             interface->get_utilities().micros_64() + DEFAULT_TIMEOUT_MICROS
         );
-        interface->send_request<RegisterAccessRequest>(
+        interface->send_request(
             &request,
             uavcan_register_Access_1_0_FIXED_PORT_ID_,
             &register_access_transfer_id,
@@ -1098,7 +1112,7 @@ public:
         request_generic<uint32_t>(name, value, &fill_register_natural32);
     }
 
-    void handler(const RegisterAccessResponse::Type& register_response, CanardRxTransfer* transfer) override {
+    void handler(const RegisterAccessResponse& register_response, CanardRxTransfer* transfer) override {
         if (transfer->metadata.remote_node_id != target_node_id) {
             return;
         }
@@ -1134,13 +1148,10 @@ public:
 #include <functional>
 
 
-#include <uavcan/diagnostic/Record_1_1.h>
-#include <uavcan/node/Heartbeat_1_0.h>
+#include <uavcan/diagnostic/Record_1_1.hpp>
+#include <uavcan/node/Heartbeat_1_0.hpp>
 #include <uavcan/node/Health_1_0.h>
 #include <uavcan/node/Mode_1_0.h>
-
-TYPE_ALIAS(DiagnosticRecord, uavcan_diagnostic_Record_1_1)
-TYPE_ALIAS(HBeat, uavcan_node_Heartbeat_1_0)
 
 // NOTE: MUST be implemented by user
 #ifndef ARDUINO
@@ -1182,7 +1193,7 @@ protected:
 
     void heartbeat() {
         static CanardTransferID hbeat_transfer_id = 0;
-        HBeat::Type heartbeat_msg = {
+        uavcan_node_Heartbeat_1_0 heartbeat_msg = {
             .uptime = (uint32_t)std::floor(millis_32() / 1000.0f),
             .health = {_health_status},
             .mode = {_mode},
@@ -1190,7 +1201,7 @@ protected:
         };
 
         if (_is_cyphal_on) {
-            cyphal_interface->send_msg<HBeat>(
+            cyphal_interface->send_msg(
                 &heartbeat_msg,
                 uavcan_node_Heartbeat_1_0_FIXED_PORT_ID_,
                 &hbeat_transfer_id,
@@ -1210,12 +1221,12 @@ protected:
         cyphal_interface->clear_queue();
 
         static CanardTransferID record_transfer_id = 0;
-        DiagnosticRecord::Type record;
+        uavcan_diagnostic_Record_1_1 record;
         record.severity.value = uavcan_diagnostic_Severity_1_0_ERROR;
         sprintf(reinterpret_cast<char*>(record.text.elements), "cyphal_error_handler was called internally");
         record.text.count = strlen((char*)record.text.elements);
 
-        cyphal_interface->send_msg<DiagnosticRecord>(
+        cyphal_interface->send_msg(
                 &record,
                 uavcan_diagnostic_Record_1_1_FIXED_PORT_ID_,
                 &record_transfer_id

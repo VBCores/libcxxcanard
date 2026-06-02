@@ -1,0 +1,19 @@
+{% macro include_path(t) -%}
+{%- for namespace_part in t.full_namespace.split('.') -%}
+{{ namespace_part | id }}/
+{%- endfor -%}
+{{ t.short_name | id }}_{{ t.version.major }}_{{ t.version.minor }}.h
+{%- endmacro %}
+
+{% macro generate_traits(t) -%}
+template <>
+struct CyphalTypeTraits<{{ t | full_reference_name }}> {
+    using serializer_type = cyphal_serializer<{{ t | full_reference_name }}>;
+    using deserializer_type = cyphal_deserializer<{{ t | full_reference_name }}>;
+
+    static constexpr serializer_type serializer = {{ t | full_reference_name }}_serialize_;
+    static constexpr deserializer_type deserializer = {{ t | full_reference_name }}_deserialize_;
+    static constexpr size_t extent = {{ t | full_reference_name }}_EXTENT_BYTES_;
+    static constexpr size_t buffer_size = {{ t | full_reference_name }}_SERIALIZATION_BUFFER_SIZE_BYTES_;
+};
+{%- endmacro %}

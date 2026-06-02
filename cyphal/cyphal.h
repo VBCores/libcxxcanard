@@ -6,30 +6,10 @@
 #include <atomic>
 
 #include "cyphal/definitions.h"
+#include "cyphal/types.hpp"
 #include "providers/provider.h"
 
 constexpr uint64_t DEFAULT_TIMEOUT_MICROS = 1000000;  // 1 sec
-
-template <typename ObjType>
-using cyphal_serializer = int8_t (*)(const ObjType* const, uint8_t* const, size_t* const);
-template <typename ObjType>
-using cyphal_deserializer = int8_t (*)(ObjType* const, const uint8_t*, size_t* const);
-
-// NOLINTBEGIN(cppcoreguidelines-macro-usage)
-
-#define TYPE_ALIAS(ALIAS_NAME, T)                                                   \
-    class ALIAS_NAME {                                                              \
-    public:                                                                         \
-        typedef T Type;                                                             \
-        typedef cyphal_serializer<T> serializer_type;                               \
-        typedef cyphal_deserializer<T> deserializer_type;                           \
-        static constexpr serializer_type serializer = T##_serialize_;               \
-        static constexpr deserializer_type deserializer = T##_deserialize_;         \
-        static constexpr size_t extent = T##_EXTENT_BYTES_;                         \
-        static constexpr size_t buffer_size = T##_SERIALIZATION_BUFFER_SIZE_BYTES_; \
-    };
-
-// NOLINTEND(cppcoreguidelines-macro-usage)
 
 /**
  * Основной класс со всей функциональностью. Это единственный класс непостредственно из этой библиотеки, экземплляр которого надо создать.
@@ -57,7 +37,11 @@ public:
         const UtilityConfig& config,
         AbstractCANProvider* provider
     )
-        : node_id(node_id), utilities(config), provider(provider){};
+        : node_id(node_id), utilities(config), provider(provider)
+#ifdef __linux__
+        , threads_terminate_flag(false), is_rx_terminated(true), is_tx_terminated(true)
+#endif
+        {};
     ~CyphalInterface();
 
     /**
@@ -191,15 +175,15 @@ public:
     ) const;
     void unsubscribe(CanardPortID port_id, CanardTransferKind kind);
     // TEMPLATES
-    template <typename TypeAlias>
+    template <typename CyphalPayload>
     void subscribe(
         CanardPortID port_id,
         CanardTransferKind kind,
         CanardRxSubscription* subscription
     );
-    template <typename TypeAlias>
+    template <typename CyphalPayload>
     inline void send(
-        typename TypeAlias::Type* obj,
+        CyphalPayload* obj,
         CanardPortID port,
         CanardTransferID* transfer_id,
         CanardPriority priority,
@@ -217,9 +201,9 @@ public:
     * @param timeout_delta Таймаут отправки в нс - по умочанию 1с
     * @param priority Приоритет сообщения
     */
-    template <typename TypeAlias>
+    template <typename ObjType>
     inline void send_msg(
-        typename TypeAlias::Type* obj,
+        ObjType* obj,
         CanardPortID port,
         CanardTransferID* transfer_id,
         uint64_t timeout_delta = DEFAULT_TIMEOUT_MICROS,
@@ -232,9 +216,9 @@ public:
     * @param transfer Структура CanardRxTransfer **полученная вместе с запросом**
     * @param timeout_delta Таймаут отправки в нс - по умочанию 1с
     */
-    template <typename TypeAlias>
+    template <typename ObjType>
     inline void send_response(
-        typename TypeAlias::Type* obj,
+        ObjType* obj,
         CanardRxTransfer* transfer,
         uint64_t timeout_delta = DEFAULT_TIMEOUT_MICROS
     ) const;
@@ -248,17 +232,17 @@ public:
     * @param timeout_delta Таймаут отправки в нс - по умочанию 1с
     * @param priority Приоритет сообщения
     */
-    template <typename TypeAlias>
+    template <typename ObjType>
     inline void send_request(
-        typename TypeAlias::Type* obj,
+        ObjType* obj,
         CanardPortID port,
         CanardTransferID* transfer_id,
         CanardNodeID to_node_id,
         uint64_t timeout_delta = DEFAULT_TIMEOUT_MICROS,
         CanardPriority priority = CanardPriorityNominal
     ) const;
-    template <typename TypeAlias>
-    inline void deserialize_transfer(typename TypeAlias::Type* obj, CanardRxTransfer* transfer)
+    template <typename CyphalPayload>
+    inline void deserialize_transfer(CyphalPayload* obj, CanardRxTransfer* transfer)
         const;
 };
 

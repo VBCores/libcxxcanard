@@ -14,13 +14,10 @@
 #include <cyphal/providers/G4CAN.h>
 #include <cyphal/allocators/o1/o1_allocator.h>
 
-#include <uavcan/diagnostic/Record_1_1.h>
-#include <uavcan/node/Heartbeat_1_0.h>
+#include <uavcan/diagnostic/Record_1_1.hpp>
+#include <uavcan/node/Heartbeat_1_0.hpp>
 #include <uavcan/node/Health_1_0.h>
 #include <uavcan/node/Mode_1_0.h>
-
-TYPE_ALIAS(DiagnosticRecord, uavcan_diagnostic_Record_1_1)
-TYPE_ALIAS(HBeat, uavcan_node_Heartbeat_1_0)
 
 // NOTE: MUST be implemented by user
 #ifndef ARDUINO
@@ -62,7 +59,7 @@ protected:
 
     void heartbeat() {
         static CanardTransferID hbeat_transfer_id = 0;
-        HBeat::Type heartbeat_msg = {
+        uavcan_node_Heartbeat_1_0 heartbeat_msg = {
             .uptime = (uint32_t)std::floor(millis_32() / 1000.0f),
             .health = {_health_status},
             .mode = {_mode},
@@ -70,7 +67,7 @@ protected:
         };
 
         if (_is_cyphal_on) {
-            cyphal_interface->send_msg<HBeat>(
+            cyphal_interface->send_msg(
                 &heartbeat_msg,
                 uavcan_node_Heartbeat_1_0_FIXED_PORT_ID_,
                 &hbeat_transfer_id,
@@ -90,12 +87,12 @@ protected:
         cyphal_interface->clear_queue();
 
         static CanardTransferID record_transfer_id = 0;
-        DiagnosticRecord::Type record;
+        uavcan_diagnostic_Record_1_1 record;
         record.severity.value = uavcan_diagnostic_Severity_1_0_ERROR;
         sprintf(reinterpret_cast<char*>(record.text.elements), "cyphal_error_handler was called internally");
         record.text.count = strlen((char*)record.text.elements);
 
-        cyphal_interface->send_msg<DiagnosticRecord>(
+        cyphal_interface->send_msg(
                 &record,
                 uavcan_diagnostic_Record_1_1_FIXED_PORT_ID_,
                 &record_transfer_id

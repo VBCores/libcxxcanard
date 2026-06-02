@@ -75,6 +75,8 @@ def process_file(path):
 with open(OUT_H, 'w+t') as out_h, open(OUT_CPP, 'w+t') as out_cpp:
     out_cpp.write('#include "cyphal.h"\n')
     out_h.write("""
+#pragma once
+
 #undef Error_Handler
 #undef Error_Handler()
                 

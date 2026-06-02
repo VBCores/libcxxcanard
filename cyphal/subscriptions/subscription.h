@@ -21,7 +21,7 @@ public:
 */
 template <typename T>
 class AbstractSubscription : public TransferListener, public IHasFilter {
-    using Type = typename T::Type;
+    using Type = T;
 
 protected:
     const CanardPortID port_id;

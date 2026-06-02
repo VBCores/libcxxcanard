@@ -460,6 +460,8 @@ void CyphalInterface::loop() {
 #ifdef __linux__
 void CyphalInterface::start_threads(uint64_t tx_delay_micros) {
     threads_terminate_flag.store(false);
+    is_rx_terminated.store(false);
+    is_tx_terminated.store(false);
 
     rx_thread = std::thread([=]() {
         std::cout << "Started RX thread" << std::endl;
@@ -541,6 +543,6 @@ void NodeInfoReader::handler(
     const uavcan_node_GetInfo_Request_1_0& object,
     CanardRxTransfer* transfer
 ) {
-    interface->send_response<NodeInfoResponse>(&node_info, transfer);
+    interface->send_response(&node_info, transfer);
 }
 #endif

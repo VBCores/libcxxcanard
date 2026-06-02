@@ -1,0 +1,17 @@
+// This is an AUTO-GENERATED C++ traits header for libcxxcanard.
+// Source file: /home/igor/Projects/libsws/cyphal_types/public_regulated_data_types/uavcan/si/unit/electric_current/Scalar.1.0.dsdl
+#pragma once
+
+#include <cyphal.h>
+#include <uavcan/si/unit/electric_current/Scalar_1_0.h>
+
+template <>
+struct CyphalTypeTraits<uavcan_si_unit_electric_current_Scalar_1_0> {
+    using serializer_type = cyphal_serializer<uavcan_si_unit_electric_current_Scalar_1_0>;
+    using deserializer_type = cyphal_deserializer<uavcan_si_unit_electric_current_Scalar_1_0>;
+
+    static constexpr serializer_type serializer = uavcan_si_unit_electric_current_Scalar_1_0_serialize_;
+    static constexpr deserializer_type deserializer = uavcan_si_unit_electric_current_Scalar_1_0_deserialize_;
+    static constexpr size_t extent = uavcan_si_unit_electric_current_Scalar_1_0_EXTENT_BYTES_;
+    static constexpr size_t buffer_size = uavcan_si_unit_electric_current_Scalar_1_0_SERIALIZATION_BUFFER_SIZE_BYTES_;
+};

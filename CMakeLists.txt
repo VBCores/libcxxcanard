@@ -22,3 +22,12 @@ add_subdirectory(${COMMON_LIBS_DIR}/libcanard ${PROJECT_BINARY_DIR}/build/libcan
 add_subdirectory(${COMMON_LIBS_DIR}/o1heap ${PROJECT_BINARY_DIR}/build/o1heap)
 
 add_library(libcxxcanard ${SOURCES} $<TARGET_OBJECTS:libcanard> $<TARGET_OBJECTS:o1heap>)
+set(LIBCXXCANARD_CXX_TRAITS_TEMPLATES_DIR
+        "${CMAKE_CURRENT_LIST_DIR}/nunavut_templates/cxxcanard_traits")
+if(NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+    set(LIBCXXCANARD_CXX_TRAITS_TEMPLATES_DIR
+            "${LIBCXXCANARD_CXX_TRAITS_TEMPLATES_DIR}"
+            PARENT_SCOPE)
+endif()
+set_target_properties(libcxxcanard PROPERTIES
+        CYPHAL_TRAITS_TEMPLATES_DIR "${LIBCXXCANARD_CXX_TRAITS_TEMPLATES_DIR}")
