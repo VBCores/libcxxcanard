@@ -1,57 +1,40 @@
-Документация libcxxcanard
-=========================
+libcxxcanard
+============
 
-Если лень читать
-----------------
-**Рекомедуемая конфигурация**: `CyphalInterface::create_heap`, `O1Allocator`, `DEFAULT_CONFIG`, провайдер зависимо от платформы.
+``libcxxcanard`` is a small C++17 wrapper around OpenCyphal
+`libcanard <https://github.com/OpenCyphal/libcanard>`_ and ``o1heap``.
+It keeps the transport model close to the C implementation, but gives
+application code a compact typed interface for sending messages, handling
+subscriptions, answering services, and exposing Cyphal registers.
 
-Главный класс
--------------
+The library is used in three main shapes:
 
-`CyphalInterface` - главный и единственный открытый для пользователя класс, не считая `AbstractSubscription`.
+* Linux and normal CMake projects through SocketCAN and generated DSDL headers.
+* STM32 bare-metal projects through the G4 FDCAN provider.
+* STM32 Arduino projects through the packed Arduino library in ``src/``.
 
-.. doxygenclass:: CyphalInterface
-   :members:
+Current type model
+------------------
 
-Провайдеры (/providers)
------------------------
+Application code uses raw Nunavut-generated C structs directly. For example,
+``uavcan_primitive_scalar_Natural32_1_0`` is the message type. A generated C++
+traits sidecar, such as ``uavcan/primitive/scalar/Natural32_1_0.hpp``, registers
+the serializer, deserializer, extent, and serialization buffer size for
+``CyphalInterface``.
 
-Конструкторами провайдеров лучше не пользоваться напрямую, их вызывает фабричный метод в CyphalInterface.
-То, какой конструктор вызовется, зависит от переданных аргументов.
+There is no legacy wrapper alias layer. Include ``.hpp`` generated sidecars in
+C++ and Arduino code.
 
-.. doxygenclass:: AbstractCANProvider
-   :members:
+Contents
+--------
 
-.. doxygenclass:: LinuxCAN
-   :members:
+.. toctree::
+   :maxdepth: 2
 
-.. doxygenclass:: G4CAN
-   :members:
+   installation
+   dsdl
+   linux
+   arduino
+   examples
+   api
 
-Аллокаторы (/allocators)
-------------------------
-
-Конструкторами аллокаторов лучше не пользоваться напрямую, их вызывает фабричный метод в CyphalInterface.
-То, какой конструктор вызовется, зависит от переданных аргументов.
-
-
-.. doxygenclass:: AbstractAllocator
-   :members:
-
-.. doxygenclass:: SystemAllocator
-   :members:
-
-.. doxygenclass:: O1Allocator
-   :members:
-
-Подписки (/subscriptions)
--------------------------
-
-.. doxygenclass:: AbstractSubscription
-   :members:
-
-Утилиты
--------
-
-.. doxygenstruct:: UtilityConfig
-   :members:

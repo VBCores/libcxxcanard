@@ -1,5 +1,8 @@
+import pathlib
 import subprocess
-subprocess.call('doxygen', shell=True)
+
+DOCS_DIR = pathlib.Path(__file__).resolve().parent
+subprocess.run(["doxygen", "Doxyfile"], cwd=DOCS_DIR, check=True)
 
 # Configuration file for the Sphinx documentation builder.
 #
@@ -22,7 +25,7 @@ extensions = ["breathe", "sphinx_rtd_theme"]
 # Breathe Configuration
 breathe_default_project = "libcxxcanard"
 breathe_projects = {
-    "libcxxcanard": "doxygen/xml"
+    "libcxxcanard": str(DOCS_DIR / "doxygen" / "xml")
 }
 
 templates_path = ["_templates"]
