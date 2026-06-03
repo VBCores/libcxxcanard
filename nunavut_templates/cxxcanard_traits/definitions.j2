@@ -1,8 +1,9 @@
 {% macro include_path(t) -%}
 {%- for namespace_part in t.full_namespace.split('.') -%}
-{{ namespace_part | id }}/
+{{ namespace_part | id("path") }}/
 {%- endfor -%}
-{{ t.short_name | id }}_{{ t.version.major }}_{{ t.version.minor }}.h
+{%- set file_stem = t.short_name ~ '_' ~ t.version.major ~ '_' ~ t.version.minor -%}
+{{ file_stem | id("path") }}.h
 {%- endmacro %}
 
 {% macro generate_traits(t) -%}

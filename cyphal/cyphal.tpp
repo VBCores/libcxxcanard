@@ -16,11 +16,11 @@ inline void CyphalInterface::send(
     }
 
     const CanardTransferMetadata cyphal_transfer_metadata = {
-        .priority = priority,
-        .transfer_kind = transfer_kind,
-        .port_id = port,
-        .remote_node_id = to_node_id,
-        .transfer_id = *transfer_id,
+        priority,
+        transfer_kind,
+        port,
+        to_node_id,
+        *transfer_id
     };
     push(
         utilities.micros_64() + timeout_delta,
@@ -64,11 +64,11 @@ inline void CyphalInterface::send_response(
     }
 
     const CanardTransferMetadata cyphal_transfer_metadata = {
-        .priority = transfer->metadata.priority,
-        .transfer_kind = CanardTransferKindResponse,
-        .port_id = transfer->metadata.port_id,
-        .remote_node_id = transfer->metadata.remote_node_id,
-        .transfer_id = transfer->metadata.transfer_id,
+        transfer->metadata.priority,
+        CanardTransferKindResponse,
+        transfer->metadata.port_id,
+        transfer->metadata.remote_node_id,
+        transfer->metadata.transfer_id
     };
     push(
         utilities.micros_64() + timeout_delta,
