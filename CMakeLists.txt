@@ -2,7 +2,7 @@ project(libcxxcanard)
 cmake_minimum_required(VERSION 3.15)
 
 set (CMAKE_CXX_STANDARD 17)
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+option(LIBCXXCANARD_POSITION_INDEPENDENT_CODE "Build libcxxcanard and bundled C libraries as PIC" OFF)
 
 include_directories(.)
 file(GLOB_RECURSE SOURCES "cyphal/*.c" "cyphal/*.cpp")
@@ -22,6 +22,8 @@ add_subdirectory(${COMMON_LIBS_DIR}/libcanard ${PROJECT_BINARY_DIR}/build/libcan
 add_subdirectory(${COMMON_LIBS_DIR}/o1heap ${PROJECT_BINARY_DIR}/build/o1heap)
 
 add_library(libcxxcanard ${SOURCES} $<TARGET_OBJECTS:libcanard> $<TARGET_OBJECTS:o1heap>)
+set_target_properties(libcxxcanard libcanard o1heap PROPERTIES
+        POSITION_INDEPENDENT_CODE ${LIBCXXCANARD_POSITION_INDEPENDENT_CODE})
 set(LIBCXXCANARD_CXX_TRAITS_TEMPLATES_DIR
         "${CMAKE_CURRENT_LIST_DIR}/nunavut_templates/cxxcanard_traits")
 if(NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
