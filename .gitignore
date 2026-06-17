@@ -9,6 +9,7 @@ compile_commands.json
 *.db
 Debug*/
 stuff
+var/
 
 ### IDE
 # STM32CubeIDE

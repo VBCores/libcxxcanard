@@ -675,11 +675,11 @@ inline void CyphalInterface::send(
     }
 
     const CanardTransferMetadata cyphal_transfer_metadata = {
-        .priority = priority,
-        .transfer_kind = transfer_kind,
-        .port_id = port,
-        .remote_node_id = to_node_id,
-        .transfer_id = *transfer_id,
+        priority,
+        transfer_kind,
+        port,
+        to_node_id,
+        *transfer_id
     };
     push(
         utilities.micros_64() + timeout_delta,
@@ -723,11 +723,11 @@ inline void CyphalInterface::send_response(
     }
 
     const CanardTransferMetadata cyphal_transfer_metadata = {
-        .priority = transfer->metadata.priority,
-        .transfer_kind = CanardTransferKindResponse,
-        .port_id = transfer->metadata.port_id,
-        .remote_node_id = transfer->metadata.remote_node_id,
-        .transfer_id = transfer->metadata.transfer_id,
+        transfer->metadata.priority,
+        CanardTransferKindResponse,
+        transfer->metadata.port_id,
+        transfer->metadata.remote_node_id,
+        transfer->metadata.transfer_id
     };
     push(
         utilities.micros_64() + timeout_delta,
@@ -938,7 +938,7 @@ public:
         uavcan_register_Name_1_0 name = {};
 
         if (register_list_request.index < registers.size()) {
-            auto register_name = std::get<std::string>(registers[register_list_request.index]);
+            const auto& register_name = std::get<std::string>(registers[register_list_request.index]);
             memcpy(name.name.elements, register_name.c_str(), register_name.size());
             name.name.count = register_name.size();
         }
@@ -960,6 +960,9 @@ public:
         bool is_found = false;
         for (auto& register_def : registers) {
             auto& register_name = std::get<std::string>(register_def);
+            if (register_name.size() != register_access_request.name.name.count) {
+                continue;
+            }
             if(memcmp(
                 register_name.c_str(),
                 register_access_request.name.name.elements,
@@ -986,6 +989,7 @@ public:
 
 
 static constexpr uint8_t REGISTER_EMPTY_TAG = 0U;
+static constexpr uint8_t REGISTER_INTEGER32_TAG = 5U;
 static constexpr uint8_t REGISTER_BIT_TAG = 3U;
 static constexpr uint8_t REGISTER_REAL32_TAG = 13U;
 static constexpr uint8_t REGISTER_NATURAL32_TAG = 9U;
@@ -1006,6 +1010,22 @@ inline bool parse_register_real32(const uavcan_register_Value_1_0& value, float&
     return true;
 }
 
+inline bool parse_register_integer32(const uavcan_register_Value_1_0& value, int32_t& parsed) {
+    if (value._tag_ != REGISTER_INTEGER32_TAG || value.integer32.value.count == 0) {
+        return false;
+    }
+    parsed = value.integer32.value.elements[0];
+    return true;
+}
+
+inline bool parse_register_natural32(const uavcan_register_Value_1_0& value, uint32_t& parsed) {
+    if (value._tag_ != REGISTER_NATURAL32_TAG || value.natural32.value.count == 0) {
+        return false;
+    }
+    parsed = value.natural32.value.elements[0];
+    return true;
+}
+
 inline void fill_register_bit(uavcan_register_Value_1_0& out, bool value) {
     out._tag_ = REGISTER_BIT_TAG;
     out.bit.value.bitpacked[0] = value;
@@ -1016,6 +1036,12 @@ inline void fill_register_real32(uavcan_register_Value_1_0& out, float value) {
     out._tag_ = REGISTER_REAL32_TAG;
     out.real32.value.elements[0] = value;
     out.real32.value.count = 1;
+}
+
+inline void fill_register_integer32(uavcan_register_Value_1_0& out, int32_t value) {
+    out._tag_ = REGISTER_INTEGER32_TAG;
+    out.integer32.value.elements[0] = value;
+    out.integer32.value.count = 1;
 }
 
 inline void fill_register_natural32(uavcan_register_Value_1_0& out, uint32_t value) {
