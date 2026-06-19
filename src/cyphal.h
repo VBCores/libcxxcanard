@@ -177,27 +177,38 @@ extern size_t fdcan_dlc_to_len(uint32_t);
 
 #include "libcanard/canard.h"
 
-extern std::unique_ptr<AbstractAllocator> _alloc_ptr;
+inline void delete_allocator(AbstractAllocator* allocator) {
+    delete allocator;
+}
+
+template <class T>
+void destroy_allocator(AbstractAllocator* allocator) {
+    static_cast<T*>(allocator)->~T();
+}
+
+using AllocatorPtr = std::unique_ptr<AbstractAllocator, void (*)(AbstractAllocator*)>;
 
 inline void* alloc_f(CanardInstance* ins, size_t amount) {
-    if (!_alloc_ptr) {
+    auto* allocator = static_cast<AbstractAllocator*>(ins->user_reference);
+    if (allocator == nullptr) {
 #ifdef __linux__
         std::cerr << "Tried to allocate canard memory before creating provider&allocator!"
                   << std::endl;
 #endif
         exit(1);
     }
-    return _alloc_ptr->allocate(ins, amount);
+    return allocator->allocate(ins, amount);
 }
 inline void free_f(CanardInstance* ins, void* pointer) {
-    if (!_alloc_ptr) {
+    auto* allocator = static_cast<AbstractAllocator*>(ins->user_reference);
+    if (allocator == nullptr) {
 #ifdef __linux__
         std::cerr << "Tried to free (?) canard memory before creating provider&allocator!"
                   << std::endl;
 #endif
         exit(1);
     }
-    return _alloc_ptr->free(ins, pointer);
+    return allocator->free(ins, pointer);
 }
 
 // 1 for tx, 1 for rx, 0.5 for misc (subs, multipart msgs, etc.)
@@ -216,6 +227,7 @@ protected:
     CanardTxQueue queue;
     CanardInstance canard;
     const UtilityConfig& utilities;
+    AllocatorPtr allocator;
 
     AbstractCANProvider(size_t canard_mtu, size_t wire_mtu, const UtilityConfig& utilities)
         : AbstractCANProvider(canard_mtu, wire_mtu, DEFAULT_QUEUE_SIZE, utilities){};
@@ -228,21 +240,23 @@ protected:
         : CANARD_MTU(canard_mtu),
           WIRE_MTU(wire_mtu),
           queue(canardTxInit(queue_len, CANARD_MTU)),
-          utilities(utilities){};
+          utilities(utilities),
+          allocator(nullptr, delete_allocator){};
 
     template <class T>
-    void setup(T* ptr, CanardNodeID node_id) {
+    void setup(T* ptr, CanardNodeID node_id, AllocatorPtr::deleter_type allocator_deleter) {
         using namespace std::placeholders;
 
-        if (_alloc_ptr) {
+        if (allocator) {
 #ifdef __linux__
             std::cerr << "Tried to call setup in provider twice!" << std::endl;
 #endif
             utilities.error_handler();
         }
-        _alloc_ptr = std::unique_ptr<T>(ptr);
+        allocator = AllocatorPtr(ptr, allocator_deleter);
 
         canard = canardInit(alloc_f, free_f);
+        canard.user_reference = allocator.get();
         canard.node_id = node_id;
     }
 
@@ -353,7 +367,7 @@ public:
         auto ptr = new (provider_loc) G4CAN(handler, queue_len, utilities);
         // NOLINTEND(cppcoreguidelines-owning-memory,cppcoreguidelines-pro-bounds-pointer-arithmetic,bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
 
-        ptr->setup<T>(allocator_ptr, node_id);
+        ptr->setup<T>(allocator_ptr, node_id, destroy_allocator<T>);
 
         *inout_buffer = provider_loc + sizeof(G4CAN);
         return ptr;
@@ -375,7 +389,7 @@ public:
         );
         auto ptr = new G4CAN(handler, queue_len, utilities);
         // NOLINTEND(cppcoreguidelines-owning-memory,cppcoreguidelines-pro-bounds-pointer-arithmetic,bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
-        ptr->setup<T>(allocator_ptr, node_id);
+        ptr->setup<T>(allocator_ptr, node_id, delete_allocator);
 
         return ptr;
     }
@@ -418,6 +432,8 @@ struct CyphalTypeTraits {
 #include <thread>
 #include <unistd.h>
 #include <atomic>
+#include <type_traits>
+#include <vector>
 
 
 constexpr uint64_t DEFAULT_TIMEOUT_MICROS = 1000000;  // 1 sec
@@ -425,11 +441,25 @@ constexpr uint64_t DEFAULT_TIMEOUT_MICROS = 1000000;  // 1 sec
 /**
  * Основной класс со всей функциональностью. Это единственный класс непостредственно из этой библиотеки, экземплляр которого надо создать.
  */
-class CyphalInterface {
+using TransferListener = IListener<CanardRxTransfer*>;
+
+inline void delete_provider(AbstractCANProvider* provider) {
+    delete provider;
+}
+
+template <class T>
+void destroy_provider(AbstractCANProvider* provider) {
+    static_cast<T*>(provider)->~T();
+}
+
+using ProviderPtr = std::unique_ptr<AbstractCANProvider, void (*)(AbstractCANProvider*)>;
+
+class CyphalInterface : public std::enable_shared_from_this<CyphalInterface> {
 private:
     const CanardNodeID node_id;
-    const UtilityConfig& utilities;
-    std::unique_ptr<AbstractCANProvider> provider;
+    const UtilityConfig utilities;
+    ProviderPtr provider;
+    std::vector<std::unique_ptr<TransferListener>> callback_subscriptions;
 #ifdef __linux__
     std::thread rx_thread;
     std::thread tx_thread;
@@ -437,6 +467,14 @@ private:
     std::atomic<bool> is_rx_terminated;
     std::atomic<bool> is_tx_terminated;
 #endif
+
+protected:
+    void attach_provider(
+        AbstractCANProvider* provider,
+        ProviderPtr::deleter_type provider_deleter = delete_provider
+    );
+    void detach_provider();
+    void clear_callback_subscriptions();
 
 public:
     /**
@@ -446,14 +484,15 @@ public:
     CyphalInterface(
         CanardNodeID node_id,
         const UtilityConfig& config,
-        AbstractCANProvider* provider
+        AbstractCANProvider* provider,
+        ProviderPtr::deleter_type provider_deleter = delete_provider
     )
-        : node_id(node_id), utilities(config), provider(provider)
+        : node_id(node_id), utilities(config), provider(provider, provider_deleter)
 #ifdef __linux__
         , threads_terminate_flag(false), is_rx_terminated(true), is_tx_terminated(true)
 #endif
         {};
-    ~CyphalInterface();
+    virtual ~CyphalInterface();
 
     /**
      * Инициализировать CyphalInterface в глобальной памяти (.bss), не использует кучу.
@@ -486,7 +525,12 @@ public:
 
         std::byte* interface_ptr = *inout_buffer;
         // NOLINTBEGIN(cppcoreguidelines-owning-memory)
-        auto interface = new (interface_ptr) CyphalInterface(node_id, config, provider);
+        auto interface = new (interface_ptr) CyphalInterface(
+            node_id,
+            config,
+            provider,
+            destroy_provider<Provider>
+        );
         // NOLINTEND(cppcoreguidelines-owning-memory)
 
         return interface;
@@ -509,15 +553,19 @@ public:
         Args&&... args,
         const UtilityConfig& config
     ) {
+        auto interface = std::shared_ptr<CyphalInterface>(
+            new CyphalInterface(node_id, config, nullptr)
+        );
         AbstractCANProvider* provider = Provider::template create_heap<Allocator>(
             handler,
             node_id,
             queue_len,
             std::forward<Args>(args)...,
-            config
+            interface->get_utilities()
         );
+        interface->attach_provider(provider);
 
-        return std::make_shared<CyphalInterface>(node_id, config, provider);
+        return interface;
     }
 
     const UtilityConfig& get_utilities() const {
@@ -592,6 +640,14 @@ public:
         CanardTransferKind kind,
         CanardRxSubscription* subscription
     );
+    template <typename Func>
+    void subscribe(CanardPortID port_id, Func&& callback);
+    template <typename Func>
+    void subscribe(CanardPortID port_id, CanardTransferKind kind, Func&& callback);
+    template <typename CyphalPayload, typename Func>
+    void subscribe(CanardPortID port_id, Func&& callback);
+    template <typename CyphalPayload, typename Func>
+    void subscribe(CanardPortID port_id, CanardTransferKind kind, Func&& callback);
     template <typename CyphalPayload>
     inline void send(
         CyphalPayload* obj,
@@ -655,6 +711,97 @@ public:
     template <typename CyphalPayload>
     inline void deserialize_transfer(CyphalPayload* obj, CanardRxTransfer* transfer)
         const;
+};
+
+template <typename T, typename... Args>
+std::shared_ptr<T> make_cyphal(Args&&... args) {
+    static_assert(
+        std::is_base_of<CyphalInterface, T>::value,
+        "make_cyphal<T>() requires T to derive from CyphalInterface"
+    );
+    return std::shared_ptr<T>(new T(std::forward<Args>(args)...));
+}
+
+
+#include <functional>
+#include <type_traits>
+#include <utility>
+
+#include "libcanard/canard.h"
+
+class CyphalInterface;
+
+template <typename T>
+struct CyphalCallbackTraits : CyphalCallbackTraits<decltype(&T::operator())> {};
+
+template <typename R, typename Payload>
+struct CyphalCallbackTraits<R (*)(const Payload&, CanardRxTransfer*)> {
+    using payload_type = Payload;
+};
+
+template <typename R, typename Payload>
+struct CyphalCallbackTraits<R (*)(Payload&, CanardRxTransfer*)> {
+    using payload_type = Payload;
+};
+
+template <typename R, typename Class, typename Payload>
+struct CyphalCallbackTraits<R (Class::*)(const Payload&, CanardRxTransfer*) const> {
+    using payload_type = Payload;
+};
+
+template <typename R, typename Class, typename Payload>
+struct CyphalCallbackTraits<R (Class::*)(Payload&, CanardRxTransfer*) const> {
+    using payload_type = Payload;
+};
+
+template <typename R, typename Class, typename Payload>
+struct CyphalCallbackTraits<R (Class::*)(const Payload&, CanardRxTransfer*)> {
+    using payload_type = Payload;
+};
+
+template <typename R, typename Class, typename Payload>
+struct CyphalCallbackTraits<R (Class::*)(Payload&, CanardRxTransfer*)> {
+    using payload_type = Payload;
+};
+
+template <typename Payload>
+struct CyphalCallbackTraits<std::function<void(const Payload&, CanardRxTransfer*)>> {
+    using payload_type = Payload;
+};
+
+template <typename CyphalPayload, typename Func>
+class CyphalCallbackSubscription : public IListener<CanardRxTransfer*> {
+private:
+    CyphalInterface& interface;
+    const CanardPortID port_id;
+    const CanardTransferKind kind;
+    CanardRxSubscription subscription = {};
+    Func callback;
+
+public:
+    CyphalCallbackSubscription(
+        CyphalInterface& interface,
+        CanardPortID port_id,
+        CanardTransferKind kind,
+        Func&& callback
+    )
+        : interface(interface),
+          port_id(port_id),
+          kind(kind),
+          callback(std::forward<Func>(callback)) {
+        subscription.user_reference = static_cast<void*>(this);
+        interface.template subscribe<CyphalPayload>(port_id, kind, &subscription);
+    }
+
+    void accept(CanardRxTransfer* transfer) override {
+        CyphalPayload object{};
+        interface.deserialize_transfer<CyphalPayload>(&object, transfer);
+        callback(object, transfer);
+    }
+
+    ~CyphalCallbackSubscription() override {
+        interface.unsubscribe(port_id, kind);
+    }
 };
 
 template <typename CyphalPayload>
@@ -788,14 +935,45 @@ inline void CyphalInterface::subscribe(
     }
 }
 
+template <typename Func>
+inline void CyphalInterface::subscribe(CanardPortID port_id, Func&& callback) {
+    using Payload = typename CyphalCallbackTraits<std::decay_t<Func>>::payload_type;
+    subscribe<Payload>(port_id, CanardTransferKindMessage, std::forward<Func>(callback));
+}
+
+template <typename Func>
+inline void CyphalInterface::subscribe(
+    CanardPortID port_id,
+    CanardTransferKind kind,
+    Func&& callback
+) {
+    using Payload = typename CyphalCallbackTraits<std::decay_t<Func>>::payload_type;
+    subscribe<Payload>(port_id, kind, std::forward<Func>(callback));
+}
+
+template <typename CyphalPayload, typename Func>
+inline void CyphalInterface::subscribe(CanardPortID port_id, Func&& callback) {
+    subscribe<CyphalPayload>(port_id, CanardTransferKindMessage, std::forward<Func>(callback));
+}
+
+template <typename CyphalPayload, typename Func>
+inline void CyphalInterface::subscribe(
+    CanardPortID port_id,
+    CanardTransferKind kind,
+    Func&& callback
+) {
+    using Subscription = CyphalCallbackSubscription<CyphalPayload, std::decay_t<Func>>;
+    callback_subscriptions.emplace_back(
+        new Subscription(*this, port_id, kind, std::forward<Func>(callback))
+    );
+}
+
 #include <memory>
 #include <functional>
 
 #include "libcanard/canard.h"
 
 using InterfacePtr = const std::shared_ptr<CyphalInterface>;
-using TransferListener = IListener<CanardRxTransfer*>;
-
 class IHasFilter {
 public:
     virtual CanardFilter make_filter(CanardNodeID node_id) = 0;
@@ -1172,6 +1350,7 @@ public:
 #if defined(HAL_FDCAN_MODULE_ENABLED)
 
 #include <functional>
+#include <memory>
 
 
 #include <uavcan/diagnostic/Record_1_1.hpp>
@@ -1195,27 +1374,28 @@ micros_t micros_64();
 #endif
 
 template<size_t QUEUE_SIZE, millis_t DELAY_ON_ERROR, size_t REGISTERS_COUNT>
-class EmbeddedCyphal {
+class EmbeddedCyphal: public CyphalInterface {
 protected:
+    FDCAN_HandleTypeDef* hfdcan;
+    std::byte cyphal_bss_buffer[sizeof(G4CAN) + sizeof(O1Allocator)] __attribute__((aligned(4)));
     bool _is_cyphal_on = false;
     uint8_t _health_status = uavcan_node_Health_1_0_NOMINAL;
     uint8_t _mode = uavcan_node_Mode_1_0_INITIALIZATION;
     millis_t _delay_cyphal_until_millis = 0;
 
-    FDCAN_HandleTypeDef* hfdcan;
-    UtilityConfig utilities;
-    std::shared_ptr<CyphalInterface> cyphal_interface;
-    std::byte cyphal_bss_buffer[
-        sizeof(CyphalInterface) + sizeof(G4CAN) + sizeof(O1Allocator)
-    ] __attribute__((aligned(4)));
+    std::string node_name;
+    uavcan_node_Version_1_0 protocol_version;
+    uavcan_node_Version_1_0 hardware_version;
+    uavcan_node_Version_1_0 software_version;
+    uint64_t software_vcs_revision_id;
+    std::array<RegisterDefinition, REGISTERS_COUNT> registers_list;
+    std::unique_ptr<NodeInfoReader> node_info_reader;
+    std::unique_ptr<RegistersHandler<REGISTERS_COUNT>> registers_handler;
     // Must match the arena size requested by G4CAN::create_bss().
     static const size_t CYPHAL_BUFFER_SIZE = static_cast<size_t>(
         QUEUE_SIZE * sizeof(CanardTxQueueItem) * QUEUE_SIZE_MULT
     );
     static inline std::byte cyphal_queue_buffer[CYPHAL_BUFFER_SIZE] __attribute__((aligned(O1HEAP_ALIGNMENT)));
-
-    NodeInfoReader node_info_reader;
-    RegistersHandler<REGISTERS_COUNT> registers_handler;
 
     void heartbeat() {
         static CanardTransferID hbeat_transfer_id = 0;
@@ -1223,11 +1403,11 @@ protected:
             .uptime = (uint32_t)std::floor(millis_32() / 1000.0f),
             .health = {_health_status},
             .mode = {_mode},
-            .vendor_specific_status_code = static_cast<uint8_t>(cyphal_interface->queue_size())
+            .vendor_specific_status_code = static_cast<uint8_t>(queue_size())
         };
 
         if (_is_cyphal_on) {
-            cyphal_interface->send_msg(
+            send_msg(
                 &heartbeat_msg,
                 uavcan_node_Heartbeat_1_0_FIXED_PORT_ID_,
                 &hbeat_transfer_id,
@@ -1238,13 +1418,13 @@ protected:
 
     void cyphal_error_handler() {
         _is_cyphal_on = false;
-        cyphal_interface->clear_queue();
+        clear_queue();
         // delay for half a second
         _delay_cyphal_until_millis = millis_32() + DELAY_ON_ERROR;
     }
 
     void restart_cyphal() {
-        cyphal_interface->clear_queue();
+        clear_queue();
 
         static CanardTransferID record_transfer_id = 0;
         uavcan_diagnostic_Record_1_1 record;
@@ -1252,7 +1432,7 @@ protected:
         sprintf(reinterpret_cast<char*>(record.text.elements), "cyphal_error_handler was called internally");
         record.text.count = strlen((char*)record.text.elements);
 
-        cyphal_interface->send_msg(
+        send_msg(
                 &record,
                 uavcan_diagnostic_Record_1_1_FIXED_PORT_ID_,
                 &record_transfer_id
@@ -1264,17 +1444,33 @@ protected:
 
     void start_cyphal() {
         HAL_IMPORTANT(HAL_FDCAN_ConfigTxDelayCompensation(
-            hfdcan,
-            hfdcan->Init.DataTimeSeg1 * hfdcan->Init.DataPrescaler,
+            this->hfdcan,
+            this->hfdcan->Init.DataTimeSeg1 * this->hfdcan->Init.DataPrescaler,
             0
         ))
-        HAL_IMPORTANT(HAL_FDCAN_EnableTxDelayCompensation(hfdcan))
-        HAL_IMPORTANT(HAL_FDCAN_Start(hfdcan))
+        HAL_IMPORTANT(HAL_FDCAN_EnableTxDelayCompensation(this->hfdcan))
+        HAL_IMPORTANT(HAL_FDCAN_Start(this->hfdcan))
 
         _is_cyphal_on = true;
     }
 
+    void setup_builtin_subscriptions() {
+        InterfacePtr interface = shared_from_this();
+        node_info_reader = std::unique_ptr<NodeInfoReader>(new NodeInfoReader(
+            interface,
+            std::move(node_name),
+            std::move(protocol_version),
+            std::move(hardware_version),
+            std::move(software_version),
+            software_vcs_revision_id
+        ));
+        registers_handler = std::unique_ptr<RegistersHandler<REGISTERS_COUNT>>(
+            new RegistersHandler<REGISTERS_COUNT>(std::move(registers_list), interface)
+        );
+    }
+
     void finish_cyphal_setup() {
+        setup_builtin_subscriptions();
         setup_subscriptions();
         start_cyphal();
     }
@@ -1308,29 +1504,36 @@ public:
         uint64_t software_vcs_revision_id,
         std::array<RegisterDefinition, REGISTERS_COUNT>&& registers_list
     ):
-        hfdcan(hfdcan),
-        utilities(micros_64, std::bind(&EmbeddedCyphal::cyphal_error_handler, this)),
-        cyphal_interface(CyphalInterface::create_bss<G4CAN, O1Allocator>(
-            cyphal_bss_buffer,
+        CyphalInterface(
             node_id,
-            hfdcan,
-            QUEUE_SIZE,
-            utilities,
-            cyphal_queue_buffer
-        )),
-        node_info_reader(
-            cyphal_interface,
-            std::forward<std::string>(name),
-            std::forward<uavcan_node_Version_1_0>(protocol_version),
-            std::forward<uavcan_node_Version_1_0>(hardware_version),
-            std::forward<uavcan_node_Version_1_0>(software_version),
-            std::forward<uint64_t>(software_vcs_revision_id)
+            UtilityConfig(micros_64, std::bind(&EmbeddedCyphal::cyphal_error_handler, this)),
+            nullptr
         ),
-        registers_handler(
-            std::forward<std::array<RegisterDefinition, REGISTERS_COUNT>>(registers_list),
-            cyphal_interface
-        )
-        {}
+        hfdcan(hfdcan),
+        node_name(std::move(name)),
+        protocol_version(std::move(protocol_version)),
+        hardware_version(std::move(hardware_version)),
+        software_version(std::move(software_version)),
+        software_vcs_revision_id(software_vcs_revision_id),
+        registers_list(std::move(registers_list)) {
+        std::byte* buffer = cyphal_bss_buffer;
+        auto provider = G4CAN::create_bss<O1Allocator>(
+            &buffer,
+            hfdcan,
+            node_id,
+            QUEUE_SIZE,
+            get_utilities(),
+            cyphal_queue_buffer
+        );
+        attach_provider(provider, destroy_provider<G4CAN>);
+    }
+
+    ~EmbeddedCyphal() override {
+        node_info_reader.reset();
+        registers_handler.reset();
+        clear_callback_subscriptions();
+        detach_provider();
+    }
 
     void set_mode(uint8_t mode) {
         _mode = mode;
@@ -1342,7 +1545,7 @@ public:
 
     __attribute__((hot, flatten)) void cyphal_loop() {
         if (_is_cyphal_on) {
-            cyphal_interface->loop();
+            loop();
         }
         if (_is_cyphal_on) {
             millis_t current_t = millis_32();
@@ -1362,7 +1565,7 @@ public:
 
     virtual void setup_subscriptions() {
         HAL_FDCAN_ConfigGlobalFilter(
-            hfdcan,
+            this->hfdcan,
             FDCAN_REJECT,
             FDCAN_REJECT,
             FDCAN_REJECT_REMOTE,

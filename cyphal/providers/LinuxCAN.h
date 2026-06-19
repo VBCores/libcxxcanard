@@ -44,7 +44,7 @@ public:
 
         std::byte* provider_loc = allocator_loc + sizeof(T);
         auto ptr = new (provider_loc) LinuxCAN(handler, queue_len, utilities);
-        ptr->setup<T>(allocator_ptr, node_id);
+        ptr->setup<T>(allocator_ptr, node_id, destroy_allocator<T>);
 
         *inout_buffer = provider_loc + sizeof(LinuxCAN);
         // NOLINTEND(cppcoreguidelines-owning-memory,cppcoreguidelines-pro-bounds-pointer-arithmetic,bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
@@ -67,7 +67,7 @@ public:
         );
         auto ptr = new LinuxCAN(handler, queue_len, utilities);
         // NOLINTEND(cppcoreguidelines-owning-memory,cppcoreguidelines-pro-bounds-pointer-arithmetic,bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
-        ptr->setup<T>(allocator_ptr, node_id);
+        ptr->setup<T>(allocator_ptr, node_id, delete_allocator);
 
         return ptr;
     }

@@ -44,6 +44,27 @@ void CyphalInterface::loop() {
     provider->can_loop();
 }
 
+void CyphalInterface::attach_provider(
+    AbstractCANProvider* new_provider,
+    ProviderPtr::deleter_type provider_deleter
+) {
+    if (provider) {
+#ifdef __linux__
+        std::cerr << "Tried to attach provider twice" << std::endl;
+#endif
+        utilities.error_handler();
+    }
+    provider = ProviderPtr(new_provider, provider_deleter);
+}
+
+void CyphalInterface::detach_provider() {
+    provider.reset();
+}
+
+void CyphalInterface::clear_callback_subscriptions() {
+    callback_subscriptions.clear();
+}
+
 #ifdef __linux__
 void CyphalInterface::start_threads(uint64_t tx_delay_micros) {
     threads_terminate_flag.store(false);
@@ -85,4 +106,5 @@ CyphalInterface::~CyphalInterface() {
     while (!is_tx_terminated.load()) {}
     std::cout << "Waited for TX thread" << std::endl;
 #endif
+    clear_callback_subscriptions();
 }

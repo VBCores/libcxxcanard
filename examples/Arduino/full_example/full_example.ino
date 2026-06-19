@@ -1,11 +1,10 @@
 #include <VBCoreG4_arduino_system.h>
 #include <cyphal.h>
+#include <cyphal_common_types.hpp>
 
-#include <uavcan/primitive/scalar/Natural32_1_0.hpp>
 #include <voltbro/echo/echo_msg_1_0.hpp>
 #include <voltbro/echo/echo_service_1_0.hpp>
 
-using Natural32 = uavcan_primitive_scalar_Natural32_1_0;
 using EchoMsg = voltbro_echo_echo_msg_1_0;
 using EchoRequest = voltbro_echo_echo_service_Request_1_0;
 using EchoResponse = voltbro_echo_echo_service_Response_1_0;
@@ -48,14 +47,14 @@ std::array<RegisterDefinition, 3> make_registers() {
   }};
 }
 
-class Natural32Sub : public AbstractSubscription<Natural32> {
+class Natural32Sub : public AbstractSubscription<UInt32> {
 public:
   Natural32Sub(InterfacePtr interface):
-    AbstractSubscription<Natural32>(interface, NATURAL32_RX_PORT_ID)
+    AbstractSubscription<UInt32>(interface, NATURAL32_RX_PORT_ID)
   {}
 
 private:
-  void handler(const Natural32& msg, CanardRxTransfer*) override {
+  void handler(const UInt32& msg, CanardRxTransfer*) override {
     last_natural32 = msg.value;
     Serial.print("rx natural32: ");
     Serial.println(last_natural32);
@@ -112,9 +111,10 @@ private:
 
   void setup_subscriptions() override {
     ArduinoCyphal<3>::setup_subscriptions();
-    natural32_sub = new Natural32Sub(cyphal_interface);
-    echo_msg_sub = new EchoMsgSub(cyphal_interface);
-    echo_service = new EchoService(cyphal_interface);
+    InterfacePtr interface = shared_from_this();
+    natural32_sub = new Natural32Sub(interface);
+    echo_msg_sub = new EchoMsgSub(interface);
+    echo_service = new EchoService(interface);
   }
 
   void in_loop_reporting(uint32_t current_t) override {
@@ -124,8 +124,8 @@ private:
         return;
       }
 
-      Natural32 natural_msg = {.value = static_cast<uint32_t>(current_t * gain)};
-      cyphal_interface->send_msg(
+      UInt32 natural_msg = {.value = static_cast<uint32_t>(current_t * gain)};
+      send_msg(
         &natural_msg,
         NATURAL32_TX_PORT_ID,
         &natural32_transfer_id
@@ -133,7 +133,7 @@ private:
 
       EchoMsg echo_msg{};
       fill_string(echo_msg.ping, "hello from ArduinoCyphal");
-      cyphal_interface->send_msg(
+      send_msg(
         &echo_msg,
         ECHO_MSG_PORT_ID,
         &echo_msg_transfer_id
@@ -145,7 +145,7 @@ private:
 };
 
 CanFD canfd;
-FullExampleCyphal* cyphal = nullptr;
+std::shared_ptr<FullExampleCyphal> cyphal;
 
 void setup() {
   Serial.begin(115200);
@@ -155,7 +155,7 @@ void setup() {
   canfd.write_default_params();
   canfd.apply_config();
 
-  cyphal = new FullExampleCyphal(canfd.get_hfdcan(), NODE_ID);
+  cyphal = make_cyphal<FullExampleCyphal>(canfd.get_hfdcan(), NODE_ID);
   cyphal->begin();
   digitalWrite(LED1, HIGH);
 }

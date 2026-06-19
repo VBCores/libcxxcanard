@@ -10,27 +10,38 @@
 #include "cyphal/definitions.h"
 #include "libcanard/canard.h"
 
-extern std::unique_ptr<AbstractAllocator> _alloc_ptr;
+inline void delete_allocator(AbstractAllocator* allocator) {
+    delete allocator;
+}
+
+template <class T>
+void destroy_allocator(AbstractAllocator* allocator) {
+    static_cast<T*>(allocator)->~T();
+}
+
+using AllocatorPtr = std::unique_ptr<AbstractAllocator, void (*)(AbstractAllocator*)>;
 
 inline void* alloc_f(CanardInstance* ins, size_t amount) {
-    if (!_alloc_ptr) {
+    auto* allocator = static_cast<AbstractAllocator*>(ins->user_reference);
+    if (allocator == nullptr) {
 #ifdef __linux__
         std::cerr << "Tried to allocate canard memory before creating provider&allocator!"
                   << std::endl;
 #endif
         exit(1);
     }
-    return _alloc_ptr->allocate(ins, amount);
+    return allocator->allocate(ins, amount);
 }
 inline void free_f(CanardInstance* ins, void* pointer) {
-    if (!_alloc_ptr) {
+    auto* allocator = static_cast<AbstractAllocator*>(ins->user_reference);
+    if (allocator == nullptr) {
 #ifdef __linux__
         std::cerr << "Tried to free (?) canard memory before creating provider&allocator!"
                   << std::endl;
 #endif
         exit(1);
     }
-    return _alloc_ptr->free(ins, pointer);
+    return allocator->free(ins, pointer);
 }
 
 // 1 for tx, 1 for rx, 0.5 for misc (subs, multipart msgs, etc.)
@@ -49,6 +60,7 @@ protected:
     CanardTxQueue queue;
     CanardInstance canard;
     const UtilityConfig& utilities;
+    AllocatorPtr allocator;
 
     AbstractCANProvider(size_t canard_mtu, size_t wire_mtu, const UtilityConfig& utilities)
         : AbstractCANProvider(canard_mtu, wire_mtu, DEFAULT_QUEUE_SIZE, utilities){};
@@ -61,21 +73,23 @@ protected:
         : CANARD_MTU(canard_mtu),
           WIRE_MTU(wire_mtu),
           queue(canardTxInit(queue_len, CANARD_MTU)),
-          utilities(utilities){};
+          utilities(utilities),
+          allocator(nullptr, delete_allocator){};
 
     template <class T>
-    void setup(T* ptr, CanardNodeID node_id) {
+    void setup(T* ptr, CanardNodeID node_id, AllocatorPtr::deleter_type allocator_deleter) {
         using namespace std::placeholders;
 
-        if (_alloc_ptr) {
+        if (allocator) {
 #ifdef __linux__
             std::cerr << "Tried to call setup in provider twice!" << std::endl;
 #endif
             utilities.error_handler();
         }
-        _alloc_ptr = std::unique_ptr<T>(ptr);
+        allocator = AllocatorPtr(ptr, allocator_deleter);
 
         canard = canardInit(alloc_f, free_f);
+        canard.user_reference = allocator.get();
         canard.node_id = node_id;
     }
 

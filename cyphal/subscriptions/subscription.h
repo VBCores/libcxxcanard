@@ -8,8 +8,6 @@
 #include "libcanard/canard.h"
 
 using InterfacePtr = const std::shared_ptr<CyphalInterface>;
-using TransferListener = IListener<CanardRxTransfer*>;
-
 class IHasFilter {
 public:
     virtual CanardFilter make_filter(CanardNodeID node_id) = 0;

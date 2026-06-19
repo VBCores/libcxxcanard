@@ -110,3 +110,5 @@ void __attribute__((weak, noreturn)) exit(int _) {
 for lib_entry in arduino_build_data['libs']:
     print(f"Processing {lib_entry}")
     shutil.copytree(LIBS_DIR / lib_entry, OUT_DIR / lib_entry)
+
+shutil.copy2(DIR / 'cyphal_common_types.hpp', OUT_DIR / 'cyphal_common_types.hpp')

@@ -8,6 +8,7 @@
 #if defined(HAL_FDCAN_MODULE_ENABLED)
 
 #include <functional>
+#include <memory>
 
 #include <cyphal/node/node_info_handler.h>
 #include <cyphal/node/registers_handler.hpp>
@@ -35,27 +36,28 @@ micros_t micros_64();
 #endif
 
 template<size_t QUEUE_SIZE, millis_t DELAY_ON_ERROR, size_t REGISTERS_COUNT>
-class EmbeddedCyphal {
+class EmbeddedCyphal: public CyphalInterface {
 protected:
+    FDCAN_HandleTypeDef* hfdcan;
+    std::byte cyphal_bss_buffer[sizeof(G4CAN) + sizeof(O1Allocator)] __attribute__((aligned(4)));
     bool _is_cyphal_on = false;
     uint8_t _health_status = uavcan_node_Health_1_0_NOMINAL;
     uint8_t _mode = uavcan_node_Mode_1_0_INITIALIZATION;
     millis_t _delay_cyphal_until_millis = 0;
 
-    FDCAN_HandleTypeDef* hfdcan;
-    UtilityConfig utilities;
-    std::shared_ptr<CyphalInterface> cyphal_interface;
-    std::byte cyphal_bss_buffer[
-        sizeof(CyphalInterface) + sizeof(G4CAN) + sizeof(O1Allocator)
-    ] __attribute__((aligned(4)));
+    std::string node_name;
+    uavcan_node_Version_1_0 protocol_version;
+    uavcan_node_Version_1_0 hardware_version;
+    uavcan_node_Version_1_0 software_version;
+    uint64_t software_vcs_revision_id;
+    std::array<RegisterDefinition, REGISTERS_COUNT> registers_list;
+    std::unique_ptr<NodeInfoReader> node_info_reader;
+    std::unique_ptr<RegistersHandler<REGISTERS_COUNT>> registers_handler;
     // Must match the arena size requested by G4CAN::create_bss().
     static const size_t CYPHAL_BUFFER_SIZE = static_cast<size_t>(
         QUEUE_SIZE * sizeof(CanardTxQueueItem) * QUEUE_SIZE_MULT
     );
     static inline std::byte cyphal_queue_buffer[CYPHAL_BUFFER_SIZE] __attribute__((aligned(O1HEAP_ALIGNMENT)));
-
-    NodeInfoReader node_info_reader;
-    RegistersHandler<REGISTERS_COUNT> registers_handler;
 
     void heartbeat() {
         static CanardTransferID hbeat_transfer_id = 0;
@@ -63,11 +65,11 @@ protected:
             .uptime = (uint32_t)std::floor(millis_32() / 1000.0f),
             .health = {_health_status},
             .mode = {_mode},
-            .vendor_specific_status_code = static_cast<uint8_t>(cyphal_interface->queue_size())
+            .vendor_specific_status_code = static_cast<uint8_t>(queue_size())
         };
 
         if (_is_cyphal_on) {
-            cyphal_interface->send_msg(
+            send_msg(
                 &heartbeat_msg,
                 uavcan_node_Heartbeat_1_0_FIXED_PORT_ID_,
                 &hbeat_transfer_id,
@@ -78,13 +80,13 @@ protected:
 
     void cyphal_error_handler() {
         _is_cyphal_on = false;
-        cyphal_interface->clear_queue();
+        clear_queue();
         // delay for half a second
         _delay_cyphal_until_millis = millis_32() + DELAY_ON_ERROR;
     }
 
     void restart_cyphal() {
-        cyphal_interface->clear_queue();
+        clear_queue();
 
         static CanardTransferID record_transfer_id = 0;
         uavcan_diagnostic_Record_1_1 record;
@@ -92,7 +94,7 @@ protected:
         sprintf(reinterpret_cast<char*>(record.text.elements), "cyphal_error_handler was called internally");
         record.text.count = strlen((char*)record.text.elements);
 
-        cyphal_interface->send_msg(
+        send_msg(
                 &record,
                 uavcan_diagnostic_Record_1_1_FIXED_PORT_ID_,
                 &record_transfer_id
@@ -104,17 +106,33 @@ protected:
 
     void start_cyphal() {
         HAL_IMPORTANT(HAL_FDCAN_ConfigTxDelayCompensation(
-            hfdcan,
-            hfdcan->Init.DataTimeSeg1 * hfdcan->Init.DataPrescaler,
+            this->hfdcan,
+            this->hfdcan->Init.DataTimeSeg1 * this->hfdcan->Init.DataPrescaler,
             0
         ))
-        HAL_IMPORTANT(HAL_FDCAN_EnableTxDelayCompensation(hfdcan))
-        HAL_IMPORTANT(HAL_FDCAN_Start(hfdcan))
+        HAL_IMPORTANT(HAL_FDCAN_EnableTxDelayCompensation(this->hfdcan))
+        HAL_IMPORTANT(HAL_FDCAN_Start(this->hfdcan))
 
         _is_cyphal_on = true;
     }
 
+    void setup_builtin_subscriptions() {
+        InterfacePtr interface = shared_from_this();
+        node_info_reader = std::unique_ptr<NodeInfoReader>(new NodeInfoReader(
+            interface,
+            std::move(node_name),
+            std::move(protocol_version),
+            std::move(hardware_version),
+            std::move(software_version),
+            software_vcs_revision_id
+        ));
+        registers_handler = std::unique_ptr<RegistersHandler<REGISTERS_COUNT>>(
+            new RegistersHandler<REGISTERS_COUNT>(std::move(registers_list), interface)
+        );
+    }
+
     void finish_cyphal_setup() {
+        setup_builtin_subscriptions();
         setup_subscriptions();
         start_cyphal();
     }
@@ -148,29 +166,36 @@ public:
         uint64_t software_vcs_revision_id,
         std::array<RegisterDefinition, REGISTERS_COUNT>&& registers_list
     ):
-        hfdcan(hfdcan),
-        utilities(micros_64, std::bind(&EmbeddedCyphal::cyphal_error_handler, this)),
-        cyphal_interface(CyphalInterface::create_bss<G4CAN, O1Allocator>(
-            cyphal_bss_buffer,
+        CyphalInterface(
             node_id,
-            hfdcan,
-            QUEUE_SIZE,
-            utilities,
-            cyphal_queue_buffer
-        )),
-        node_info_reader(
-            cyphal_interface,
-            std::forward<std::string>(name),
-            std::forward<uavcan_node_Version_1_0>(protocol_version),
-            std::forward<uavcan_node_Version_1_0>(hardware_version),
-            std::forward<uavcan_node_Version_1_0>(software_version),
-            std::forward<uint64_t>(software_vcs_revision_id)
+            UtilityConfig(micros_64, std::bind(&EmbeddedCyphal::cyphal_error_handler, this)),
+            nullptr
         ),
-        registers_handler(
-            std::forward<std::array<RegisterDefinition, REGISTERS_COUNT>>(registers_list),
-            cyphal_interface
-        )
-        {}
+        hfdcan(hfdcan),
+        node_name(std::move(name)),
+        protocol_version(std::move(protocol_version)),
+        hardware_version(std::move(hardware_version)),
+        software_version(std::move(software_version)),
+        software_vcs_revision_id(software_vcs_revision_id),
+        registers_list(std::move(registers_list)) {
+        std::byte* buffer = cyphal_bss_buffer;
+        auto provider = G4CAN::create_bss<O1Allocator>(
+            &buffer,
+            hfdcan,
+            node_id,
+            QUEUE_SIZE,
+            get_utilities(),
+            cyphal_queue_buffer
+        );
+        attach_provider(provider, destroy_provider<G4CAN>);
+    }
+
+    ~EmbeddedCyphal() override {
+        node_info_reader.reset();
+        registers_handler.reset();
+        clear_callback_subscriptions();
+        detach_provider();
+    }
 
     void set_mode(uint8_t mode) {
         _mode = mode;
@@ -182,7 +207,7 @@ public:
 
     __attribute__((hot, flatten)) void cyphal_loop() {
         if (_is_cyphal_on) {
-            cyphal_interface->loop();
+            loop();
         }
         if (_is_cyphal_on) {
             millis_t current_t = millis_32();
@@ -202,7 +227,7 @@ public:
 
     virtual void setup_subscriptions() {
         HAL_FDCAN_ConfigGlobalFilter(
-            hfdcan,
+            this->hfdcan,
             FDCAN_REJECT,
             FDCAN_REJECT,
             FDCAN_REJECT_REMOTE,

@@ -1,8 +1,6 @@
 #include "provider.h"
 #include "cyphal/interfaces.h"
 
-std::unique_ptr<AbstractAllocator> _alloc_ptr;
-
 void AbstractCANProvider::process_canard_rx(CanardFrame* frame) {
     CanardRxTransfer transfer = {};
     transfer.payload = nullptr;

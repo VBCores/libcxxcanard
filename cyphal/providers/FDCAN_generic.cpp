@@ -1,6 +1,6 @@
 #include "FDCAN_generic.h"
 
-#if defined(__linux__) || defined(ARDUINO)
+#if defined(__linux__) || defined(ARDUINO) || (!defined(STM32G0) && !defined(STM32G4))
 #define FDCAN_DLC_BYTES_0 ((uint32_t)0x00000000U)  /*!< 0 bytes data field  */
 #define FDCAN_DLC_BYTES_1 ((uint32_t)0x00010000U)  /*!< 1 bytes data field  */
 #define FDCAN_DLC_BYTES_2 ((uint32_t)0x00020000U)  /*!< 2 bytes data field  */
@@ -21,7 +21,7 @@
 #include "stm32g4xx.h"
 #include "stm32g4xx_hal.h"
 #include "stm32g4xx_hal_fdcan.h"
-#else
+#elif defined(STM32G0)
 #include "stm32g0xx.h"
 #include "stm32g0xx_hal.h"
 #include "stm32g0xx_hal_fdcan.h"

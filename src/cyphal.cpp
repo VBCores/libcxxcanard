@@ -101,7 +101,7 @@ void SystemAllocator::free(CanardInstance* const ins, void* const pointer) {
     // NOLINTEND(cppcoreguidelines-owning-memory,cppcoreguidelines-no-malloc,hicpp-no-malloc)
 }
 
-#if defined(__linux__) || defined(ARDUINO)
+#if defined(__linux__) || defined(ARDUINO) || (!defined(STM32G0) && !defined(STM32G4))
 #define FDCAN_DLC_BYTES_0 ((uint32_t)0x00000000U)  /*!< 0 bytes data field  */
 #define FDCAN_DLC_BYTES_1 ((uint32_t)0x00010000U)  /*!< 1 bytes data field  */
 #define FDCAN_DLC_BYTES_2 ((uint32_t)0x00020000U)  /*!< 2 bytes data field  */
@@ -122,7 +122,7 @@ void SystemAllocator::free(CanardInstance* const ins, void* const pointer) {
 #include "stm32g4xx.h"
 #include "stm32g4xx_hal.h"
 #include "stm32g4xx_hal_fdcan.h"
-#else
+#elif defined(STM32G0)
 #include "stm32g0xx.h"
 #include "stm32g0xx_hal.h"
 #include "stm32g0xx_hal_fdcan.h"
@@ -241,8 +241,6 @@ size_t fdcan_dlc_to_len(uint32_t dlc) {
     //       we return max length for incorrect dlc values
     return 64;
 }
-
-std::unique_ptr<AbstractAllocator> _alloc_ptr;
 
 void AbstractCANProvider::process_canard_rx(CanardFrame* frame) {
     CanardRxTransfer transfer = {};
@@ -457,6 +455,27 @@ void CyphalInterface::loop() {
     provider->can_loop();
 }
 
+void CyphalInterface::attach_provider(
+    AbstractCANProvider* new_provider,
+    ProviderPtr::deleter_type provider_deleter
+) {
+    if (provider) {
+#ifdef __linux__
+        std::cerr << "Tried to attach provider twice" << std::endl;
+#endif
+        utilities.error_handler();
+    }
+    provider = ProviderPtr(new_provider, provider_deleter);
+}
+
+void CyphalInterface::detach_provider() {
+    provider.reset();
+}
+
+void CyphalInterface::clear_callback_subscriptions() {
+    callback_subscriptions.clear();
+}
+
 #ifdef __linux__
 void CyphalInterface::start_threads(uint64_t tx_delay_micros) {
     threads_terminate_flag.store(false);
@@ -498,6 +517,7 @@ CyphalInterface::~CyphalInterface() {
     while (!is_tx_terminated.load()) {}
     std::cout << "Waited for TX thread" << std::endl;
 #endif
+    clear_callback_subscriptions();
 }
 #if (defined(STM32G) || defined(STM32G4) || defined(STM32G0))
 

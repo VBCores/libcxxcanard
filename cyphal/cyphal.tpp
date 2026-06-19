@@ -1,3 +1,5 @@
+#include "cyphal/subscriptions/callbacks.h"
+
 template <typename CyphalPayload>
 inline void CyphalInterface::send(
     CyphalPayload* obj,
@@ -127,4 +129,37 @@ inline void CyphalInterface::subscribe(
         ) != 1) {
         utilities.error_handler();
     }
+}
+
+template <typename Func>
+inline void CyphalInterface::subscribe(CanardPortID port_id, Func&& callback) {
+    using Payload = typename CyphalCallbackTraits<std::decay_t<Func>>::payload_type;
+    subscribe<Payload>(port_id, CanardTransferKindMessage, std::forward<Func>(callback));
+}
+
+template <typename Func>
+inline void CyphalInterface::subscribe(
+    CanardPortID port_id,
+    CanardTransferKind kind,
+    Func&& callback
+) {
+    using Payload = typename CyphalCallbackTraits<std::decay_t<Func>>::payload_type;
+    subscribe<Payload>(port_id, kind, std::forward<Func>(callback));
+}
+
+template <typename CyphalPayload, typename Func>
+inline void CyphalInterface::subscribe(CanardPortID port_id, Func&& callback) {
+    subscribe<CyphalPayload>(port_id, CanardTransferKindMessage, std::forward<Func>(callback));
+}
+
+template <typename CyphalPayload, typename Func>
+inline void CyphalInterface::subscribe(
+    CanardPortID port_id,
+    CanardTransferKind kind,
+    Func&& callback
+) {
+    using Subscription = CyphalCallbackSubscription<CyphalPayload, std::decay_t<Func>>;
+    callback_subscriptions.emplace_back(
+        new Subscription(*this, port_id, kind, std::forward<Func>(callback))
+    );
 }

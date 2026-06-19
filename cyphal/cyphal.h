@@ -4,8 +4,11 @@
 #include <thread>
 #include <unistd.h>
 #include <atomic>
+#include <type_traits>
+#include <vector>
 
 #include "cyphal/definitions.h"
+#include "cyphal/interfaces.h"
 #include "cyphal/types.hpp"
 #include "providers/provider.h"
 
@@ -14,11 +17,25 @@ constexpr uint64_t DEFAULT_TIMEOUT_MICROS = 1000000;  // 1 sec
 /**
  * Основной класс со всей функциональностью. Это единственный класс непостредственно из этой библиотеки, экземплляр которого надо создать.
  */
-class CyphalInterface {
+using TransferListener = IListener<CanardRxTransfer*>;
+
+inline void delete_provider(AbstractCANProvider* provider) {
+    delete provider;
+}
+
+template <class T>
+void destroy_provider(AbstractCANProvider* provider) {
+    static_cast<T*>(provider)->~T();
+}
+
+using ProviderPtr = std::unique_ptr<AbstractCANProvider, void (*)(AbstractCANProvider*)>;
+
+class CyphalInterface : public std::enable_shared_from_this<CyphalInterface> {
 private:
     const CanardNodeID node_id;
-    const UtilityConfig& utilities;
-    std::unique_ptr<AbstractCANProvider> provider;
+    const UtilityConfig utilities;
+    ProviderPtr provider;
+    std::vector<std::unique_ptr<TransferListener>> callback_subscriptions;
 #ifdef __linux__
     std::thread rx_thread;
     std::thread tx_thread;
@@ -26,6 +43,14 @@ private:
     std::atomic<bool> is_rx_terminated;
     std::atomic<bool> is_tx_terminated;
 #endif
+
+protected:
+    void attach_provider(
+        AbstractCANProvider* provider,
+        ProviderPtr::deleter_type provider_deleter = delete_provider
+    );
+    void detach_provider();
+    void clear_callback_subscriptions();
 
 public:
     /**
@@ -35,14 +60,15 @@ public:
     CyphalInterface(
         CanardNodeID node_id,
         const UtilityConfig& config,
-        AbstractCANProvider* provider
+        AbstractCANProvider* provider,
+        ProviderPtr::deleter_type provider_deleter = delete_provider
     )
-        : node_id(node_id), utilities(config), provider(provider)
+        : node_id(node_id), utilities(config), provider(provider, provider_deleter)
 #ifdef __linux__
         , threads_terminate_flag(false), is_rx_terminated(true), is_tx_terminated(true)
 #endif
         {};
-    ~CyphalInterface();
+    virtual ~CyphalInterface();
 
     /**
      * Инициализировать CyphalInterface в глобальной памяти (.bss), не использует кучу.
@@ -75,7 +101,12 @@ public:
 
         std::byte* interface_ptr = *inout_buffer;
         // NOLINTBEGIN(cppcoreguidelines-owning-memory)
-        auto interface = new (interface_ptr) CyphalInterface(node_id, config, provider);
+        auto interface = new (interface_ptr) CyphalInterface(
+            node_id,
+            config,
+            provider,
+            destroy_provider<Provider>
+        );
         // NOLINTEND(cppcoreguidelines-owning-memory)
 
         return interface;
@@ -98,15 +129,19 @@ public:
         Args&&... args,
         const UtilityConfig& config
     ) {
+        auto interface = std::shared_ptr<CyphalInterface>(
+            new CyphalInterface(node_id, config, nullptr)
+        );
         AbstractCANProvider* provider = Provider::template create_heap<Allocator>(
             handler,
             node_id,
             queue_len,
             std::forward<Args>(args)...,
-            config
+            interface->get_utilities()
         );
+        interface->attach_provider(provider);
 
-        return std::make_shared<CyphalInterface>(node_id, config, provider);
+        return interface;
     }
 
     const UtilityConfig& get_utilities() const {
@@ -181,6 +216,14 @@ public:
         CanardTransferKind kind,
         CanardRxSubscription* subscription
     );
+    template <typename Func>
+    void subscribe(CanardPortID port_id, Func&& callback);
+    template <typename Func>
+    void subscribe(CanardPortID port_id, CanardTransferKind kind, Func&& callback);
+    template <typename CyphalPayload, typename Func>
+    void subscribe(CanardPortID port_id, Func&& callback);
+    template <typename CyphalPayload, typename Func>
+    void subscribe(CanardPortID port_id, CanardTransferKind kind, Func&& callback);
     template <typename CyphalPayload>
     inline void send(
         CyphalPayload* obj,
@@ -245,5 +288,14 @@ public:
     inline void deserialize_transfer(CyphalPayload* obj, CanardRxTransfer* transfer)
         const;
 };
+
+template <typename T, typename... Args>
+std::shared_ptr<T> make_cyphal(Args&&... args) {
+    static_assert(
+        std::is_base_of<CyphalInterface, T>::value,
+        "make_cyphal<T>() requires T to derive from CyphalInterface"
+    );
+    return std::shared_ptr<T>(new T(std::forward<Args>(args)...));
+}
 
 #include "cyphal.tpp"
