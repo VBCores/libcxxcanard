@@ -15,12 +15,6 @@ library from `src/`.
 
 ## Build
 
-Regenerate the Arduino package after library changes:
-
-```sh
-make arduino-lib
-```
-
 Compile a sketch with Arduino CLI or the helper used for STM32 Arduino builds:
 
 ```sh
