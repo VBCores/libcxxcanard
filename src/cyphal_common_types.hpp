@@ -30,6 +30,13 @@
 #include <uavcan/primitive/array/Real32_1_0.hpp>
 #include <uavcan/primitive/array/Real64_1_0.hpp>
 
+#include <uavcan/si/sample/angle/Scalar_1_0.hpp>
+#include <uavcan/si/sample/angular_velocity/Scalar_1_0.hpp>
+#include <uavcan/si/unit/angle/Scalar_1_0.hpp>
+#include <uavcan/si/unit/angular_velocity/Scalar_1_0.hpp>
+
+
+
 using Empty = uavcan_primitive_Empty_1_0;
 using CyphalString = uavcan_primitive_String_1_0;
 using Bytes = uavcan_primitive_Unstructured_1_0;
@@ -63,3 +70,8 @@ using Int64Array = uavcan_primitive_array_Integer64_1_0;
 using Float16Array = uavcan_primitive_array_Real16_1_0;
 using Float32Array = uavcan_primitive_array_Real32_1_0;
 using Float64Array = uavcan_primitive_array_Real64_1_0;
+
+using AngleSampleScalar = uavcan_si_sample_angle_Scalar_1_0;
+using AngularVelocitySampleScalar = uavcan_si_sample_angular_velocity_Scalar_1_0;
+using AngleUnitScalar = uavcan_si_unit_angle_Scalar_1_0;
+using AngularVelocityUnitScalar = uavcan_si_unit_angular_velocity_Scalar_1_0;
